@@ -1,0 +1,27 @@
+
+.inspectorControls {
+    width: 100%;
+}
+
+.sorts {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.sorts .sortControl {
+    width: 100px;
+}
+
+.filters {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.filters label {
+    /*flex-grow: 1;*/
+    text-align: center;
+}
