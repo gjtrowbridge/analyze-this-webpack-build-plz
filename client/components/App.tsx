@@ -127,6 +127,8 @@ export function App() {
     />
   } else if (view === "comparison") {
     mainElement = <ComparisonView
+      file1Name={selectedFile1}
+      file2Name={selectedFile2}
       bothFilesAreSelected={selectedFile1 !== null && selectedFile2 !== null}
       moduleStates={{
         file1: moduleState,

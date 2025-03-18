@@ -34,11 +34,14 @@ app.post('/api/stats/upload', (req, res) => {
     const bb = busboy({ headers: req.headers })
     let fileNamePrefix: string | undefined = undefined
     bb.on('field', (name, val, info) => {
+        console.log('alternate', val)
         if (name === "alternateName" && alternateFileNameRegex.test(val)) {
+            console.log('xcxc saving alternate name', val)
             fileNamePrefix = val
         }
     })
     bb.on('file', (name, file, info) => {
+        console.log('xcxc saving file')
         const { filename } = info
         // TODO: Fix the race condition here, for now it's fine
         const fileNameToSave = getStoredFileName(filename, fileNamePrefix)

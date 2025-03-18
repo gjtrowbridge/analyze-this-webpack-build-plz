@@ -6,7 +6,7 @@ import { JsonViewer } from '@textea/json-viewer'
 
 export function ModuleRow(props: {
   module: StatsModule,
-  extraInfo: ModuleExtraInfo,
+  extraInfo?: ModuleExtraInfo,
   showRawInfo: boolean,
   setShowRawInfo: (moduleId: ModuleIdentifier) => void
 }) {
@@ -21,7 +21,7 @@ export function ModuleRow(props: {
   return <div className="moduleRow">
     <div>
       <p>Name: {module.name}</p>
-      <p>Depth: { extraInfo.depth === noDepthFoundConstant ? "Not a descendant of any entry point file" : extraInfo.depth }</p>
+      { extraInfo ? (<p>Depth: { extraInfo.depth === noDepthFoundConstant ? "Not a descendant of any entry point file" : extraInfo.depth }</p>) : null }
       <p>Size: ~{Math.round(module.size / 1024)} kb</p>
       <p># Optimization Bailouts: { module.optimizationBailout?.length || 0 }</p>
       <p>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</p>

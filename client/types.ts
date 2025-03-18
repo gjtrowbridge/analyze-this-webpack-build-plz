@@ -1,4 +1,6 @@
 import type { StatsChunk, StatsModule } from 'webpack'
+import { ModuleIdentifier } from './helpers/modules'
+import { ChunkIdentifier } from './helpers/chunks'
 
 export type ReactModuleState = {
   ready: true
@@ -11,3 +13,6 @@ export type ReactChunkState = {
   statusMessage: string
   chunks: Array<StatsChunk>
 } | { ready: false, statusMessage?: string }
+
+export type ModulesById = Map<ModuleIdentifier, StatsModule>
+export type ChunksById = Map<ChunkIdentifier, StatsChunk>
