@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getAllStatsFilenames, isStatsFilePathValid, loadStatsObjectFromFile } from '../helpers'
+import { getAllStatsFilenames, isStatsFilePathValid, loadStatsObjectFromFile } from '../helpers/files'
 
 export const modulesRouter = Router()
 

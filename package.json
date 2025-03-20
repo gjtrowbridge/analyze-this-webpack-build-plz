@@ -8,10 +8,11 @@
     "build-client-with-stats": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.client.config.ts --json client-webpack-stats.json",
     "build-server": "webpack --config webpack.server.config.js",
 
-    "db-down-all": "tsx cli/migration/downAll.ts",
-    "db-up-all": "tsx cli/migration/upAll.ts",
-    "db-run-one": "tsx cli/migration/runOne.ts",
+    "db-down-all": "tsx cli/migration/downAll.ts && npm run db-update-schema",
+    "db-up-all": "tsx cli/migration/upAll.ts && npm run db-update-schema",
+    "db-run-one": "tsx cli/migration/runOne.ts && npm run db-update-schema",
     "db-cli": "sqlite3 sqlite/db.sqlite",
+    "db-update-schema": "sqlite3 sqlite/db.sqlite .schema > ./cli/migration/schema.sql",
 
     "devserver": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack-dev-server --config webpack.client.config.ts",
     "start": "npm run build-client && npm run build-server && node dist/server/index.js",

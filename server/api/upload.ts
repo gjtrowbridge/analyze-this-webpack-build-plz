@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import * as busboy from 'busboy'
 import { alternateFileNameRegex } from '../../shared/helpers'
-import { getStoredFileName, writeStatsObjectToFile } from '../helpers'
+import { getStoredFileName, writeStatsObjectToFile } from '../helpers/files'
 
 export const uploadRouter = Router()
 
