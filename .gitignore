@@ -2,3 +2,4 @@
 dist
 node_modules
 server/stats_files
+sqlite

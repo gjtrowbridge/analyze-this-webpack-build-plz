@@ -26,11 +26,11 @@ export function FileLoader(props: {
   }, [setAlternateName])
   const onClickButton = useCallback(async () => {
     const formData = new FormData()
-    formData.set('alternateName', alternateName)
-    formData.set('file', file)
+    formData.append('alternateName', alternateName)
+    formData.append('file', file)
     const s = file.stream()
     setLoadingState("uploading file...")
-    const res1 = await axios.post('/api/stats/upload', formData, {
+    const res1 = await axios.post('/api/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       }

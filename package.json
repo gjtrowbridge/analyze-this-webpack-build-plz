@@ -7,6 +7,12 @@
     "build-client": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.client.config.ts",
     "build-client-with-stats": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.client.config.ts --json client-webpack-stats.json",
     "build-server": "webpack --config webpack.server.config.js",
+
+    "db-down-all": "tsx cli/migration/downAll.ts",
+    "db-up-all": "tsx cli/migration/upAll.ts",
+    "db-run-one": "tsx cli/migration/runOne.ts",
+    "db-cli": "sqlite3 sqlite/db.sqlite",
+
     "devserver": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack-dev-server --config webpack.client.config.ts",
     "start": "npm run build-client && npm run build-server && node dist/server/index.js",
     "start-server": "npm run build-server && node dist/server/index.js",
@@ -21,6 +27,7 @@
     "@textea/json-viewer": "^4.0.1",
     "@types/busboy": "^1.5.4",
     "axios": "^1.8.1",
+    "better-sqlite3": "^11.9.1",
     "big-json": "^3.2.0",
     "busboy": "^1.6.0",
     "express": "^4.21.2",
@@ -31,6 +38,7 @@
   "sideEffects": true,
   "devDependencies": {
     "@types/axios": "^0.9.36",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/big-json": "^3.2.5",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",

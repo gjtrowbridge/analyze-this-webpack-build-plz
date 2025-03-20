@@ -12,7 +12,7 @@ export function RawFileView(props: { fileName: string }) {
       return
     }
     void (async () => {
-      const res = await axios.get<object>(`/api/raw_file/${fileName}`)
+      const res = await axios.get<object>(`/api/files/${fileName}`)
       if (res.status > 300) {
         setContents({
           fileName,
