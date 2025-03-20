@@ -1,4 +1,4 @@
-import { Migration } from '../../../server/db/types'
+import { Migration } from './types'
 import { createBasicTablesMigration } from './create-basic-tables-2025-03-20_09-25'
 
 /**

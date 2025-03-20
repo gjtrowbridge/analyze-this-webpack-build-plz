@@ -1,10 +1,12 @@
 CREATE TABLE files(
       id INTEGER,
       original_name TEXT NOT NULL,
-      prefix TEXT,
+      user_provided_name TEXT NOT NULL,
       uploaded_at INTEGER,
+      done_processing INTEGER NOT NULL,
       
-      PRIMARY KEY(id ASC) 
+      PRIMARY KEY(id ASC),
+      UNIQUE(original_name, uploaded_at)
   ) STRICT
 ;
 CREATE TABLE modules(

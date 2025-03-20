@@ -1,4 +1,4 @@
-import { Migration } from '../../../server/db/types'
+import { Migration } from './types'
 import type { Database } from 'better-sqlite3'
 
 export const createBasicTablesMigration: Migration = {
@@ -7,10 +7,12 @@ export const createBasicTablesMigration: Migration = {
   CREATE TABLE IF NOT EXISTS files(
       id INTEGER,
       original_name TEXT NOT NULL,
-      prefix TEXT,
+      user_provided_name TEXT NOT NULL,
       uploaded_at INTEGER,
+      done_processing INTEGER NOT NULL,
       
-      PRIMARY KEY(id ASC) 
+      PRIMARY KEY(id ASC),
+      UNIQUE(original_name, uploaded_at)
   ) STRICT
 `)
     db.exec(`
