@@ -1,5 +1,5 @@
-import { FileRow } from './types'
-import { db } from './database'
+import { FileRow } from '../types'
+import { db } from '../database'
 import { Statement } from 'better-sqlite3'
 
 const insertStatement = `
@@ -13,7 +13,7 @@ const insertStatement = `
                      @user_provided_name,
                      @uploaded_at,
                      @done_processing
-  )
+  ) RETURNING id
 `
 const deleteStatement = `
   DELETE FROM files where id = @id
@@ -25,24 +25,25 @@ const getOneStatement = `
   SELECT * FROM files WHERE id = ?
 `
 
-function saveFileToDatabase(fileRow: FileRow) {
+export function saveFileToDatabase(fileRow: FileRow): number {
   const del = db.prepare(deleteStatement)
-  const insert = db.prepare(insertStatement)
+  const insert: Statement<unknown[], { id: number }> = db.prepare(insertStatement)
   const transaction = db.transaction((fr: FileRow) => {
     if (fr.id) {
       del.run(fr)
     }
-    insert.run(fr)
+    return insert.get(fr)
   })
-  transaction(fileRow)
+  const { id } = transaction(fileRow)
+  return id
 }
 
-function getFilesFromDatabase(): Array<FileRow> {
+export function getFilesFromDatabase(): Array<FileRow> {
   const getAll: Statement<unknown[], FileRow> = db.prepare(getAllStatement)
   return getAll.all()
 }
 
-function getFileFromDatabase(id: number): FileRow | undefined {
+export function getFileFromDatabase(id: number): FileRow | undefined {
   const getOne: Statement<unknown[], FileRow> = db.prepare(getOneStatement)
   return getOne.get(id)
 }

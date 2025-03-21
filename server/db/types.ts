@@ -9,15 +9,16 @@ export interface FileRow {
 }
 export interface ModuleRow {
   id?: number
+  unique_key: string
   module_id: string
   module_identifier: string
-  raw: object
+  raw_json: string
   file_id: number
 }
 export interface ChunkRow {
   id?: number
   chunk_id: string
   chunk_name: string
-  raw: object
+  raw_json: object
   file_id: number
 }

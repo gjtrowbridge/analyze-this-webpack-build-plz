@@ -41,7 +41,7 @@ export function FileLoader(props: {
       setLoadingState("Done uploading file")
       fileWasUploaded()
     }
-  }, [file, fileWasUploaded, setLoadingState])
+  }, [file, fileWasUploaded, setLoadingState, alternateName])
 
   let uploadButton: ReactElement = null
   if (file) {

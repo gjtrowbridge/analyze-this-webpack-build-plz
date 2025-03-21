@@ -18,14 +18,16 @@ export const createBasicTablesMigration: Migration = {
     db.exec(`
   CREATE TABLE IF NOT EXISTS modules(
       id INTEGER,
+      unique_key TEXT,
+      
       module_id TEXT,
       module_identifier TEXT,
-      raw BLOB NOT NULL,
+      raw_json TEXT NOT NULL,
       file_id INTEGER NOT NULL,
 
       PRIMARY KEY(id ASC),
       FOREIGN KEY(file_id) REFERENCES files(id),
-      UNIQUE(module_id, module_identifier, file_id)
+      UNIQUE(unique_key, file_id)
   ) STRICT
 `)
     db.exec(`
@@ -33,7 +35,7 @@ export const createBasicTablesMigration: Migration = {
       id INTEGER,
       chunk_id TEXT,
       chunk_name TEXT,
-      raw BLOB NOT NULL,
+      raw_json TEXT NOT NULL,
       file_id INTEGER NOT NULL,
 
       PRIMARY KEY(id ASC),

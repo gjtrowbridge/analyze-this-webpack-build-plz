@@ -1,0 +1,7 @@
+{
+  "verbose": true,
+  "execMap": {
+    "ts": "tsx"
+  },
+  "watch": ["server"]
+}

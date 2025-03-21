@@ -9,6 +9,8 @@ import * as webpackDevServer from 'webpack-dev-server'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 
 
+const timeout = 60 * 1000
+
 const config: webpack.Configuration = {
   entry: {
     index: './client/index.tsx',
@@ -68,6 +70,8 @@ const config: webpack.Configuration = {
       {
         context: ['/api'],
         target: 'http://localhost:8080',
+        proxyTimeout: timeout,
+        timeout,
       },
     ],
     hot: true,

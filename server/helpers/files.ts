@@ -45,7 +45,7 @@ export async function loadStatsObjectFromFile(fileName: string): Promise<StatsCo
   }
 
   const fh = await promises.open(filePath, 'r')
-  const stats: StatsCompilation = new Promise((resolve) => {
+  const stats: Promise<StatsCompilation> = new Promise((resolve) => {
     const readStream = fh.createReadStream()
     const parseStream = createParseStream()
     parseStream.on('data', (obj) => {

@@ -1,7 +1,12 @@
 import { Router } from 'express'
-import * as busboy from 'busboy'
-import { alternateFileNameRegex } from '../../shared/helpers'
+import busboy from 'busboy'
+import { alternateFileNameRegex, getUniqueModuleKey } from '../../shared/helpers'
 import { getStoredFileName, writeStatsObjectToFile } from '../helpers/files'
+import { createParseStream } from 'big-json'
+import { StatsCompilation } from 'webpack'
+import { saveFileToDatabase } from '../db/queries/files'
+import { ModuleRow } from '../db/types'
+import { saveModulesToDatabase } from '../db/queries/modules'
 
 export const uploadRouter = Router()
 
@@ -16,18 +21,41 @@ uploadRouter.post("/", (req, res) => {
       fileNamePrefix = val
     }
   })
-  bb.on('file', (name, file, info) => {
+  bb.on('file', async (name, file, info) => {
     const { filename } = info
     const fileNameToSave = getStoredFileName(filename, fileNamePrefix)
     if (name === 'file') {
-      writeStatsObjectToFile({
-        readStream: file,
-        fileName: fileNameToSave,
-      }).then(() => {
-        res.status(201).json({ message: "successfully saved file", fileName: fileNameToSave })
-      }).catch((e) => {
-        res.status(500).json({ message: "something went wrong", error: e })
+      const p: Promise<StatsCompilation> = new Promise((resolve) => {
+        const readStream = file
+        const parseStream = createParseStream()
+        parseStream.on('data', (obj) => {
+          resolve(obj)
+        })
+        parseStream.on("error", (e) => {
+          throw e
+        })
+        readStream.pipe(parseStream)
       })
+      const stats = await p
+      const file_id = saveFileToDatabase({
+        original_name: filename,
+        user_provided_name: fileNamePrefix ?? "",
+        uploaded_at: Date.now(),
+        done_processing: 0,
+      })
+      if (stats.modules) {
+        const moduleRows: Array<ModuleRow> = stats.modules.map((m) => {
+          return {
+            unique_key: getUniqueModuleKey(m),
+            module_id: String(m.id),
+            module_identifier: String(m.identifier),
+            raw_json: JSON.stringify(m),
+            file_id,
+          }
+        })
+        saveModulesToDatabase(moduleRows)
+      }
+      res.status(201).json({ fileId: file_id })
     }
   })
   bb.on('close', () => {})
