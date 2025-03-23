@@ -15,6 +15,17 @@ const insertStatement = `
                      @done_processing
   ) RETURNING id
 `
+const updateStatement = `
+  UPDATE files
+  SET
+    original_name = @original_name,
+    user_provided_name = @user_provided_name,
+    uploaded_at = @uploaded_at,
+    done_processing = @done_processing
+  WHERE
+    id = @id
+`
+
 const deleteStatement = `
   DELETE FROM files where id = @id
 `
@@ -25,17 +36,15 @@ const getOneStatement = `
   SELECT * FROM files WHERE id = ?
 `
 
-export function saveFileToDatabase(fileRow: FileRow): number {
-  const del = db.prepare(deleteStatement)
+export function insertFileToDatabase(fileRow: Omit<FileRow, "id">): number {
   const insert: Statement<unknown[], { id: number }> = db.prepare(insertStatement)
-  const transaction = db.transaction((fr: FileRow) => {
-    if (fr.id) {
-      del.run(fr)
-    }
-    return insert.get(fr)
-  })
-  const { id } = transaction(fileRow)
+  const { id } = insert.get(fileRow)
   return id
+}
+
+export function updateFileInDatabase(fileRow: FileRow & { id: number }) {
+  const update = db.prepare(updateStatement)
+  return update.run(fileRow)
 }
 
 export function getFilesFromDatabase(): Array<FileRow> {

@@ -19,6 +19,6 @@ export interface ChunkRow {
   id?: number
   chunk_id: string
   chunk_name: string
-  raw_json: object
+  raw_json: string
   file_id: number
 }
