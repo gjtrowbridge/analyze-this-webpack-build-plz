@@ -14,10 +14,10 @@ export type FileState = {
   status: 'LOADED',
 } & LoadedFileData)
 
-export const defaultModuleState: ReactModuleState = { ready: false }
-export const defaultChunkState: ReactChunkState = { ready: false }
-
 export const filesState = hookstate<FileState>({
   status: 'NOT_LOADED',
 })
 export const errorsState = hookstate<Array<string>>([])
+
+export const modulesStateFile1: State<ReactModuleState | null> = hookstate<ReactModuleState | null>(null)
+export const modulesStateFile2: State<ReactModuleState | null> = hookstate<ReactModuleState | null>(null)

@@ -64,4 +64,20 @@ export function useFileNames() {
   return fileNames
 }
 
+export function useFileIds() {
+  const files = useHookstate(filesState)
+  const f = files.get()
 
+  let fileIds: {
+    file1: number | null
+    file2: number | null
+  } = {
+    file1: null,
+    file2: null,
+  }
+  if (f.status === 'LOADED') {
+    fileIds.file1 = f.selectedFileId1 ?? null
+    fileIds.file2 = f.selectedFileId2 ?? null
+  }
+  return fileIds
+}

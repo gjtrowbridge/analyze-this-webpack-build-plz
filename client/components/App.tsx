@@ -10,7 +10,7 @@ import { ComparisonView } from './ComparisonView'
 import "./styles/App.css"
 import { useFileNames, useRefreshFiles } from '../hooks/useFiles'
 import { useHookstate } from '@hookstate/core'
-import { filesState } from '../globalState'
+import { filesState, modulesStateFile1 } from '../globalState'
 
 
 export function App() {
@@ -21,7 +21,7 @@ export function App() {
   const defaultModuleState: ReactModuleState = { ready: false }
   const defaultChunkState: ReactChunkState = { ready: false }
   const [view, setView] = useState<"module" | "chunk" | "file_selector" | "comparison" | "raw_file">("file_selector")
-  const [moduleState, setModuleState] = useState<ReactModuleState>(defaultModuleState)
+  // const [moduleState, setModuleState] = useState<ReactModuleState>(defaultModuleState)
   const [moduleStateComparisonFile, setModuleStateComparisonFile] = useState<ReactModuleState>(defaultModuleState)
   const [chunkState, setChunkState] = useState<ReactChunkState>(defaultChunkState)
   const [chunkStateComparisonFile, setChunkStateComparisonFile] = useState<ReactChunkState>(defaultChunkState)
@@ -49,13 +49,7 @@ export function App() {
   /**
    * Load Modules and Chunks for main file
    */
-  useModules({
-    moduleState,
-    selectedFileId: f.status === 'LOADED' && f.selectedFileId1 || null,
-    setModuleState,
-    setErrorMessage: setModuleErrorMessage,
-    isEnabled: view === "module" || view === "comparison",
-  })
+  useModules()
   useChunks({
     chunkState,
     selectedFileId: f.status === 'LOADED' && f.selectedFileId1 || null,
@@ -66,13 +60,6 @@ export function App() {
   /**
    * Load Modules and Chunks for comparison file (if comparing)
    */
-  useModules({
-    moduleState: moduleStateComparisonFile,
-    selectedFileId: f.status === 'LOADED' && f.selectedFileId2 || null,
-    setModuleState: setModuleStateComparisonFile,
-    setErrorMessage: setModuleErrorMessage,
-    isEnabled: view === "comparison",
-  })
   useChunks({
     chunkState: chunkStateComparisonFile,
     selectedFileId: f.status === 'LOADED' && f.selectedFileId2 || null,
@@ -80,30 +67,33 @@ export function App() {
     setErrorMessage: setChunkErrorMessage,
     isEnabled: view === "comparison",
   })
+  const msf1 = useHookstate(modulesStateFile1)
+  // Hack to not lose my mind worrying about this shit
+  const moduleState = msf1.get() as ReactModuleState | null
 
   // TODO: Make it so these don't lose unmount / lose state between view changes...
-  const moduleInspector = moduleState.ready ? <ModuleInspector modules={moduleState.modules} /> : null
-  const chunkInspector = chunkState.ready ? <ChunkInspector chunks={chunkState.chunks} /> : null
+  const moduleInspector = moduleState?.ready ? <ModuleInspector modules={moduleState.modules} /> : null
+  // const chunkInspector = chunkState.ready ? <ChunkInspector chunks={chunkState.chunks} /> : null
   let mainElement = null
   if (view === "module") {
     mainElement = <LoadingBoundary isLoading={!moduleState.ready} element={moduleInspector} />
   } else if (view === "chunk") {
-    mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
+    // mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
   } else if (view === "file_selector") {
     mainElement = <FileSelector
       refreshFilesFn={refreshFilesFn}
     />
   } else if (view === "comparison") {
-    mainElement = <ComparisonView
-      moduleStates={{
-        file1: moduleState,
-        file2: moduleStateComparisonFile,
-      }}
-      chunkStates={{
-        file1: chunkState,
-        file2: chunkStateComparisonFile,
-      }}
-    />
+    // mainElement = <ComparisonView
+    //   moduleStates={{
+    //     file1: moduleState,
+    //     file2: moduleStateComparisonFile,
+    //   }}
+    //   chunkStates={{
+    //     file1: chunkState,
+    //     file2: chunkStateComparisonFile,
+    //   }}
+    // />
   } else {
     mainElement = null
   }
