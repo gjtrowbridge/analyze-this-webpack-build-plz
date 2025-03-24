@@ -7,14 +7,14 @@ import { ModuleRow } from '../../shared/types'
 
 export function useModules(args: {
   moduleState: ReactModuleState
-  selectedFile: number | null,
+  selectedFileId: number | null,
   setModuleState: (newValue: ReactModuleState) => void
   isEnabled: boolean
   setErrorMessage: (errorMessage: string) => void
 }) {
-  const { moduleState, selectedFile, setErrorMessage, setModuleState, isEnabled } = args
+  const { moduleState, selectedFileId, setErrorMessage, setModuleState, isEnabled } = args
   useEffect(() => {
-    if (selectedFile === null) {
+    if (selectedFileId === null) {
       return
     }
     let limit = 200
@@ -23,18 +23,18 @@ export function useModules(args: {
     if (moduleState.ready || !isEnabled) {
       return
     }
-    console.log(`Querying modules for ${selectedFile}...`)
+    console.log(`Querying modules for ${selectedFileId}...`)
     const modules: Array<StatsModule> = []
     void (async () => {
       while (!shouldStopEarly) {
         setModuleState({
           ready: false,
-          statusMessage: `Getting the ${limit} modules after id: ${minIdNonInclusive} for file: "${selectedFile}"`,
+          statusMessage: `Getting the ${limit} modules after id: ${minIdNonInclusive} for file: "${selectedFileId}"`,
         })
         const res = await axios.get<{
           moduleRows: Array<ModuleRow & { id: number }>
           lastId: number | null
-        }>(`/api/modules/${selectedFile}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
+        }>(`/api/modules/${selectedFileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
         if (res.status > 300) {
           setErrorMessage(`Something went wrong when loading the modules...`)
           break
@@ -48,14 +48,14 @@ export function useModules(args: {
           break
         }
         minIdNonInclusive = lastId
-        console.log('last id', lastId)
+        console.log('last module id...', lastId)
       }
       setModuleState({
         ready: true,
-        statusMessage: `Done loading modules for file: "${selectedFile}"`,
+        statusMessage: `Done loading modules for file: "${selectedFileId}"`,
         modules,
       })
     })()
     return () => { shouldStopEarly = true }
-  }, [setErrorMessage, selectedFile, setModuleState, moduleState.ready, isEnabled]);
+  }, [setErrorMessage, selectedFileId, setModuleState, moduleState.ready, isEnabled]);
 }

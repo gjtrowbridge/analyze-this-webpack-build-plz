@@ -22,7 +22,7 @@ export function ChunkRow(props: {
         <p>Id: {chunk.id}</p>
         <p>Name(s): {chunk.names?.join(",") ?? "N/A"}</p>
         <p>Size: {Math.round(chunk.size / 1024)} kb</p>
-        <p>Generated Asset Name(s): {chunk.files.join(", ")}</p>
+        <p>Generated Asset Name(s): {chunk.files?.join(", ")}</p>
         <button onClick={() => { if (showRawInfo) { setShowRawInfo("") } else { setShowRawInfo(chunk.id)}}}>Show {showRawInfo ? "Less" : "More"}</button>
       </div>
       {rawInfo}

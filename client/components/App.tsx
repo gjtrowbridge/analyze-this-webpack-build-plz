@@ -64,44 +64,44 @@ export function App() {
    */
   useModules({
     moduleState,
-    selectedFile: selectedFileId1,
+    selectedFileId: selectedFileId1,
     setModuleState,
     setErrorMessage: setModuleErrorMessage,
     isEnabled: view === "module" || view === "comparison",
   })
-  // useChunks({
-  //   chunkState,
-  //   selectedFile: selectedFileId1,
-  //   setChunkState,
-  //   setErrorMessage: setChunkErrorMessage,
-  //   isEnabled: view === "chunk" || view === "comparison",
-  // })
+  useChunks({
+    chunkState,
+    selectedFileId: selectedFileId1,
+    setChunkState,
+    setErrorMessage: setChunkErrorMessage,
+    isEnabled: view === "chunk" || view === "comparison",
+  })
   /**
    * Load Modules and Chunks for comparison file (if comparing)
    */
   useModules({
     moduleState: moduleStateComparisonFile,
-    selectedFile: selectedFileId2,
+    selectedFileId: selectedFileId2,
     setModuleState: setModuleStateComparisonFile,
     setErrorMessage: setModuleErrorMessage,
     isEnabled: view === "comparison",
   })
-  // useChunks({
-  //   chunkState: chunkStateComparisonFile,
-  //   selectedFile: selectedFileId2,
-  //   setChunkState: setChunkStateComparisonFile,
-  //   setErrorMessage: setChunkErrorMessage,
-  //   isEnabled: view === "comparison",
-  // })
+  useChunks({
+    chunkState: chunkStateComparisonFile,
+    selectedFileId: selectedFileId2,
+    setChunkState: setChunkStateComparisonFile,
+    setErrorMessage: setChunkErrorMessage,
+    isEnabled: view === "comparison",
+  })
 
   // TODO: Make it so these don't lose unmount / lose state between view changes...
   const moduleInspector = moduleState.ready ? <ModuleInspector modules={moduleState.modules} /> : null
-  // const chunkInspector = chunkState.ready ? <ChunkInspector chunks={chunkState.chunks} /> : null
+  const chunkInspector = chunkState.ready ? <ChunkInspector chunks={chunkState.chunks} /> : null
   let mainElement = null
   if (view === "module") {
     mainElement = <LoadingBoundary isLoading={!moduleState.ready} element={moduleInspector} />
-  // } else if (view === "chunk") {
-  //   mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
+  } else if (view === "chunk") {
+    mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
   } else if (view === "file_selector") {
     mainElement = <FileSelector
       selectedFileId1={selectedFileId1}

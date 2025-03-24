@@ -27,7 +27,7 @@ const getManyStatement = `
 `
 
 const getOneStatement = `
-  SELECT * FROM files WHERE id = ?
+  SELECT * FROM modules WHERE id = ?
 `
 
 export function saveModuleToDatabase(moduleRow: ModuleRow) {

@@ -1,30 +1,26 @@
 import { Router } from 'express'
-import { getAllStatsFilenames, isStatsFilePathValid, loadStatsObjectFromFile } from '../helpers/files'
+import { convertToInteger } from '../helpers/misc'
+import { getChunksFromDatabase } from '../db/queries/chunks'
 
 export const chunksRouter = Router()
 
 /**
  * Get chunks info for a given file
  */
-chunksRouter.get('/:fileName', async (req, res) => {
-  let { fileName } = req.params
-  if (fileName === "latest") {
-    const fileNames = await getAllStatsFilenames()
-    fileName = fileNames[0]
-  }
-  const [isValid] = await Promise.all([isStatsFilePathValid(fileName)])
-  if (!isValid) {
-    res.status(400).json({ error: `FileName: "${fileName}" is not valid`})
-  }
+chunksRouter.get('/:fileId', async (req, res) => {
+  const fileId = convertToInteger(req.params.fileId)
+  const limit = convertToInteger(req.query.limit) ?? 10
+  const minIdNonInclusive = convertToInteger(req.query.minIdNonInclusive) ?? -1
 
-  const stats = await loadStatsObjectFromFile(fileName)
-  const { offset, limit } = req.query
-  const o = Number(offset)
-  const l = Number(limit)
-  const chunks = stats.chunks?.slice(o, l + o) || []
+  const chunkRows = getChunksFromDatabase({
+    limit,
+    minIdNonInclusive,
+    fileId
+  })
 
-  // Return the chunks
+  // Return the modules
   res.json({
-    chunks,
+    chunkRows,
+    lastId: chunkRows.length > 0 ? chunkRows[chunkRows.length - 1].id : null
   })
 })
