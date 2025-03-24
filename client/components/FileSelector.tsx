@@ -1,39 +1,45 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { FileLoader } from './FileLoader'
+import { FileRow } from '../../shared/types'
+import { convertToInteger } from '../../server/helpers/misc'
 
 
 export function FileSelector(props: {
-  selectedFile1: string | null,
-  selectedFile2: string | null,
-  setSelectedFile1: (f: string | null) => void
-  setSelectedFile2: (f: string | null) => void
+  selectedFileId1: number | null,
+  selectedFileId2: number | null,
+  setSelectedFileId1: (f: number | null) => void
+  setSelectedFileId2: (f: number | null) => void
 }) {
   const {
-    selectedFile1,
-    selectedFile2,
-    setSelectedFile1,
-    setSelectedFile2,
+    selectedFileId1,
+    selectedFileId2,
+    setSelectedFileId1,
+    setSelectedFileId2,
   } = props
-  const [existingFiles, setExistingFiles] = useState<Array<string> | null>(null)
+  const [existingFiles, setExistingFiles] = useState<Array<FileRow & { id: number }> | null>(null)
   const [error, setError] = useState<string>("")
   const [fileWasUploadedCount, setFileWasUploadedCount] = useState<number>(0)
 
   // Get the existing files
   useEffect(() => {
     void (async () => {
-      const res = await axios.get<{ files: Array<string>}>(`/api/files`)
+      const res = await axios.get<{ fileRows: Array<FileRow & { id: number }>}>(`/api/files`)
+      const { fileRows } = res.data
       if (res.status > 300) {
         setError("ERROR: Something went wrong fetching the list of files")
       }
-      if (selectedFile1 === null) {
-        setSelectedFile1(res.data.files[0])
+      if (selectedFileId1 === null) {
+        setSelectedFileId1(fileRows[0].id)
       }
-      setExistingFiles(res.data.files)
+      setExistingFiles(fileRows)
     })()
-  }, [fileWasUploadedCount, setSelectedFile1, setExistingFiles]);
+  }, [fileWasUploadedCount, setSelectedFileId1, setExistingFiles]);
 
-  const noFileSelected = '-- No file selected --'
+  const noFileSelected = {
+    value: -1,
+    name: '-- No file selected --',
+  }
   let message = error
   if (message === "" && existingFiles === null) {
     message = "Loading..."
@@ -41,19 +47,27 @@ export function FileSelector(props: {
   const messageEl = <p>{message}</p>
   const existingFileOptionsElements = existingFiles === null ?
     null :
-    [noFileSelected, ...existingFiles].map((f) => {
-      return <option key={f} value={f}>{f}</option>
+    [...existingFiles].map((f) => {
+      const fileName = `${f.user_provided_name}-${f.uploaded_at}`
+      return <option key={f.id} value={f.id}>{fileName}</option>
     })
+  existingFileOptionsElements?.unshift(
+    <option key={noFileSelected.value} value={noFileSelected.value}>
+      {noFileSelected.name}
+    </option>
+  )
   const fileSelector1 = existingFileOptionsElements === null ?
     null :
     <select
-      value={selectedFile1}
+      value={selectedFileId1 === null ? noFileSelected.value : selectedFileId1}
       name="file-select-1"
       onChange={(e) => {
-        const newFile = e.target.value
-        if (newFile !== noFileSelected) {
-          setSelectedFile1(newFile)
+        const newValue = convertToInteger(e.target.value)
+        if (newValue === noFileSelected.value) {
+          setSelectedFileId1(null)
+          return
         }
+        setSelectedFileId1(newValue)
       }}
     >
       {existingFileOptionsElements}
@@ -61,15 +75,15 @@ export function FileSelector(props: {
   const fileSelector2 = existingFileOptionsElements === null ?
     null :
     <select
-      value={selectedFile2 ?? ""}
+      value={selectedFileId2 === null ? noFileSelected.value : selectedFileId2}
       name="file-select-2"
       onChange={(e) => {
-        const newFile = e.target.value
-        if (newFile === noFileSelected) {
-          setSelectedFile2(null)
-        } else {
-          setSelectedFile2(newFile)
+        const newValue = convertToInteger(e.target.value)
+        if (newValue === noFileSelected.value) {
+          setSelectedFileId2(null)
+          return
         }
+        setSelectedFileId2(newValue)
       }}
     >
       {existingFileOptionsElements}

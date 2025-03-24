@@ -1,4 +1,4 @@
-import { ModuleRow } from '../types'
+import { ModuleRow } from '../../../shared/types'
 import { Statement } from 'better-sqlite3'
 import { db } from '../database'
 
@@ -18,7 +18,12 @@ const insertStatement = `
 `
 
 const getManyStatement = `
-  SELECT * FROM modules WHERE id >= ? LIMIT ?
+  SELECT * FROM modules
+           WHERE
+               id > @minIdNonInclusive AND
+               file_id = @fileId
+           ORDER BY id
+           LIMIT @limit
 `
 
 const getOneStatement = `
@@ -41,18 +46,12 @@ export function saveModulesToDatabase(moduleRows: Array<ModuleRow>) {
 }
 
 export function getModulesFromDatabase(args: {
+  fileId: number,
   limit: number,
-  minIdNonInclusive?: number,
-}): Array<ModuleRow> {
-  const {
-    minIdNonInclusive,
-    limit,
-  } = args
-
-  const minId = minIdNonInclusive ?? -1
-
-  const getMany: Statement<unknown[], ModuleRow> = db.prepare(getManyStatement)
-  return getMany.all(minId, limit)
+  minIdNonInclusive: number,
+}): Array<ModuleRow & { id: number }> {
+  const getMany: Statement<unknown[], ModuleRow & { id: number }> = db.prepare(getManyStatement)
+  return getMany.all(args)
 }
 
 export function getModuleFromDatabase(id: number): ModuleRow | undefined {

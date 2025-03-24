@@ -1,31 +1,29 @@
 import { Router } from 'express'
-import { getAllStatsFilenames, isStatsFilePathValid, loadStatsObjectFromFile } from '../helpers/files'
+import { getModulesFromDatabase } from '../db/queries/modules'
+import { convertToInteger } from '../helpers/misc'
+import { type StatsModule } from 'webpack'
+import { ModuleRow } from '../../shared/types'
 
 export const modulesRouter = Router()
 
 /**
  * Get modules info for a given file
  */
-modulesRouter.get('/:fileName', async (req, res) => {
-  let { fileName } = req.params
-  if (fileName === "latest") {
-    const fileNames = await getAllStatsFilenames()
-    fileName = fileNames[0]
-  }
-  const isValid = await isStatsFilePathValid(fileName)
-  if (!isValid) {
-    res.status(400).json({ error: `FileName: "${fileName}" is not valid`})
-  }
+modulesRouter.get('/:fileId', async (req, res) => {
 
-  // TODO(Greg): Maybe add more validation in future...
-  const stats = await loadStatsObjectFromFile(fileName)
-  const { offset, limit } = req.query
-  const o = Number(offset)
-  const l = Number(limit)
-  const modules = stats.modules?.slice(o, l + o) || []
+  const fileId = convertToInteger(req.params.fileId)
+  const limit = convertToInteger(req.query.limit) ?? 10
+  const minIdNonInclusive = convertToInteger(req.query.minIdNonInclusive) ?? -1
+
+  const moduleRows = getModulesFromDatabase({
+    limit,
+    minIdNonInclusive,
+    fileId
+  })
 
   // Return the modules
   res.json({
-    modules,
+    moduleRows,
+    lastId: moduleRows.length > 0 ? moduleRows[moduleRows.length - 1].id : null
   })
 })

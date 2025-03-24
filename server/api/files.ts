@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { getAllStatsFilenames, isStatsFilePathValid, loadStatsObjectFromFile } from '../helpers/files'
+import { getFilesFromDatabase } from '../db/queries/files'
 
 export const filesRouter = Router()
 
@@ -7,12 +8,9 @@ export const filesRouter = Router()
  * Lists all currently-uploaded files
  */
 filesRouter.get('/', async (req, res) => {
-  const fileNames = await getAllStatsFilenames()
-  if (fileNames.length > 0) {
-    fileNames.unshift("latest")
-  }
+  const fileRows = getFilesFromDatabase()
   res.status(200).json({
-    files: fileNames
+    fileRows,
   })
 })
 

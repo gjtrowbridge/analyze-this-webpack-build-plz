@@ -36,8 +36,9 @@ import { RawFileView } from './RawFileView'
 export function App() {
   const defaultModuleState: ReactModuleState = { ready: false }
   const defaultChunkState: ReactChunkState = { ready: false }
-  const [selectedFile1, setSelectedFile1] = useState<string | null>(null)
-  const [selectedFile2, setSelectedFile2] = useState<string | null>(null)
+  // TODO: Change this back to null and address it better...
+  const [selectedFileId1, setSelectedFileId1] = useState<number | null>(null)
+  const [selectedFileId2, setSelectedFileId2] = useState<number | null>(null)
   const [view, setView] = useState<"module" | "chunk" | "file_selector" | "comparison" | "raw_file">("file_selector")
   const [moduleState, setModuleState] = useState<ReactModuleState>(defaultModuleState)
   const [moduleStateComparisonFile, setModuleStateComparisonFile] = useState<ReactModuleState>(defaultModuleState)
@@ -63,50 +64,50 @@ export function App() {
    */
   useModules({
     moduleState,
-    selectedFile: selectedFile1,
+    selectedFile: selectedFileId1,
     setModuleState,
     setErrorMessage: setModuleErrorMessage,
     isEnabled: view === "module" || view === "comparison",
   })
-  useChunks({
-    chunkState,
-    selectedFile: selectedFile1,
-    setChunkState,
-    setErrorMessage: setChunkErrorMessage,
-    isEnabled: view === "chunk" || view === "comparison",
-  })
+  // useChunks({
+  //   chunkState,
+  //   selectedFile: selectedFileId1,
+  //   setChunkState,
+  //   setErrorMessage: setChunkErrorMessage,
+  //   isEnabled: view === "chunk" || view === "comparison",
+  // })
   /**
    * Load Modules and Chunks for comparison file (if comparing)
    */
   useModules({
     moduleState: moduleStateComparisonFile,
-    selectedFile: selectedFile2,
+    selectedFile: selectedFileId2,
     setModuleState: setModuleStateComparisonFile,
     setErrorMessage: setModuleErrorMessage,
     isEnabled: view === "comparison",
   })
-  useChunks({
-    chunkState: chunkStateComparisonFile,
-    selectedFile: selectedFile2,
-    setChunkState: setChunkStateComparisonFile,
-    setErrorMessage: setChunkErrorMessage,
-    isEnabled: view === "comparison",
-  })
+  // useChunks({
+  //   chunkState: chunkStateComparisonFile,
+  //   selectedFile: selectedFileId2,
+  //   setChunkState: setChunkStateComparisonFile,
+  //   setErrorMessage: setChunkErrorMessage,
+  //   isEnabled: view === "comparison",
+  // })
 
   // TODO: Make it so these don't lose unmount / lose state between view changes...
   const moduleInspector = moduleState.ready ? <ModuleInspector modules={moduleState.modules} /> : null
-  const chunkInspector = chunkState.ready ? <ChunkInspector chunks={chunkState.chunks} /> : null
+  // const chunkInspector = chunkState.ready ? <ChunkInspector chunks={chunkState.chunks} /> : null
   let mainElement = null
   if (view === "module") {
     mainElement = <LoadingBoundary isLoading={!moduleState.ready} element={moduleInspector} />
-  } else if (view === "chunk") {
-    mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
+  // } else if (view === "chunk") {
+  //   mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
   } else if (view === "file_selector") {
     mainElement = <FileSelector
-      selectedFile1={selectedFile1}
-      setSelectedFile1={(f) => {
-        if (f !== selectedFile1) {
-          setSelectedFile1(f)
+      selectedFileId1={selectedFileId1}
+      setSelectedFileId1={(f) => {
+        if (f !== selectedFileId1) {
+          setSelectedFileId1(f)
 
           // Make sure the chunks and modules reload if a new file is selected
           setModuleState(defaultModuleState)
@@ -114,10 +115,10 @@ export function App() {
         }
 
       }}
-      selectedFile2={selectedFile2}
-      setSelectedFile2={(f) => {
-        if (f !== selectedFile2) {
-          setSelectedFile2(f)
+      selectedFileId2={selectedFileId2}
+      setSelectedFileId2={(f) => {
+        if (f !== selectedFileId2) {
+          setSelectedFileId2(f)
 
           // Make sure the chunks and modules reload if a new file is selected
           setModuleStateComparisonFile(defaultModuleState)
@@ -127,9 +128,9 @@ export function App() {
     />
   } else if (view === "comparison") {
     mainElement = <ComparisonView
-      file1Name={selectedFile1}
-      file2Name={selectedFile2}
-      bothFilesAreSelected={selectedFile1 !== null && selectedFile2 !== null}
+      file1Name={"placeholder"}
+      file2Name={"fixme"}
+      bothFilesAreSelected={selectedFileId1 !== null && selectedFileId2 !== null}
       moduleStates={{
         file1: moduleState,
         file2: moduleStateComparisonFile,
@@ -145,8 +146,6 @@ export function App() {
       chunkState.ready &&
       chunkStateComparisonFile.ready
     )
-  } else if (view === "raw_file") {
-    mainElement = <RawFileView fileName={selectedFile1} />
   } else {
     mainElement = null
   }
@@ -157,10 +156,9 @@ export function App() {
         <a href="#" className={view === "file_selector" ? "active" : ""} onClick={() => setView("file_selector")}>Select File(s)</a>
         <a href="#" className={view === "module" ? "active" : ""} onClick={() => setView("module")}>Module View</a>
         <a href="#" className={view === "chunk" ? "active" : ""} onClick={() => setView("chunk")}>Chunk View</a>
-        <a href="#" className={view === "raw_file" ? "active" : ""} onClick={() => setView("raw_file")}>See Entire Raw File</a>
         <a href="#" className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>Comparison View</a>
       </div>
-      <h3>Main file: {selectedFile1}, Comparison file: {selectedFile2 ?? "None"}</h3>
+      <h3>Main file: {selectedFileId1}, Comparison file: {selectedFileId2 ?? "None"}</h3>
       {mainElement}
     </div>
   )

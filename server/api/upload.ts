@@ -4,7 +4,7 @@ import { alternateFileNameRegex, getUniqueChunkKey, getUniqueModuleKey } from '.
 import { createParseStream } from 'big-json'
 import { StatsCompilation } from 'webpack'
 import { insertFileToDatabase, updateFileInDatabase } from '../db/queries/files'
-import { ChunkRow, ModuleRow } from '../db/types'
+import { ChunkRow, ModuleRow } from '../../shared/types'
 import { saveModulesToDatabase } from '../db/queries/modules'
 import { saveChunksToDatabase } from '../db/queries/chunks'
 

@@ -2,11 +2,12 @@ import type { StatsModule } from 'webpack'
 import { useEffect } from 'react'
 import axios from 'axios'
 import type { ReactModuleState } from '../types'
+import { ModuleRow } from '../../shared/types'
 
 
 export function useModules(args: {
   moduleState: ReactModuleState
-  selectedFile: string | null,
+  selectedFile: number | null,
   setModuleState: (newValue: ReactModuleState) => void
   isEnabled: boolean
   setErrorMessage: (errorMessage: string) => void
@@ -16,8 +17,8 @@ export function useModules(args: {
     if (selectedFile === null) {
       return
     }
-    let offset = 0
     let limit = 200
+    let minIdNonInclusive = -1
     let shouldStopEarly = false
     if (moduleState.ready || !isEnabled) {
       return
@@ -28,22 +29,26 @@ export function useModules(args: {
       while (!shouldStopEarly) {
         setModuleState({
           ready: false,
-          statusMessage: `Getting modules ${offset} -> ${offset + limit - 1} for file: "${selectedFile}"`,
+          statusMessage: `Getting the ${limit} modules after id: ${minIdNonInclusive} for file: "${selectedFile}"`,
         })
-        const res = await axios.get<{ modules?: Array<StatsModule>}>(`/api/modules/${selectedFile}?offset=${offset}&limit=${limit}`)
+        const res = await axios.get<{
+          moduleRows: Array<ModuleRow & { id: number }>
+          lastId: number | null
+        }>(`/api/modules/${selectedFile}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
         if (res.status > 300) {
           setErrorMessage(`Something went wrong when loading the modules...`)
           break
         }
-        const modulesFromRequest = res.data.modules || []
-        modulesFromRequest.forEach((m) => {
-          modules.push(m)
+        const { moduleRows, lastId } = res.data
+        moduleRows.forEach((mr) => {
+          const module: StatsModule = JSON.parse(mr.raw_json)
+          modules.push(module)
         })
-        if (modulesFromRequest.length < limit) {
+        if (lastId === null) {
           break
         }
-        offset += limit
-        console.log('bumping offset', offset, limit)
+        minIdNonInclusive = lastId
+        console.log('last id', lastId)
       }
       setModuleState({
         ready: true,

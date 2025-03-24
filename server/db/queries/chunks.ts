@@ -1,4 +1,4 @@
-import { ChunkRow } from '../types'
+import { ChunkRow } from '../../../shared/types'
 import { db } from '../database'
 
 

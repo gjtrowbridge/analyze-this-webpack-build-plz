@@ -1,4 +1,4 @@
-import { FileRow } from '../types'
+import { FileRow } from '../../../shared/types'
 import { db } from '../database'
 import { Statement } from 'better-sqlite3'
 
@@ -30,7 +30,7 @@ const deleteStatement = `
   DELETE FROM files where id = @id
 `
 const getAllStatement = `
-  SELECT * FROM files
+  SELECT * FROM files ORDER BY uploaded_at DESC
 `
 const getOneStatement = `
   SELECT * FROM files WHERE id = ?
