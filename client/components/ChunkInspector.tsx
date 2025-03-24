@@ -12,8 +12,6 @@ export function ChunkInspector(props: {
 }) {
   const { chunks } = props
 
-  console.log('xcxc chunks', chunks)
-
   const [filterById, setFilterById] = useState<string>("")
   const [sortBy, setSortBy] = useState<string>("Size")
   const [sortAscending, setSortAscending] = useState<boolean>(false)

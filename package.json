@@ -7,13 +7,11 @@
     "build-client": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.client.config.ts",
     "build-client-with-stats": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.client.config.ts --json client-webpack-stats.json",
     "build-server": "webpack --config webpack.server.config.js",
-
     "db-down-all": "tsx cli/migration/downAll.ts && npm run db-update-schema",
     "db-up-all": "tsx cli/migration/upAll.ts && npm run db-update-schema",
     "db-run-one": "tsx cli/migration/runOne.ts && npm run db-update-schema",
     "db-cli": "sqlite3 ./sqlite/db.sqlite",
     "db-update-schema": "sqlite3 sqlite/db.sqlite .schema > ./cli/migration/schema.sql",
-
     "watch-client": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack-dev-server --config webpack.client.config.ts",
     "watch-server": "nodemon server/index.ts",
     "start": "npm run build-client && npm run build-server && node dist/server/index.js",
@@ -25,6 +23,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@hookstate/core": "^4.0.2",
     "@mui/material": "^6.4.7",
     "@textea/json-viewer": "^4.0.1",
     "@types/busboy": "^1.5.4",

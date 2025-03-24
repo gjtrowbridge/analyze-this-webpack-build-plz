@@ -3,9 +3,9 @@ import axios from 'axios'
 import { alternateFileNameRegex } from '../../shared/helpers'
 
 export function FileLoader(props: {
-  fileWasUploaded: () => void
+  refreshFilesFn: () => void
 }) {
-  const { fileWasUploaded } = props
+  const { refreshFilesFn } = props
   const [file, setFile] = useState<File | null>(null)
   const [alternateName, setAlternateName] = useState<string>("")
   const [loadingState, setLoadingState] = useState<string>("")
@@ -39,9 +39,9 @@ export function FileLoader(props: {
       setLoadingState("Something went wrong while uploading the file")
     } else {
       setLoadingState("Done uploading file")
-      fileWasUploaded()
+      refreshFilesFn()
     }
-  }, [file, fileWasUploaded, setLoadingState, alternateName])
+  }, [file, refreshFilesFn, setLoadingState, alternateName])
 
   let uploadButton: ReactElement = null
   if (file) {

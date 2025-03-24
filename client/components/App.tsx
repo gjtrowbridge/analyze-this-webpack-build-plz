@@ -9,6 +9,9 @@ import { FileSelector } from './FileSelector'
 import { ComparisonView } from './ComparisonView'
 import "./styles/App.css"
 import { RawFileView } from './RawFileView'
+import { useFiles } from '../hooks/useFiles'
+import { useHookstate } from '@hookstate/core'
+import { filesState } from '../globalState'
 
 /*
   [X] useEffect to load file
@@ -22,7 +25,7 @@ import { RawFileView } from './RawFileView'
   [X] Re-add support for uploading and swapping between files
   [X] Make ModuleRow and ChunkRow a bit prettier (table view? tab view? box shadow? better formatting?)
   [] Add cleaner top-level info (std dev, mean, total size, number of chunks/modules)
-  [] Add a comparison feature
+  [X] Add a comparison feature
     - Which chunks went away
     - Which chunks were added
     - Which chunks changed size
@@ -34,17 +37,18 @@ import { RawFileView } from './RawFileView'
 
  */
 export function App() {
+  const files = useHookstate(filesState)
+  const f = files.get()
+
   const defaultModuleState: ReactModuleState = { ready: false }
   const defaultChunkState: ReactChunkState = { ready: false }
-  // TODO: Change this back to null and address it better...
-  const [selectedFileId1, setSelectedFileId1] = useState<number | null>(null)
-  const [selectedFileId2, setSelectedFileId2] = useState<number | null>(null)
   const [view, setView] = useState<"module" | "chunk" | "file_selector" | "comparison" | "raw_file">("file_selector")
   const [moduleState, setModuleState] = useState<ReactModuleState>(defaultModuleState)
   const [moduleStateComparisonFile, setModuleStateComparisonFile] = useState<ReactModuleState>(defaultModuleState)
   const [chunkState, setChunkState] = useState<ReactChunkState>(defaultChunkState)
   const [chunkStateComparisonFile, setChunkStateComparisonFile] = useState<ReactChunkState>(defaultChunkState)
   const [errorMessages, setErrorMessages] = useState<{ [key: string]: string }>({})
+
 
   const setModuleErrorMessage = useCallback((errorMessage: string) => {
     setErrorMessages({
@@ -60,18 +64,23 @@ export function App() {
   }, [setErrorMessages])
 
   /**
+   * Load available files
+   */
+  const refreshFilesFn = useFiles()
+
+  /**
    * Load Modules and Chunks for main file
    */
   useModules({
     moduleState,
-    selectedFileId: selectedFileId1,
+    selectedFileId: f.status === 'LOADED' && f.selectedFileId1 || null,
     setModuleState,
     setErrorMessage: setModuleErrorMessage,
     isEnabled: view === "module" || view === "comparison",
   })
   useChunks({
     chunkState,
-    selectedFileId: selectedFileId1,
+    selectedFileId: f.status === 'LOADED' && f.selectedFileId1 || null,
     setChunkState,
     setErrorMessage: setChunkErrorMessage,
     isEnabled: view === "chunk" || view === "comparison",
@@ -81,14 +90,14 @@ export function App() {
    */
   useModules({
     moduleState: moduleStateComparisonFile,
-    selectedFileId: selectedFileId2,
+    selectedFileId: f.status === 'LOADED' && f.selectedFileId2 || null,
     setModuleState: setModuleStateComparisonFile,
     setErrorMessage: setModuleErrorMessage,
     isEnabled: view === "comparison",
   })
   useChunks({
     chunkState: chunkStateComparisonFile,
-    selectedFileId: selectedFileId2,
+    selectedFileId: f.status === 'LOADED' && f.selectedFileId2 || null,
     setChunkState: setChunkStateComparisonFile,
     setErrorMessage: setChunkErrorMessage,
     isEnabled: view === "comparison",
@@ -104,48 +113,28 @@ export function App() {
     mainElement = <LoadingBoundary isLoading={!chunkState.ready} element={chunkInspector} />
   } else if (view === "file_selector") {
     mainElement = <FileSelector
-      selectedFileId1={selectedFileId1}
-      setSelectedFileId1={(f) => {
-        if (f !== selectedFileId1) {
-          setSelectedFileId1(f)
-
-          // Make sure the chunks and modules reload if a new file is selected
-          setModuleState(defaultModuleState)
-          setChunkState(defaultChunkState)
-        }
-
-      }}
-      selectedFileId2={selectedFileId2}
-      setSelectedFileId2={(f) => {
-        if (f !== selectedFileId2) {
-          setSelectedFileId2(f)
-
-          // Make sure the chunks and modules reload if a new file is selected
-          setModuleStateComparisonFile(defaultModuleState)
-          setChunkStateComparisonFile(defaultChunkState)
-        }
-      }}
+      refreshFilesFn={refreshFilesFn}
     />
-  } else if (view === "comparison") {
-    mainElement = <ComparisonView
-      file1Name={"placeholder"}
-      file2Name={"fixme"}
-      bothFilesAreSelected={selectedFileId1 !== null && selectedFileId2 !== null}
-      moduleStates={{
-        file1: moduleState,
-        file2: moduleStateComparisonFile,
-      }}
-      chunkStates={{
-        file1: chunkState,
-        file2: chunkStateComparisonFile,
-      }}
-    />
-    const isReady = (
-      moduleState.ready &&
-      moduleStateComparisonFile.ready &&
-      chunkState.ready &&
-      chunkStateComparisonFile.ready
-    )
+  // } else if (view === "comparison") {
+  //   mainElement = <ComparisonView
+  //     file1Name={"placeholder"}
+  //     file2Name={"fixme"}
+  //     bothFilesAreSelected={selectedFileId1 !== null && selectedFileId2 !== null}
+  //     moduleStates={{
+  //       file1: moduleState,
+  //       file2: moduleStateComparisonFile,
+  //     }}
+  //     chunkStates={{
+  //       file1: chunkState,
+  //       file2: chunkStateComparisonFile,
+  //     }}
+  //   />
+  //   const isReady = (
+  //     moduleState.ready &&
+  //     moduleStateComparisonFile.ready &&
+  //     chunkState.ready &&
+  //     chunkStateComparisonFile.ready
+  //   )
   } else {
     mainElement = null
   }
@@ -158,7 +147,6 @@ export function App() {
         <a href="#" className={view === "chunk" ? "active" : ""} onClick={() => setView("chunk")}>Chunk View</a>
         <a href="#" className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>Comparison View</a>
       </div>
-      <h3>Main file: {selectedFileId1}, Comparison file: {selectedFileId2 ?? "None"}</h3>
       {mainElement}
     </div>
   )
