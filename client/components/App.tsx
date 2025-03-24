@@ -8,37 +8,15 @@ import { ChunkInspector } from './ChunkInspector'
 import { FileSelector } from './FileSelector'
 import { ComparisonView } from './ComparisonView'
 import "./styles/App.css"
-import { RawFileView } from './RawFileView'
-import { useFiles } from '../hooks/useFiles'
+import { useFileNames, useRefreshFiles } from '../hooks/useFiles'
 import { useHookstate } from '@hookstate/core'
 import { filesState } from '../globalState'
 
-/*
-  [X] useEffect to load file
-  [X] set up new route to use default file if none specified
-  [X] Get module inspector working again
-  [X] Improve sorting UI
-  [X] Add support for counting opt bailout reasons
-  [X] switch to module identifier
-  [X] Add chunks view
-  [X] Add JSON inspector for raw view (with default everything collapsed)
-  [X] Re-add support for uploading and swapping between files
-  [X] Make ModuleRow and ChunkRow a bit prettier (table view? tab view? box shadow? better formatting?)
-  [] Add cleaner top-level info (std dev, mean, total size, number of chunks/modules)
-  [X] Add a comparison feature
-    - Which chunks went away
-    - Which chunks were added
-    - Which chunks changed size
-    - Which modules moved between chunks
-    - Possibly something indicating std deviation of size among chunks?
-  [] Add modals and/or deep link for detail view
-    [] Add same for json raw view
-  [] Make it so it's refreshable without losing state (either state params in URL or localStorage for state?)
 
- */
 export function App() {
   const files = useHookstate(filesState)
   const f = files.get()
+  const fileNames = useFileNames()
 
   const defaultModuleState: ReactModuleState = { ready: false }
   const defaultChunkState: ReactChunkState = { ready: false }
@@ -66,7 +44,7 @@ export function App() {
   /**
    * Load available files
    */
-  const refreshFilesFn = useFiles()
+  const refreshFilesFn = useRefreshFiles()
 
   /**
    * Load Modules and Chunks for main file
@@ -115,26 +93,17 @@ export function App() {
     mainElement = <FileSelector
       refreshFilesFn={refreshFilesFn}
     />
-  // } else if (view === "comparison") {
-  //   mainElement = <ComparisonView
-  //     file1Name={"placeholder"}
-  //     file2Name={"fixme"}
-  //     bothFilesAreSelected={selectedFileId1 !== null && selectedFileId2 !== null}
-  //     moduleStates={{
-  //       file1: moduleState,
-  //       file2: moduleStateComparisonFile,
-  //     }}
-  //     chunkStates={{
-  //       file1: chunkState,
-  //       file2: chunkStateComparisonFile,
-  //     }}
-  //   />
-  //   const isReady = (
-  //     moduleState.ready &&
-  //     moduleStateComparisonFile.ready &&
-  //     chunkState.ready &&
-  //     chunkStateComparisonFile.ready
-  //   )
+  } else if (view === "comparison") {
+    mainElement = <ComparisonView
+      moduleStates={{
+        file1: moduleState,
+        file2: moduleStateComparisonFile,
+      }}
+      chunkStates={{
+        file1: chunkState,
+        file2: chunkStateComparisonFile,
+      }}
+    />
   } else {
     mainElement = null
   }
@@ -147,6 +116,7 @@ export function App() {
         <a href="#" className={view === "chunk" ? "active" : ""} onClick={() => setView("chunk")}>Chunk View</a>
         <a href="#" className={view === "comparison" ? "active" : ""} onClick={() => setView("comparison")}>Comparison View</a>
       </div>
+      <p>Main file: {fileNames.file1}, Comparison file: {fileNames.file2}</p>
       {mainElement}
     </div>
   )

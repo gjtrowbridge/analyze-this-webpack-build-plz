@@ -4,6 +4,7 @@ import { StatsChunk, StatsModule } from 'webpack'
 import { ChunkRow } from './ChunkRow'
 import { useState } from 'react'
 import { ModuleRow } from './ModuleRow'
+import { useFileNames } from '../hooks/useFiles'
 
 function ChunkComparison(props: {
   file1Name: string,
@@ -125,9 +126,6 @@ function HydratedComparison(props: {
 }
 
 export function ComparisonView(props: {
-  bothFilesAreSelected: boolean
-  file1Name: string | null,
-  file2Name: string | null,
   moduleStates: {
     file1: ReactModuleState,
     file2: ReactModuleState,
@@ -138,9 +136,6 @@ export function ComparisonView(props: {
   }
 }) {
   const {
-    file1Name,
-    file2Name,
-    bothFilesAreSelected,
     moduleStates,
     chunkStates
   } = props
@@ -148,6 +143,7 @@ export function ComparisonView(props: {
     moduleStates.file2.ready &&
     chunkStates.file1.ready &&
     chunkStates.file2.ready
+  const fileNames = useFileNames()
 
   // Typescript isn't smart enough to realize this is the same as isLoaded...
   let mainComparisonUI = null
@@ -174,8 +170,8 @@ export function ComparisonView(props: {
       }
     })
     mainComparisonUI = <HydratedComparison
-      file1Name={file1Name}
-      file2Name={file2Name}
+      file1Name={fileNames.file1}
+      file2Name={fileNames.file2}
       data={data}
       chunksById1={chunksById1}
       chunksById2={chunksById2}
@@ -186,8 +182,8 @@ export function ComparisonView(props: {
 
   return (
     <div className="ComparisonView">
-      {!bothFilesAreSelected && <p className={"warning"}>You need to select a main file AND a comparison file!</p>}
-      {bothFilesAreSelected && !isLoaded && <p>Loading...</p>}
+      {!fileNames.bothAreSelected && <p className={"warning"}>You need to select a main file AND a comparison file!</p>}
+      {fileNames.bothAreSelected && !isLoaded && <p>Loading...</p>}
       {mainComparisonUI}
     </div>
   )
