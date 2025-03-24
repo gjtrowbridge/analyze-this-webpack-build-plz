@@ -127,31 +127,31 @@ function HydratedComparison(props: {
 
 export function ComparisonView(props: {
   moduleStates: {
-    file1: ReactModuleState,
-    file2: ReactModuleState,
+    file1: ReactModuleState | null,
+    file2: ReactModuleState | null,
   },
   chunkStates: {
-    file1: ReactChunkState,
-    file2: ReactChunkState,
+    file1: ReactChunkState | null,
+    file2: ReactChunkState | null,
   }
 }) {
   const {
     moduleStates,
     chunkStates
   } = props
-  const isLoaded = moduleStates.file1.ready &&
-    moduleStates.file2.ready &&
-    chunkStates.file1.ready &&
-    chunkStates.file2.ready
+  const isLoaded = moduleStates.file1?.ready &&
+    moduleStates.file2?.ready &&
+    chunkStates.file1?.ready &&
+    chunkStates.file2?.ready
   const fileNames = useFileNames()
 
   // Typescript isn't smart enough to realize this is the same as isLoaded...
   let mainComparisonUI = null
   if (
-    moduleStates.file1.ready &&
-    moduleStates.file2.ready &&
-    chunkStates.file1.ready &&
-    chunkStates.file2.ready
+    moduleStates.file1?.ready &&
+    moduleStates.file2?.ready &&
+    chunkStates.file1?.ready &&
+    chunkStates.file2?.ready
   ) {
     const {
       data,

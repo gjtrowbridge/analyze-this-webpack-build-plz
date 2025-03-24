@@ -12,18 +12,18 @@ export function useRefreshFiles() {
   useEffect(() => {
     void (async () => {
       files.set({ status: 'LOADING' })
-      const res = await axios.get<{ fileRows: Array<FileRow & { id: number }>}>(`/api/files`)
-      if (res.status > 300) {
+      try {
+        const res = await axios.get<{ fileRows: Array<FileRow & { id: number }>}>(`/api/files`)
+        const { fileRows } = res.data
+        files.merge({
+          status: 'LOADED',
+          existingFiles: fileRows,
+          selectedFileId1: fileRows[0].id,
+        })
+      } catch (e) {
         files.set({ status: 'ERROR' })
-        errors.merge("[FILES]: something went wrong fetching the list of available files")
-        return
+        errors.merge(["[FILES]: something went wrong fetching the list of available files"])
       }
-      const { fileRows } = res.data
-      files.merge({
-        status: 'LOADED',
-        existingFiles: fileRows,
-        selectedFileId1: fileRows[0].id,
-      })
     })()
   }, [refreshCount]);
 

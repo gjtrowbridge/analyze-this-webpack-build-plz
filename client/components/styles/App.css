@@ -1,4 +1,9 @@
 
+.error {
+    font-weight: bold;
+    color: red;
+}
+
 .TopBar {
     display: flex;
     justify-content: space-around;

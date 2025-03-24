@@ -56,24 +56,25 @@ function useUpdateModulesForFile(args: {
           ready: false,
           statusMessage: `Getting the ${limit} modules after id: ${minIdNonInclusive} for file: "${fileId}"`,
         })
-        const res = await axios.get<{
-          moduleRows: Array<ModuleRow & { id: number }>
-          lastId: number | null
-        }>(`/api/modules/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
-        if (res.status > 300) {
+        try {
+          const res = await axios.get<{
+            moduleRows: Array<ModuleRow & { id: number }>
+            lastId: number | null
+          }>(`/api/modules/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
+          const { moduleRows, lastId } = res.data
+          moduleRows.forEach((mr) => {
+            const module: StatsModule = JSON.parse(mr.raw_json)
+            modules.push(module)
+          })
+          if (lastId === null) {
+            break
+          }
+          minIdNonInclusive = lastId
+          console.log('last module id...', lastId)
+        } catch(e) {
           errors.merge("[MODULES]: Something went wrong fetching the list of available modules")
-          break
+          return
         }
-        const { moduleRows, lastId } = res.data
-        moduleRows.forEach((mr) => {
-          const module: StatsModule = JSON.parse(mr.raw_json)
-          modules.push(module)
-        })
-        if (lastId === null) {
-          break
-        }
-        minIdNonInclusive = lastId
-        console.log('last module id...', lastId)
       }
       setModuleState({
         ready: true,
@@ -82,61 +83,6 @@ function useUpdateModulesForFile(args: {
       })
     })()
 
-  }, [fileId, setModuleState, alreadyUpToDate]);
-
+  }, [fileId, setModuleState, alreadyUpToDate])
 }
-//
-// export function useModules(args: {
-//   moduleState: ReactModuleState | null
-//   selectedFileId: number | null,
-//   setModuleState: (newValue: ReactModuleState) => void
-//   isEnabled: boolean
-//   setErrorMessage: (errorMessage: string) => void
-// }) {
-//   const { moduleState, selectedFileId, setErrorMessage, setModuleState, isEnabled } = args
-//   useEffect(() => {
-//     if (selectedFileId === null || moduleState === null) {
-//       return
-//     }
-//     let limit = 200
-//     let minIdNonInclusive = -1
-//     let shouldStopEarly = false
-//     if (moduleState.ready || !isEnabled) {
-//       return
-//     }
-//     console.log(`Querying modules for ${selectedFileId}...`)
-//     const modules: Array<StatsModule> = []
-//     void (async () => {
-//       while (!shouldStopEarly) {
-//         setModuleState({
-//           ready: false,
-//           statusMessage: `Getting the ${limit} modules after id: ${minIdNonInclusive} for file: "${selectedFileId}"`,
-//         })
-//         const res = await axios.get<{
-//           moduleRows: Array<ModuleRow & { id: number }>
-//           lastId: number | null
-//         }>(`/api/modules/${selectedFileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
-//         if (res.status > 300) {
-//           setErrorMessage(`Something went wrong when loading the modules...`)
-//           break
-//         }
-//         const { moduleRows, lastId } = res.data
-//         moduleRows.forEach((mr) => {
-//           const module: StatsModule = JSON.parse(mr.raw_json)
-//           modules.push(module)
-//         })
-//         if (lastId === null) {
-//           break
-//         }
-//         minIdNonInclusive = lastId
-//         console.log('last module id...', lastId)
-//       }
-//       setModuleState({
-//         ready: true,
-//         statusMessage: `Done loading modules for file: "${selectedFileId}"`,
-//         modules,
-//       })
-//     })()
-//     return () => { shouldStopEarly = true }
-//   }, [setErrorMessage, selectedFileId, setModuleState, moduleState.ready, isEnabled]);
-// }
+

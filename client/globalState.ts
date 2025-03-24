@@ -21,3 +21,6 @@ export const errorsState = hookstate<Array<string>>([])
 
 export const modulesStateFile1: State<ReactModuleState | null> = hookstate<ReactModuleState | null>(null)
 export const modulesStateFile2: State<ReactModuleState | null> = hookstate<ReactModuleState | null>(null)
+
+export const chunksStateFile1: State<ReactChunkState | null> = hookstate<ReactChunkState | null>(null)
+export const chunksStateFile2: State<ReactChunkState | null> = hookstate<ReactChunkState | null>(null)
