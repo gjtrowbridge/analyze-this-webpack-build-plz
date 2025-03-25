@@ -42,7 +42,7 @@ export function insertFileToDatabase(fileRow: Omit<FileRow, "id">): number {
   return id
 }
 
-export function updateFileInDatabase(fileRow: FileRow & { id: number }) {
+export function updateFileInDatabase(fileRow: FileRow) {
   const update = db.prepare(updateStatement)
   return update.run(fileRow)
 }

@@ -13,7 +13,7 @@ export function useRefreshFiles() {
     void (async () => {
       files.set({ status: 'LOADING' })
       try {
-        const res = await axios.get<{ fileRows: Array<FileRow & { id: number }>}>(`/api/files`)
+        const res = await axios.get<{ fileRows: Array<FileRow>}>(`/api/files`)
         const { fileRows } = res.data
         files.merge({
           status: 'LOADED',

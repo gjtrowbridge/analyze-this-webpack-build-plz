@@ -58,7 +58,7 @@ export function useUpdateChunksForFile(args: {
         })
         try {
           const res = await axios.get<{
-            chunkRows: Array<ChunkRow & { id: number }>
+            chunkRows: Array<ChunkRow>
             lastId: number | null
           }>(`/api/chunks/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
           const { chunkRows, lastId } = res.data

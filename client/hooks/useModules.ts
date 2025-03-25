@@ -58,7 +58,7 @@ function useUpdateModulesForFile(args: {
         })
         try {
           const res = await axios.get<{
-            moduleRows: Array<ModuleRow & { id: number }>
+            moduleRows: Array<ModuleRow>
             lastId: number | null
           }>(`/api/modules/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
           const { moduleRows, lastId } = res.data

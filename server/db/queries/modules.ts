@@ -35,9 +35,9 @@ export function saveModuleToDatabase(moduleRow: ModuleRow) {
   insert.run(moduleRow)
 }
 
-export function saveModulesToDatabase(moduleRows: Array<ModuleRow>) {
+export function saveModulesToDatabase(moduleRows: Array<Omit<ModuleRow, 'id'>>) {
   const insert = db.prepare(insertStatement)
-  const transaction = db.transaction((mrs: Array<ModuleRow>) => {
+  const transaction = db.transaction((mrs: Array<Omit<ModuleRow, 'id'>>) => {
     for (let mr of mrs) {
       insert.run(mr)
     }
@@ -49,8 +49,8 @@ export function getModulesFromDatabase(args: {
   fileId: number,
   limit: number,
   minIdNonInclusive: number,
-}): Array<ModuleRow & { id: number }> {
-  const getMany: Statement<unknown[], ModuleRow & { id: number }> = db.prepare(getManyStatement)
+}): Array<ModuleRow> {
+  const getMany: Statement<unknown[], ModuleRow> = db.prepare(getManyStatement)
   return getMany.all(args)
 }
 

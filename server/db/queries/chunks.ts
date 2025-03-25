@@ -26,9 +26,9 @@ const getManyStatement = `
            LIMIT @limit
 `
 
-export function saveChunksToDatabase(chunkRows: Array<ChunkRow>) {
+export function saveChunksToDatabase(chunkRows: Array<Omit<ChunkRow, "id">>) {
   const insert = db.prepare(insertStatement)
-  const transaction = db.transaction((crs: Array<ChunkRow>) => {
+  const transaction = db.transaction((crs: Array<Omit<ChunkRow, "id">>) => {
     for (let cr of crs) {
       insert.run(cr)
     }
@@ -40,7 +40,7 @@ export function getChunksFromDatabase(args: {
   fileId: number,
   limit: number,
   minIdNonInclusive: number,
-}): Array<ChunkRow & { id: number }> {
-  const getMany: Statement<unknown[], ChunkRow & { id: number }> = db.prepare(getManyStatement)
+}): Array<ChunkRow> {
+  const getMany: Statement<unknown[], ChunkRow> = db.prepare(getManyStatement)
   return getMany.all(args)
 }
