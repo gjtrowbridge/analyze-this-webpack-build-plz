@@ -45,7 +45,6 @@ function useUpdateModulesForFile(args: {
     if (fileId === null || alreadyUpToDate) {
       return
     }
-    console.log('xcxc querying modules for file', fileId)
     let limit = 200
     let minIdNonInclusive = -1
     let shouldStopEarly = false
