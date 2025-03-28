@@ -1,18 +1,16 @@
-import { StatsChunk, type StatsModule } from 'webpack'
 import { ChunkRow } from './ChunkRow'
 import { useCallback, useState } from 'react'
 import { ChunkIdentifier } from '../helpers/chunks'
 import { SortControl } from './SortControl'
 import { getStatistics } from '../helpers/math'
-import { ImmutableMap, ImmutableObject } from '@hookstate/core'
+import { useHookstate } from '@hookstate/core'
 import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
+import { file1ProcessedGlobalState } from '../globalState'
 
 type SortBy = "Size" | "Name"
 
-export function ChunkInspector(props: {
-  chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
-}) {
-  const { chunksByDatabaseId } = props
+export function ChunkInspector() {
+  const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const [filterById, setFilterById] = useState<string>("")
   const [sortBy, setSortBy] = useState<string>("Size")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
@@ -33,6 +31,12 @@ export function ChunkInspector(props: {
     }
   }, [sortAscending, sortBy])
 
+  const stateOrNull = file1ProcessedState.ornull
+  if (stateOrNull === null) {
+    return <p>Loading and processing data, chunk data will be visible soon...</p>
+  }
+
+  const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const chunks = Array.from(chunksByDatabaseId.values())
   const chunkRows = chunks
     .filter((c) => {

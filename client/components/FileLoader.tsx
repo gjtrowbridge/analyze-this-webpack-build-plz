@@ -1,11 +1,10 @@
 import {ChangeEvent, ChangeEventHandler, useCallback, useState, ReactElement} from "react"
 import axios from 'axios'
 import { alternateFileNameRegex } from '../../shared/helpers'
+import { useRefreshFilesFn } from '../hooks/useFiles'
 
-export function FileLoader(props: {
-  refreshFilesFn: () => void
-}) {
-  const { refreshFilesFn } = props
+export function FileLoader() {
+  const refreshFilesFn = useRefreshFilesFn()
   const [file, setFile] = useState<File | null>(null)
   const [alternateName, setAlternateName] = useState<string>("")
   const [loadingState, setLoadingState] = useState<string>("")

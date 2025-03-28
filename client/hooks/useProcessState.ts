@@ -9,7 +9,7 @@ import { useEffect } from 'react'
 import { processModulesAndChunks } from '../helpers/processModulesAndChunks'
 
 
-export function useProcessor() {
+export function useProcessState() {
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const file2ProcessedState = useHookstate(file2ProcessedGlobalState)
   const modulesFile1 = useHookstate(file1ModulesGlobalState)

@@ -1,15 +1,10 @@
-import { useEffect, useState } from 'react'
-import axios from 'axios'
 import { FileLoader } from './FileLoader'
-import { FileRow } from '../../shared/types'
 import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
 import { filesState } from '../globalState'
 
 
-export function FileSelector(props: {
-  refreshFilesFn: () => void
-}) {
+export function FileSelector() {
   const files = useHookstate(filesState)
   const f = files.get()
 
@@ -74,7 +69,7 @@ export function FileSelector(props: {
     <>
       <h1>Files</h1>
       <h2>Upload New File(s)</h2>
-      <FileLoader refreshFilesFn={props.refreshFilesFn} />
+      <FileLoader />
       <h2>Select File(s) To Analyze</h2>
       <div className="FileSelector">
         {statusEl}

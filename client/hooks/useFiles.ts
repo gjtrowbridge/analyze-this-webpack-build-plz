@@ -1,18 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 import { FileRow } from '../../shared/types'
-import { errorsState, filesState, FileState, LoadedFileData } from '../globalState'
+import { errorsState, fileRefreshCountGlobalState, filesState, FileState, LoadedFileData } from '../globalState'
 import { useHookstate } from '@hookstate/core'
 
-export function useRefreshFiles() {
+export function useRefreshFilesFn() {
+  const refreshCount = useHookstate(fileRefreshCountGlobalState)
+  return useCallback(() => {
+    refreshCount.set((oldValue) => {
+      return oldValue += 1
+    })
+  }, [refreshCount])
+}
+
+export function useGetFiles() {
   const files = useHookstate(filesState)
   const errors = useHookstate(errorsState)
-  const [refreshCount, setRefreshCount] = useState(0)
+  const refreshCount = useHookstate(fileRefreshCountGlobalState)
 
+  const countDependency = refreshCount.get()
   useEffect(() => {
     void (async () => {
       files.set({ status: 'LOADING' })
       try {
+        console.log('xcxc fetchin files...')
         const res = await axios.get<{ fileRows: Array<FileRow>}>(`/api/files`)
         const { fileRows } = res.data
         files.merge({
@@ -25,16 +36,7 @@ export function useRefreshFiles() {
         errors.merge(["[FILES]: something went wrong fetching the list of available files"])
       }
     })()
-  }, [refreshCount]);
-
-  /**
-   * Returns a function to refresh the files
-   */
-  const refreshFilesFn = useCallback(() => {
-    setRefreshCount(refreshCount + 1)
-  }, [refreshCount, setRefreshCount])
-
-  return refreshFilesFn
+  }, [countDependency]);
 }
 
 export function useFileNames() {

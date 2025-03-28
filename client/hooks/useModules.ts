@@ -1,15 +1,11 @@
-import type { StatsModule } from 'webpack'
 import { useCallback, useEffect } from 'react'
 import axios from 'axios'
-import type { ReactModuleState } from '../types'
 import { ModuleRow } from '../../shared/types'
 import { useFileIds } from './useFiles'
 import {
   errorsState,
   file1ModulesGlobalState,
   file2ModulesGlobalState,
-  modulesStateFile1,
-  modulesStateFile2
 } from '../globalState'
 import { ImmutableObject, useHookstate } from '@hookstate/core'
 

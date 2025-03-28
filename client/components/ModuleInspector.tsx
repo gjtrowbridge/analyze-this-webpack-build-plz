@@ -6,21 +6,20 @@ import "./styles/ModuleInspector.css"
 import { SortControl } from './SortControl'
 import { getStatistics } from '../helpers/math'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
-import { ImmutableMap } from '@hookstate/core'
+import { ImmutableMap, useHookstate } from '@hookstate/core'
+import { file1ProcessedGlobalState } from '../globalState'
 
 // TODO: Figure out how to do generics for React elements
 // type SortBy = "Name" | "Size" | "Depth" | "# Optimization Bailouts"
 
 const anyInclusionReasonText = "-- Select To Filter --"
 
-export function ModuleInspector(props: {
-  modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
-  moduleInclusionReasons: ReadonlySet<string>
-}) {
-  const {
-    modulesByDatabaseId,
-    moduleInclusionReasons,
-  } = props
+export function ModuleInspector() {
+  // const {
+  //   modulesByDatabaseId,
+  //   moduleInclusionReasons,
+  // } = props
+  const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const [sortBy, setSortBy] = useState<string>("Name")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [filterName, setFilterName] = useState<string>("")
@@ -29,8 +28,6 @@ export function ModuleInspector(props: {
   const [filterOptimizationBailout, setfilterOptimizationBailout] = useState<string>("")
   const [showMoreId, setShowMoreId] = useState<number>(-1)
   const [inclusionReasonFilter, setInclusionReasonFilter] = useState<string>(anyInclusionReasonText)
-
-  const inclusionReasons = Array.from(moduleInclusionReasons)
 
   const sortFn = useCallback((a: ProcessedModuleInfo, b: ProcessedModuleInfo) => {
     const sortOrder = sortAscending ? 1 : -1
@@ -50,6 +47,14 @@ export function ModuleInspector(props: {
     }
   }, [sortAscending, sortBy])
 
+  const stateOrNull = file1ProcessedState.ornull
+  if (stateOrNull === null) {
+    return <p>Loading and processing data, module data will be visible soon...</p>
+  }
+
+  const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
+  const moduleInclusionReasons = stateOrNull.moduleInclusionReasons.get()
+  const inclusionReasons = Array.from(moduleInclusionReasons)
   const finalModules = Array.from(modulesByDatabaseId.values())
   const filteredModules = finalModules
     .filter((m) => {

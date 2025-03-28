@@ -1,12 +1,8 @@
-import type { StatsChunk } from 'webpack'
 import { useCallback, useEffect } from 'react'
 import axios from 'axios'
-import type { ReactChunkState } from '../types'
 import { ChunkRow } from '../../shared/types'
 import { ImmutableObject, useHookstate } from '@hookstate/core'
 import {
-  chunksStateFile1,
-  chunksStateFile2,
   errorsState,
   file1ChunksGlobalState,
   file2ChunksGlobalState
