@@ -74,6 +74,10 @@ const config: webpack.Configuration = {
         timeout,
       },
     ],
+    /**
+     * Allows for client-side routing to work instead of 404ing in dev
+     */
+    historyApiFallback: true,
     hot: true,
     port: 9000,
   },

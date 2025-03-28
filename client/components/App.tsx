@@ -1,12 +1,10 @@
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import {ModuleInspector} from "./ModuleInspector"
 import { LoadingBoundary } from './LoadingBoundary'
 import { useModules } from '../hooks/useModules'
-import type { ReactChunkState, ReactModuleState } from '../types'
 import { useChunks } from '../hooks/useChunks'
 import { ChunkInspector } from './ChunkInspector'
 import { FileSelector } from './FileSelector'
-// import { ComparisonView } from './ComparisonView'
 import "./styles/App.css"
 import { useFileNames, useRefreshFiles } from '../hooks/useFiles'
 import { useHookstate } from '@hookstate/core'

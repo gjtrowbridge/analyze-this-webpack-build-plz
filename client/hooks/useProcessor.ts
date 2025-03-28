@@ -18,7 +18,6 @@ export function useProcessor() {
   const chunksFile2 = useHookstate(file2ChunksGlobalState)
 
   const file1IsReadyToProcess = modulesFile1.ready.get() && chunksFile1.ready.get() && file1ProcessedState.ornull === null
-  console.log('xcxc ready to process', file1IsReadyToProcess, modulesFile1.ready.get(), modulesFile2.ready.get(), file1ProcessedState.ornull)
 
   useEffect(() => {
     if (!file1IsReadyToProcess) {

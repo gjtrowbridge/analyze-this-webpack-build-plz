@@ -60,7 +60,6 @@ export function useUpdateChunksForFile(args: {
     if (fileId === null || alreadyUpToDate) {
       return
     }
-    console.log('xcxc querying chunks for file', fileId)
     let limit = 200
     let minIdNonInclusive = -1
     let shouldStopEarly = false
