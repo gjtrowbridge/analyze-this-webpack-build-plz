@@ -4,7 +4,7 @@ import { LoadingBoundary } from './LoadingBoundary'
 import { useModules } from '../hooks/useModules'
 import type { ReactChunkState, ReactModuleState } from '../types'
 import { useChunks } from '../hooks/useChunks'
-// import { ChunkInspector } from './ChunkInspector'
+import { ChunkInspector } from './ChunkInspector'
 import { FileSelector } from './FileSelector'
 // import { ComparisonView } from './ComparisonView'
 import "./styles/App.css"
@@ -42,9 +42,14 @@ export function App() {
       />
       : null
     mainElement = <LoadingBoundary isLoading={stateOrNull === null} element={moduleInspector} />
-  // } else if (view === "chunk") {
-  //   const chunkInspector = chunkState1?.ready ? <ChunkInspector chunks={chunkState1.chunks} /> : null
-  //   mainElement = <LoadingBoundary isLoading={!chunkState1?.ready} element={chunkInspector} />
+  } else if (view === "chunk") {
+    const stateOrNull = file1ProcessedState.ornull
+    const chunkInspector = stateOrNull !== null ?
+      <ChunkInspector
+        chunksByDatabaseId={stateOrNull.chunksByDatabaseId.get()}
+      />
+      : null
+    mainElement = <LoadingBoundary isLoading={stateOrNull === null} element={chunkInspector} />
   } else if (view === "file_selector") {
     mainElement = <FileSelector
       refreshFilesFn={refreshFilesFn}

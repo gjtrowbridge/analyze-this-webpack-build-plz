@@ -1,14 +1,14 @@
-import { StatsChunk } from 'webpack'
 import "./styles/ChunkRow.css"
-import { ChunkIdentifier } from '../helpers/chunks'
 import { JsonViewer } from '@textea/json-viewer'
+import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
+import { ImmutableObject } from '@hookstate/core'
 
 type SortBy = "Size"
 
 export function ChunkRow(props: {
-  chunk: StatsChunk
+  chunk: ImmutableObject<ProcessedChunkInfo>
   showRawInfo: boolean,
-  setShowRawInfo: (chunkId: ChunkIdentifier) => void
+  setShowRawInfo: (chunkDatabaseId: number) => void
 }) {
   const { chunk, showRawInfo, setShowRawInfo } = props
 
@@ -19,11 +19,11 @@ export function ChunkRow(props: {
   return (
     <div className="chunkRow">
       <div>
-        <p>Id: {chunk.id}</p>
-        <p>Name(s): {chunk.names?.join(",") ?? "N/A"}</p>
-        <p>Size: {Math.round(chunk.size / 1024)} kb</p>
-        <p>Generated Asset Name(s): {chunk.files?.join(", ")}</p>
-        <button onClick={() => { if (showRawInfo) { setShowRawInfo("") } else { setShowRawInfo(chunk.id)}}}>Show {showRawInfo ? "Less" : "More"}</button>
+        <p>Id: {chunk.rawFromWebpack.id}</p>
+        <p>Name(s): {chunk.rawFromWebpack.names?.join(",") ?? "N/A"}</p>
+        <p>Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb</p>
+        <p>Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}</p>
+        <button onClick={() => { if (showRawInfo) { setShowRawInfo(-1) } else { setShowRawInfo(chunk.chunkDatabaseId)}}}>Show {showRawInfo ? "Less" : "More"}</button>
       </div>
       {rawInfo}
     </div>

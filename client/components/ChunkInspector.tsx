@@ -4,14 +4,15 @@ import { useCallback, useState } from 'react'
 import { ChunkIdentifier } from '../helpers/chunks'
 import { SortControl } from './SortControl'
 import { getStatistics } from '../helpers/math'
+import { ImmutableMap, ImmutableObject } from '@hookstate/core'
+import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
 
 type SortBy = "Size" | "Name"
 
 export function ChunkInspector(props: {
-  chunks: Array<StatsChunk>
+  chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
 }) {
-  const { chunks } = props
-
+  const { chunksByDatabaseId } = props
   const [filterById, setFilterById] = useState<string>("")
   const [sortBy, setSortBy] = useState<string>("Size")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
@@ -20,24 +21,25 @@ export function ChunkInspector(props: {
   const [filterByIncludedModule, setFilterByIncludedModule] = useState<string>("")
   const [filterByGeneratedAssetName, setFilterByGeneratedAssetName] = useState<string>("")
 
-  const sortFn = useCallback((a: StatsChunk, b: StatsChunk) => {
+  const sortFn = useCallback((a: ProcessedChunkInfo, b: ProcessedChunkInfo) => {
     const sortOrder = sortAscending ? 1 : -1
     if (sortBy === "Size") {
-      return (a.size - b.size) * sortOrder
+      return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
     } else {
-      const aName = a.names?.join("|") || ""
-      const bName = b.names?.join("|") || ""
+      const aName = a.rawFromWebpack.names?.join("|") || ""
+      const bName = b.rawFromWebpack.names?.join("|") || ""
       // Default to "name"
       return (aName.localeCompare(bName)) * sortOrder
     }
   }, [sortAscending, sortBy])
 
+  const chunks = Array.from(chunksByDatabaseId.values())
   const chunkRows = chunks
     .filter((c) => {
       if (filterName === "") {
         return true
       }
-      return c.names.some((name) => {
+      return c.rawFromWebpack.names.some((name) => {
         return name.toLowerCase().includes(filterName.toLowerCase())
       })
     })
@@ -45,13 +47,13 @@ export function ChunkInspector(props: {
       if (filterById === "") {
         return true
       }
-      return String(c.id) === String(filterById)
+      return String(c.rawFromWebpack.id) === String(filterById)
     })
     .filter((c) => {
       if (filterByIncludedModule === "") {
         return true
       }
-      return c.origins.some((o) => {
+      return c.rawFromWebpack.origins.some((o) => {
         return o.moduleIdentifier.toLowerCase().includes(filterByIncludedModule.toLowerCase())
       })
     })
@@ -59,7 +61,7 @@ export function ChunkInspector(props: {
       if (filterByGeneratedAssetName === "") {
         return true
       }
-      return c.files.some((f) => {
+      return c.rawFromWebpack.files.some((f) => {
         return f.toLowerCase().includes(filterByGeneratedAssetName.toLowerCase())
       })
     })
@@ -67,11 +69,11 @@ export function ChunkInspector(props: {
     .slice(0, 100)
     .map((chunk) => {
       return <ChunkRow
-        setShowRawInfo={(chunkId) => {
-          setShowMoreId(chunkId)
+        setShowRawInfo={(chunkDatabaseId) => {
+          setShowMoreId(chunkDatabaseId)
         }}
-        showRawInfo={showMoreId === chunk.id}
-        key={chunk.id}
+        showRawInfo={showMoreId === chunk.chunkDatabaseId}
+        key={chunk.chunkDatabaseId}
         chunk={chunk}
       />
     })
@@ -79,7 +81,7 @@ export function ChunkInspector(props: {
   const {
     mean,
     standardDeviation,
-  } = getStatistics(chunks.map((c) => { return c.size }))
+  } = getStatistics(chunks.map((c) => { return c.rawFromWebpack.size }))
 
   const noChunkWarning = chunks.length > 0 ? null : <h2 className="warning">No chunks found -- Make sure you generate your stats.json with chunk output enabled!</h2>
 

@@ -1,6 +1,3 @@
-import {ModuleExtraInfo, ModuleIdentifier} from "../helpers/modules"
-import type {StatsModule} from "webpack"
-import { noDepthFoundConstant } from '../helpers/modules'
 import "./styles/ModuleRow.css"
 import { JsonViewer } from '@textea/json-viewer'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
