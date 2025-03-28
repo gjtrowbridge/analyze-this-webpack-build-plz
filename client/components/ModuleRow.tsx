@@ -24,6 +24,8 @@ export function ModuleRow(props: {
       <p>Size: ~{Math.round(module.rawFromWebpack.size / 1024)} kb</p>
       <p># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</p>
       <p>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</p>
+      <p>Children: {module.childModules.length}, Parents: {module.parentModules.length}</p>
+      <p>Path To Entry: {JSON.stringify(module.pathFromEntry)}</p>
       <button onClick={() => { if (showRawInfo) { setShowRawInfo(-1) } else { setShowRawInfo(module.moduleDatabaseId)}}}>{ showRawInfo ? "Hide": "Show"} Raw JSON</button>
     </div>
     {rawInfo}

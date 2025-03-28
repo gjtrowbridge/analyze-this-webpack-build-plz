@@ -255,6 +255,7 @@ function bfsUpdatePathToEntry(modulesByDatabaseId: Map<number, ProcessedModuleIn
     // The shortest path (if any) of module database ids leading up to the entry point
     path: Array<number>,
   }
+
   /**
    * Seed the queue with just the entry point modules to start
    */
@@ -270,22 +271,35 @@ function bfsUpdatePathToEntry(modulesByDatabaseId: Map<number, ProcessedModuleIn
     }
   })
 
-  const alreadySeenModuleDatabaseIds = new Set<number>()
-  function innerLoop(item: QueueItem) {
+  /**
+   * Make sure we don't process the same node more than once
+   */
+  const alreadySeenModuleDatabaseIds = new Set<number>(queue.map((i) => {
+    return i.moduleDatabaseId
+  }))
+  let processedSoFar = 0
+
+  /**
+   * Loop over the queue until everything has been processed
+   */
+  while (queue.length > 0) {
+    processedSoFar += 1
+
+    // Grab the next item
+    const item = queue.shift()
     const { moduleDatabaseId, path } = item
-    if (alreadySeenModuleDatabaseIds.has(moduleDatabaseId)) {
-      return
-    }
-    alreadySeenModuleDatabaseIds.add(moduleDatabaseId)
 
     const module = modulesByDatabaseId.get(moduleDatabaseId)
     module.pathFromEntry = path
-
     for (const childModule of module.childModules) {
-      queue.push({
-        moduleDatabaseId: childModule.childModuleDatabaseId,
-        path: [...path, moduleDatabaseId],
-      })
+      const childDatabaseId = childModule.childModuleDatabaseId
+      if (!alreadySeenModuleDatabaseIds.has(childDatabaseId)) {
+        alreadySeenModuleDatabaseIds.add(childDatabaseId)
+        queue.push({
+          moduleDatabaseId: childDatabaseId,
+          path: [...path, childDatabaseId],
+        })
+      }
     }
   }
 }
