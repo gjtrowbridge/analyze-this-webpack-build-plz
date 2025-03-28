@@ -1,8 +1,6 @@
 import { Router } from 'express'
 import { getModulesFromDatabase } from '../db/queries/modules'
 import { convertToInteger } from '../helpers/misc'
-import { type StatsModule } from 'webpack'
-import { ModuleRow } from '../../shared/types'
 
 export const modulesRouter = Router()
 

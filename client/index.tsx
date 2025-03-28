@@ -7,6 +7,7 @@ import { SetupState } from './components/SetupState'
 import { ModuleInspector } from './components/ModuleInspector'
 import { ChunkInspector } from './components/ChunkInspector'
 import { FileSelector } from './components/FileSelector'
+import { ModuleRowPage } from './components/ModuleRowPage'
 
 // Clear the existing HTML content
 document.body.innerHTML = '<div id="app"></div>';
@@ -19,7 +20,10 @@ root.render(
     <Routes>
       <Route element={<App />}>
         <Route index element={<FileSelector />} />
-        <Route path="modules" element={<ModuleInspector />} />
+        <Route path="modules">
+          <Route index element={<ModuleInspector />} />
+          <Route path=":moduleDatabaseId" element={<ModuleRowPage />} />
+        </Route>
         <Route path="chunks" element={<ChunkInspector />} />
       </Route>
     </Routes>
