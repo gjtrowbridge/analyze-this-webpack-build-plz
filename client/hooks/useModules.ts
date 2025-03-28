@@ -4,32 +4,44 @@ import axios from 'axios'
 import type { ReactModuleState } from '../types'
 import { ModuleRow } from '../../shared/types'
 import { useFileIds } from './useFiles'
-import { errorsState, modulesStateFile1, modulesStateFile2 } from '../globalState'
-import { useHookstate } from '@hookstate/core'
+import {
+  errorsState,
+  file1ModulesGlobalState,
+  file2ModulesGlobalState,
+  modulesStateFile1,
+  modulesStateFile2
+} from '../globalState'
+import { ImmutableObject, useHookstate } from '@hookstate/core'
 
 
 export function useModules() {
-  const msf1 = useHookstate(modulesStateFile1)
-  const msf2 = useHookstate(modulesStateFile2)
+  const modules1 = useHookstate(file1ModulesGlobalState)
+  const modules2 = useHookstate(file2ModulesGlobalState)
   const fileIds = useFileIds()
 
-  const modulesState1 = msf1.get()
-  const setModuleState1 = useCallback((ms: ReactModuleState) => {
-    msf1.set(ms)
+  const modulesState1 = modules1.get()
+  const setModuleState1 = useCallback((ms: ImmutableObject<{
+    ready: boolean,
+    modules: Array<ModuleRow>
+  }>) => {
+    modules1.set(ms)
   }, [])
-  const modulesState2 = msf1.get()
-  const setModuleState2 = useCallback((ms: ReactModuleState) => {
-    msf2.set(ms)
+  const modulesState2 = modules2.get()
+  const setModuleState2 = useCallback((ms: ImmutableObject<{
+    ready: boolean,
+    modules: Array<ModuleRow>
+  }>) => {
+    modules2.set(ms)
   }, [])
 
   useUpdateModulesForFile({
     fileId: fileIds.file1,
-    alreadyUpToDate: Boolean(modulesState1?.ready),
+    alreadyUpToDate: Boolean(modulesState1.ready),
     setModuleState: setModuleState1,
   })
   useUpdateModulesForFile({
     fileId: fileIds.file2,
-    alreadyUpToDate: Boolean(modulesState2?.ready),
+    alreadyUpToDate: Boolean(modulesState2.ready),
     setModuleState: setModuleState2,
   })
 }
@@ -37,7 +49,10 @@ export function useModules() {
 function useUpdateModulesForFile(args: {
   fileId: number | null
   alreadyUpToDate: boolean
-  setModuleState: (rms: ReactModuleState) => void
+  setModuleState: (ms: ImmutableObject<{
+    ready: boolean,
+    modules: Array<ModuleRow>
+  }>) => void
 }) {
   const { fileId, setModuleState, alreadyUpToDate } = args
   const errors = useHookstate(errorsState)
@@ -48,13 +63,9 @@ function useUpdateModulesForFile(args: {
     let limit = 200
     let minIdNonInclusive = -1
     let shouldStopEarly = false
-    const modules: Array<StatsModule> = []
+    const modules: Array<ModuleRow> = []
     void (async () => {
       while (!shouldStopEarly) {
-        setModuleState({
-          ready: false,
-          statusMessage: `Getting the ${limit} modules after id: ${minIdNonInclusive} for file: "${fileId}"`,
-        })
         try {
           const res = await axios.get<{
             moduleRows: Array<ModuleRow>
@@ -62,8 +73,7 @@ function useUpdateModulesForFile(args: {
           }>(`/api/modules/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
           const { moduleRows, lastId } = res.data
           moduleRows.forEach((mr) => {
-            const module: StatsModule = JSON.parse(mr.raw_json)
-            modules.push(module)
+            modules.push(mr)
           })
           if (lastId === null) {
             break
@@ -77,7 +87,6 @@ function useUpdateModulesForFile(args: {
       }
       setModuleState({
         ready: true,
-        statusMessage: `Done loading modules for file: "${fileId}"`,
         modules,
       })
     })()

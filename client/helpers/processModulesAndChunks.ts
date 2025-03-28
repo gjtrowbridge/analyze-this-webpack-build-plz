@@ -1,6 +1,6 @@
 import { StatsChunk, StatsModule, type StatsModuleReason } from 'webpack'
 import { ChunkRow, ModuleRow } from '../../shared/types'
-import { ModuleExtraInfo, ModuleIdentifier } from './modules'
+import { ImmutableArray } from '@hookstate/core'
 
 /**
  * Including both the parent and child in this is maybe a bit more confusing than having a parent
@@ -26,6 +26,12 @@ export interface ProcessedChunkInfo {
 
   childModuleDatabaseIds: Set<number>
   // originModuleDatabaseIds: Array<number>
+}
+
+export type ProcessedState = {
+  modulesByDatabaseId: Map<number, ProcessedModuleInfo>
+  chunksByDatabaseId: Map<number, ProcessedChunkInfo>
+  moduleInclusionReasons: Set<string>
 }
 
 export interface ProcessedModuleInfo {
@@ -82,13 +88,9 @@ const moduleReasonTypeHandlers: {
 }
 
 export function processModulesAndChunks(args: {
-  moduleRows: Array<ModuleRow>
-  chunkRows: Array<ChunkRow>
-}): {
-  modulesByDatabaseId: Map<number, ProcessedModuleInfo>
-  chunksByDatabaseId: Map<number, ProcessedChunkInfo>
-  moduleInclusionReasons: Set<string>
-} {
+  moduleRows: ImmutableArray<ModuleRow>
+  chunkRows: ImmutableArray<ChunkRow>
+}): ProcessedState {
   const {
     moduleRows,
     chunkRows,
@@ -117,7 +119,7 @@ export function processModulesAndChunks(args: {
     chunksByWebpackId.set(processedChunk.rawFromWebpack.id, processedChunk)
   })
   moduleRows.forEach((moduleRow) => {
-    modulesByDatabaseId.set(moduleRow.id, {
+    const processedModule: ProcessedModuleInfo = {
       isEntry: false,
       moduleDatabaseId: moduleRow.id,
       rawFromWebpack: JSON.parse(moduleRow.raw_json),
@@ -125,7 +127,9 @@ export function processModulesAndChunks(args: {
       parentModules: [],
       childModules: [],
       parentChunkDatabaseIds: [],
-    })
+    }
+    modulesByDatabaseId.set(moduleRow.id, processedModule)
+    modulesByWebpackIdentifier.set(processedModule.rawFromWebpack.identifier, processedModule)
   })
 
   /**
@@ -226,6 +230,10 @@ function getImportHandler(outerArgs: { isLazy?: boolean }) {
     } = args
     const parentWebpackIdentifier = reason.moduleIdentifier
     const parent = modulesByWebpackIdentifier.get(parentWebpackIdentifier)
+    if (!parent) {
+      console.log('xcxc could not find parent')
+      return
+    }
 
     const relationship: ModuleRelationshipInfo = {
       isLazy: Boolean(outerArgs.isLazy),

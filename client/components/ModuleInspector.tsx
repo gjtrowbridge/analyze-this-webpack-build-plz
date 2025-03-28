@@ -5,6 +5,8 @@ import { ModuleRow } from "./ModuleRow"
 import "./styles/ModuleInspector.css"
 import { SortControl } from './SortControl'
 import { getStatistics } from '../helpers/math'
+import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import { ImmutableMap } from '@hookstate/core'
 
 // TODO: Figure out how to do generics for React elements
 // type SortBy = "Name" | "Size" | "Depth" | "# Optimization Bailouts"
@@ -12,57 +14,60 @@ import { getStatistics } from '../helpers/math'
 const anyInclusionReasonText = "-- Select To Filter --"
 
 export function ModuleInspector(props: {
-  modules: Array<StatsModule>
+  modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
+  moduleInclusionReasons: ReadonlySet<string>
 }) {
-  const { modules } = props
+  const {
+    modulesByDatabaseId,
+    moduleInclusionReasons,
+  } = props
   const [sortBy, setSortBy] = useState<string>("Name")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [filterName, setFilterName] = useState<string>("")
   const [filterByIdentifier, setFilterByIdentifier] = useState<ModuleIdentifier>("")
   const [filterByChunkId, setFilterByChunkId] = useState<string>("")
   const [filterOptimizationBailout, setfilterOptimizationBailout] = useState<string>("")
-  const [showMoreId, setShowMoreId] = useState<ModuleIdentifier>("")
+  const [showMoreId, setShowMoreId] = useState<number>(-1)
   const [inclusionReasonFilter, setInclusionReasonFilter] = useState<string>(anyInclusionReasonText)
 
-  const { modulesById, extraInfoById, inclusionReasons: irSet } = useMemo(() => {
-    return processModules(modules)
-  }, modules)
-  const inclusionReasons = Array.from(irSet)
+  const inclusionReasons = Array.from(moduleInclusionReasons)
 
-  const sortFn = useCallback((a: StatsModule, b: StatsModule) => {
+  const sortFn = useCallback((a: ProcessedModuleInfo, b: ProcessedModuleInfo) => {
     const sortOrder = sortAscending ? 1 : -1
-    const extraA = extraInfoById.get(a.identifier)
-    const extraB = extraInfoById.get(b.identifier)
+    const depthA = a.pathFromEntry.length
+    const depthB = b.pathFromEntry.length
     if (sortBy === "Size") {
-      return (a.size - b.size) * sortOrder
+      return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
     } else if (sortBy === "Depth") {
-      return (extraA.depth - extraB.depth) * sortOrder
+      return (depthA - depthB) * sortOrder
     } else if (sortBy === "# Optimization Bailouts") {
-      const aLength = a.optimizationBailout?.length ?? 0
-      const bLength = b.optimizationBailout?.length ?? 0
+      const aLength = a.rawFromWebpack.optimizationBailout?.length ?? 0
+      const bLength = b.rawFromWebpack.optimizationBailout?.length ?? 0
       return (aLength - bLength) * sortOrder
     } else {
       // Default to "name"
-      return (a.name.localeCompare(b.name)) * sortOrder
+      return (a.rawFromWebpack.name.localeCompare(b.rawFromWebpack.name)) * sortOrder
     }
-  }, [sortAscending, sortBy, extraInfoById])
+  }, [sortAscending, sortBy])
 
-  const finalModules = Array.from(modulesById.values())
+  const finalModules = Array.from(modulesByDatabaseId.values())
   const filteredModules = finalModules
     .filter((m) => {
       if (filterName === "") {
         return true
       }
-      return m.name.toLowerCase().includes(filterName.toLowerCase())
+      return m.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
     })
     .filter((m) => {
-      if (sortBy === "Depth" && extraInfoById.get(m.identifier)?.depth === noDepthFoundConstant) {
+      if (sortBy === "Depth" && m.pathFromEntry.length === 0) {
         return false
       }
       return true
     })
     .filter((m) => {
-      if (filterByChunkId !== "" && !m.chunks.some((chunkId) => { return String(chunkId) === filterByChunkId })) {
+      if (filterByChunkId !== "" && !m.rawFromWebpack.chunks.some((chunkId) => {
+        return String(chunkId) === filterByChunkId
+      })) {
         return false
       }
       return true
@@ -71,13 +76,13 @@ export function ModuleInspector(props: {
       if (filterByIdentifier === "") {
         return true
       }
-      return String(m.identifier).toLowerCase().includes(filterByIdentifier.toLowerCase())
+      return String(m.rawFromWebpack.identifier).toLowerCase().includes(filterByIdentifier.toLowerCase())
     })
     .filter((m) => {
       if (filterOptimizationBailout === "") {
         return true
       }
-      return m.optimizationBailout.some((ob) => {
+      return m.rawFromWebpack.optimizationBailout.some((ob) => {
         return ob.toLowerCase().includes(ob.toLowerCase())
       })
     })
@@ -85,10 +90,10 @@ export function ModuleInspector(props: {
       if (inclusionReasonFilter === anyInclusionReasonText) {
         return true
       }
-      if (!m.reasons) {
+      if (!m.rawFromWebpack.reasons) {
         return false
       }
-      const reasons = m.reasons
+      const reasons = m.rawFromWebpack.reasons
       return reasons.some((reason) => {
         return reason.type === inclusionReasonFilter
       })
@@ -97,9 +102,14 @@ export function ModuleInspector(props: {
   const moduleRows = filteredModules
     .slice(0, 100)
     .map((m) => {
-      return <ModuleRow key={m.identifier} extraInfo={extraInfoById.get(m.identifier)} module={modulesById.get(m.identifier)} setShowRawInfo={(moduleId: ModuleIdentifier) => {
-        setShowMoreId(moduleId)
-      }} showRawInfo={showMoreId === String(m.identifier)} />
+      return <ModuleRow
+        key={m.moduleDatabaseId}
+        module={m}
+        setShowRawInfo={(moduleDatabaseId: number) => {
+          setShowMoreId(moduleDatabaseId)
+        }}
+        showRawInfo={showMoreId === m.moduleDatabaseId}
+      />
     })
 
   const inclusionReasonOptions = inclusionReasons.map((reasonType) => {
@@ -112,9 +122,9 @@ export function ModuleInspector(props: {
   const {
     mean,
     standardDeviation,
-  } = getStatistics(filteredModules.map((m) => { return m.size }))
+  } = getStatistics(filteredModules.map((m) => { return m.rawFromWebpack.size }))
 
-  const noModuleWarning = modules.length > 0 ? null : <h2 className="warning">No modules found -- Make sure you generate your stats.json file with module output enabled!</h2>
+  const noModuleWarning = finalModules.length > 0 ? null : <h2 className="warning">No modules found -- Make sure you generate your stats.json file with module output enabled!</h2>
 
   return (
     <div className="moduleInspector">
@@ -152,7 +162,7 @@ export function ModuleInspector(props: {
           </label>
         </div>
       </div>
-      <h2>There are {modules.length} total modules, and {filteredModules.length} modules that passed your filters</h2>
+      <h2>There are {finalModules.length} total modules, and {filteredModules.length} modules that passed your filters</h2>
       {noModuleWarning}
       <h3>For the ones passing filters, the mean module size is {Math.round(mean / 1024)} kb, the std deviation is {Math.round(standardDeviation / 1024)} kb</h3>
       <div className="rows">

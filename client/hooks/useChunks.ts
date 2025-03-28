@@ -3,33 +3,45 @@ import { useCallback, useEffect } from 'react'
 import axios from 'axios'
 import type { ReactChunkState } from '../types'
 import { ChunkRow } from '../../shared/types'
-import { useHookstate } from '@hookstate/core'
-import { chunksStateFile1, chunksStateFile2, errorsState } from '../globalState'
+import { ImmutableObject, useHookstate } from '@hookstate/core'
+import {
+  chunksStateFile1,
+  chunksStateFile2,
+  errorsState,
+  file1ChunksGlobalState,
+  file2ChunksGlobalState
+} from '../globalState'
 import { useFileIds } from './useFiles'
 
 
 export function useChunks() {
-  const csf1 = useHookstate(chunksStateFile1)
-  const csf2 = useHookstate(chunksStateFile2)
+  const chunks1 = useHookstate(file1ChunksGlobalState)
+  const chunks2 = useHookstate(file2ChunksGlobalState)
   const fileIds = useFileIds()
 
-  const chunksState1 = csf1.get()
-  const setChunksState1 = useCallback((cs: ReactChunkState) => {
-    csf1.set(cs)
+  const chunksState1 = chunks1.get()
+  const setChunksState1 = useCallback((cs: ImmutableObject<{
+    ready: boolean,
+    chunks: Array<ChunkRow>
+  }>) => {
+    chunks1.set(cs)
   }, [])
-  const chunksState2 = csf1.get()
-  const setChunksState2 = useCallback((cs: ReactChunkState) => {
-    csf2.set(cs)
+  const chunksState2 = chunks2.get()
+  const setChunksState2 = useCallback((cs: ImmutableObject<{
+    ready: boolean,
+    chunks: Array<ChunkRow>
+  }>) => {
+    chunks2.set(cs)
   }, [])
 
   useUpdateChunksForFile({
     fileId: fileIds.file1,
-    alreadyUpToDate: Boolean(chunksState1?.ready),
+    alreadyUpToDate: Boolean(chunksState1.ready),
     setChunksState: setChunksState1,
   })
   useUpdateChunksForFile({
     fileId: fileIds.file2,
-    alreadyUpToDate: Boolean(chunksState2?.ready),
+    alreadyUpToDate: Boolean(chunksState2.ready),
     setChunksState: setChunksState2,
   })
 }
@@ -37,7 +49,10 @@ export function useChunks() {
 export function useUpdateChunksForFile(args: {
   fileId: number | null
   alreadyUpToDate: boolean
-  setChunksState: (rcs: ReactChunkState) => void
+  setChunksState: (cs: ImmutableObject<{
+    ready: boolean
+    chunks: Array<ChunkRow>
+  }>) => void
 }) {
   const { fileId, alreadyUpToDate, setChunksState } = args
   const errors = useHookstate(errorsState)
@@ -49,13 +64,9 @@ export function useUpdateChunksForFile(args: {
     let limit = 200
     let minIdNonInclusive = -1
     let shouldStopEarly = false
-    const chunks: Array<StatsChunk> = []
+    const chunks: Array<ChunkRow> = []
     void (async () => {
       while (!shouldStopEarly) {
-        setChunksState({
-          ready: false,
-          statusMessage: `Getting the ${limit} chunks after id: ${minIdNonInclusive} for file: "${fileId}"`,
-        })
         try {
           const res = await axios.get<{
             chunkRows: Array<ChunkRow>
@@ -63,8 +74,7 @@ export function useUpdateChunksForFile(args: {
           }>(`/api/chunks/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
           const { chunkRows, lastId } = res.data
           chunkRows.forEach((cr) => {
-            const chunk: StatsChunk = JSON.parse(cr.raw_json)
-            chunks.push(chunk)
+            chunks.push(cr)
           })
           if (lastId === null) {
             break
@@ -78,7 +88,6 @@ export function useUpdateChunksForFile(args: {
       }
       setChunksState({
         ready: true,
-        statusMessage: `Done loading chunks for file: "${fileId}"`,
         chunks,
       })
     })()

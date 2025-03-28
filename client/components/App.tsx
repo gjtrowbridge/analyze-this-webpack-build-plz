@@ -4,13 +4,14 @@ import { LoadingBoundary } from './LoadingBoundary'
 import { useModules } from '../hooks/useModules'
 import type { ReactChunkState, ReactModuleState } from '../types'
 import { useChunks } from '../hooks/useChunks'
-import { ChunkInspector } from './ChunkInspector'
+// import { ChunkInspector } from './ChunkInspector'
 import { FileSelector } from './FileSelector'
-import { ComparisonView } from './ComparisonView'
+// import { ComparisonView } from './ComparisonView'
 import "./styles/App.css"
 import { useFileNames, useRefreshFiles } from '../hooks/useFiles'
 import { useHookstate } from '@hookstate/core'
-import { chunksStateFile1, errorsState, filesState, modulesStateFile1 } from '../globalState'
+import { chunksStateFile1, errorsState, file1ProcessedGlobalState, filesState, modulesStateFile1 } from '../globalState'
+import { useProcessor } from '../hooks/useProcessor'
 
 
 export function App() {
@@ -26,41 +27,39 @@ export function App() {
   const refreshFilesFn = useRefreshFiles()
   useModules()
   useChunks()
+  useProcessor()
 
-  const msf1 = useHookstate(modulesStateFile1)
-  const msf2 = useHookstate(modulesStateFile1)
-  const csf1 = useHookstate(chunksStateFile1)
-  const csf2 = useHookstate(chunksStateFile1)
-
-  // Hack to not lose my mind converting everything to take immutables
-  const moduleState1 = msf1.get() as ReactModuleState | null
-  const moduleState2 = msf2.get() as ReactModuleState | null
-  const chunkState1 = csf1.get() as ReactChunkState | null
-  const chunkState2 = csf2.get() as ReactChunkState | null
+  const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
 
   // TODO: Make it so these don't lose unmount / lose state between view changes...
   let mainElement = null
   if (view === "module") {
-    const moduleInspector = moduleState1?.ready ? <ModuleInspector modules={moduleState1.modules} /> : null
-    mainElement = <LoadingBoundary isLoading={!moduleState1?.ready} element={moduleInspector} />
-  } else if (view === "chunk") {
-    const chunkInspector = chunkState1?.ready ? <ChunkInspector chunks={chunkState1.chunks} /> : null
-    mainElement = <LoadingBoundary isLoading={!chunkState1?.ready} element={chunkInspector} />
+    const stateOrNull = file1ProcessedState.ornull
+    const moduleInspector = stateOrNull !== null ?
+      <ModuleInspector
+        modulesByDatabaseId={stateOrNull.modulesByDatabaseId.get()}
+        moduleInclusionReasons={stateOrNull.moduleInclusionReasons.get()}
+      />
+      : null
+    mainElement = <LoadingBoundary isLoading={stateOrNull === null} element={moduleInspector} />
+  // } else if (view === "chunk") {
+  //   const chunkInspector = chunkState1?.ready ? <ChunkInspector chunks={chunkState1.chunks} /> : null
+  //   mainElement = <LoadingBoundary isLoading={!chunkState1?.ready} element={chunkInspector} />
   } else if (view === "file_selector") {
     mainElement = <FileSelector
       refreshFilesFn={refreshFilesFn}
     />
-  } else if (view === "comparison") {
-    mainElement = <ComparisonView
-      moduleStates={{
-        file1: moduleState1,
-        file2: moduleState2,
-      }}
-      chunkStates={{
-        file1: chunkState1,
-        file2: chunkState2,
-      }}
-    />
+  // } else if (view === "comparison") {
+  //   mainElement = <ComparisonView
+  //     moduleStates={{
+  //       file1: moduleState1,
+  //       file2: moduleState2,
+  //     }}
+  //     chunkStates={{
+  //       file1: chunkState1,
+  //       file2: chunkState2,
+  //     }}
+  //   />
   } else {
     mainElement = null
   }

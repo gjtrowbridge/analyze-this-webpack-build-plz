@@ -3,29 +3,31 @@ import type {StatsModule} from "webpack"
 import { noDepthFoundConstant } from '../helpers/modules'
 import "./styles/ModuleRow.css"
 import { JsonViewer } from '@textea/json-viewer'
+import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import { ImmutableObject } from '@hookstate/core'
 
 export function ModuleRow(props: {
-  module: StatsModule,
-  extraInfo?: ModuleExtraInfo,
+  module: ImmutableObject<ProcessedModuleInfo>
   showRawInfo: boolean,
-  setShowRawInfo: (moduleId: ModuleIdentifier) => void
+  setShowRawInfo: (moduleDatabaseId: number) => void
 }) {
-  const { module, extraInfo, showRawInfo, setShowRawInfo } = props
+  const { module, showRawInfo, setShowRawInfo } = props
 
   const rawInfo = showRawInfo ?
-    <JsonViewer value={module} />
+    <JsonViewer value={module.rawFromWebpack} />
     : null
 
-  const numTotalModules = module.modules?.length || 1
+  const numTotalModules = module.rawFromWebpack.modules?.length || 1
+  const depth = module.pathFromEntry.length
 
   return <div className="moduleRow">
     <div>
-      <p>Name: {module.name}</p>
-      { extraInfo ? (<p>Depth: { extraInfo.depth === noDepthFoundConstant ? "Not a descendant of any entry point file" : extraInfo.depth }</p>) : null }
-      <p>Size: ~{Math.round(module.size / 1024)} kb</p>
-      <p># Optimization Bailouts: { module.optimizationBailout?.length || 0 }</p>
+      <p>Name: {module.rawFromWebpack.name}</p>
+      <p>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</p>
+      <p>Size: ~{Math.round(module.rawFromWebpack.size / 1024)} kb</p>
+      <p># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</p>
       <p>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</p>
-      <button onClick={() => { if (showRawInfo) { setShowRawInfo("") } else { setShowRawInfo(module.identifier)}}}>{ showRawInfo ? "Hide": "Show"} Raw JSON</button>
+      <button onClick={() => { if (showRawInfo) { setShowRawInfo(-1) } else { setShowRawInfo(module.moduleDatabaseId)}}}>{ showRawInfo ? "Hide": "Show"} Raw JSON</button>
     </div>
     {rawInfo}
   </div>
