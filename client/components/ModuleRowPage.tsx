@@ -26,6 +26,11 @@ export function ModuleRowPage() {
   }
 
   return (
-    <ModuleRow module={module} showRawInfo={showRawInfo} setShowRawInfo={setShowFinal} />
+    <ModuleRow
+      module={module}
+      showRawInfo={showRawInfo}
+      setShowRawInfo={setShowFinal}
+      modulesByDatabaseId={modulesByDatabaseId}
+    />
   )
 }

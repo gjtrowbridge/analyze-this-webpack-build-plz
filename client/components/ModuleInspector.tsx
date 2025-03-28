@@ -114,6 +114,7 @@ export function ModuleInspector() {
           setShowMoreId(moduleDatabaseId)
         }}
         showRawInfo={showMoreId === m.moduleDatabaseId}
+        modulesByDatabaseId={modulesByDatabaseId}
       />
     })
 
