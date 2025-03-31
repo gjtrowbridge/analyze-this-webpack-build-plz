@@ -5,7 +5,6 @@ import { useGetFiles } from '../hooks/useFiles'
 import { ReactElement } from 'react'
 
 export function SetupState(): ReactElement {
-  console.log('xcxc rendering')
   useGetFiles()
   useModules()
   useChunks()

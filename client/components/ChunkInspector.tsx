@@ -36,6 +36,7 @@ export function ChunkInspector() {
     return <p>Loading and processing data, chunk data will be visible soon...</p>
   }
 
+  const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const chunks = Array.from(chunksByDatabaseId.values())
   const chunkRows = chunks
@@ -79,6 +80,7 @@ export function ChunkInspector() {
         showRawInfo={showMoreId === chunk.chunkDatabaseId}
         key={chunk.chunkDatabaseId}
         chunk={chunk}
+        modulesByDatabaseId={modulesByDatabaseId}
         chunksByDatabaseId={chunksByDatabaseId}
       />
     })

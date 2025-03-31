@@ -20,6 +20,7 @@ export function ChunkRowPage() {
     return <p>Loading information for chunk id {chunkDatabaseId}...</p>
   }
 
+  const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const chunk = chunksByDatabaseId.get(chunkDatabaseId)
   if (!chunk) {
@@ -32,6 +33,7 @@ export function ChunkRowPage() {
       showRawInfo={showRawInfo}
       setShowRawInfo={setShowFinal}
       chunksByDatabaseId={chunksByDatabaseId}
+      modulesByDatabaseId={modulesByDatabaseId}
     />
   )
 }
