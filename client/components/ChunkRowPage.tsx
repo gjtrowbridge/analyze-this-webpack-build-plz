@@ -1,13 +1,14 @@
 import { useParams } from 'react-router'
+import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState } from '../globalState'
-import { convertToInteger } from '../../server/helpers/misc'
 import { useCallback, useState } from 'react'
-import { ModuleRow } from './ModuleRow'
+import { ChunkRow } from './ChunkRow'
 
-export function ModuleRowPage() {
+
+export function ChunkRowPage() {
   const params = useParams()
-  const moduleDatabaseId = convertToInteger(params.moduleDatabaseId)
+  const chunkDatabaseId = convertToInteger(params.chunkDatabaseId)
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const [showRawInfo, setShowRawInfo] = useState<boolean>(false)
   const setShowFinal = useCallback(() => {
@@ -16,22 +17,20 @@ export function ModuleRowPage() {
 
   const stateOrNull = file1ProcessedState.ornull
   if (stateOrNull === null) {
-    return <p>Loading information for module id {moduleDatabaseId}...</p>
+    return <p>Loading information for chunk id {chunkDatabaseId}...</p>
   }
 
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
-  const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
-  const module = modulesByDatabaseId.get(moduleDatabaseId)
-  if (!module) {
-    return <p>No module found with id: {moduleDatabaseId}</p>
+  const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+  if (!chunk) {
+    return <p>No chunk found with id: {chunkDatabaseId}</p>
   }
 
   return (
-    <ModuleRow
-      module={module}
+    <ChunkRow
+      chunk={chunk}
       showRawInfo={showRawInfo}
       setShowRawInfo={setShowFinal}
-      modulesByDatabaseId={modulesByDatabaseId}
       chunksByDatabaseId={chunksByDatabaseId}
     />
   )

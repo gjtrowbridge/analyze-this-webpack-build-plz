@@ -8,6 +8,7 @@ import { ModuleInspector } from './components/ModuleInspector'
 import { ChunkInspector } from './components/ChunkInspector'
 import { FileSelector } from './components/FileSelector'
 import { ModuleRowPage } from './components/ModuleRowPage'
+import { ChunkRowPage } from './components/ChunkRowPage'
 
 // Clear the existing HTML content
 document.body.innerHTML = '<div id="app"></div>';
@@ -24,7 +25,10 @@ root.render(
           <Route index element={<ModuleInspector />} />
           <Route path=":moduleDatabaseId" element={<ModuleRowPage />} />
         </Route>
-        <Route path="chunks" element={<ChunkInspector />} />
+        <Route path="chunks">
+          <Route index element={<ChunkInspector />} />
+          <Route path=":chunkDatabaseId" element={<ChunkRowPage />} />
+        </Route>
       </Route>
     </Routes>
   </BrowserRouter>

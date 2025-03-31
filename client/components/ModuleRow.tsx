@@ -1,16 +1,24 @@
 import "./styles/ModuleRow.css"
 import { JsonViewer } from '@textea/json-viewer'
-import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { ImmutableMap, ImmutableObject, useHookstate } from '@hookstate/core'
 import { Link } from 'react-router'
+import { getHumanReadableChunkName } from '../helpers/chunks'
 
 export function ModuleRow(props: {
   module: ImmutableObject<ProcessedModuleInfo>
   showRawInfo: boolean,
   setShowRawInfo: (moduleDatabaseId: number) => void
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
+  chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
 }) {
-  const { module, showRawInfo, setShowRawInfo, modulesByDatabaseId } = props
+  const {
+    module,
+    showRawInfo,
+    setShowRawInfo,
+    modulesByDatabaseId,
+    chunksByDatabaseId,
+  } = props
 
   const rawInfo = showRawInfo ?
     <JsonViewer value={module.rawFromWebpack} />
@@ -26,6 +34,15 @@ export function ModuleRow(props: {
       </li>
     )
   })
+  const chunkParents = module.parentChunkDatabaseIds.map((chunkDatabaseId) => {
+    const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+    return (
+      <li key={chunkDatabaseId}>
+        <Link to={`/chunks/${chunkDatabaseId}`}>{getHumanReadableChunkName(chunk)}</Link>
+      </li>
+    )
+  })
+
   const maxChildrenToShow = 10
   const maxParentsToShow = 10
   const children = Array.from(module.childModules.values()).slice(0, maxChildrenToShow).map((relationship) => {
@@ -55,19 +72,25 @@ export function ModuleRow(props: {
       <p># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</p>
       <p>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</p>
       <div>
+        <h5>Chunk Parent(s)</h5>
+        <ul>
+          {chunkParents}
+        </ul>
+      </div>
+      <div>
         <h5>Shortest path to entry point</h5>
         <ul>
           {shortestPath}
         </ul>
       </div>
       <div>
-        <h5>Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</h5>
+        <h5>Module Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</h5>
         <ul>
           {children}
         </ul>
       </div>
       <div>
-        <h5>Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</h5>
+        <h5>Module Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</h5>
         <ul>
           {parents}
         </ul>

@@ -79,6 +79,7 @@ export function ChunkInspector() {
         showRawInfo={showMoreId === chunk.chunkDatabaseId}
         key={chunk.chunkDatabaseId}
         chunk={chunk}
+        chunksByDatabaseId={chunksByDatabaseId}
       />
     })
 

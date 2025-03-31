@@ -46,6 +46,7 @@ export function ModuleInspector() {
     return <p>Loading and processing data, module data will be visible soon...</p>
   }
 
+  const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const moduleInclusionReasons = stateOrNull.moduleInclusionReasons.get()
   const inclusionReasons = Array.from(moduleInclusionReasons)
@@ -109,6 +110,7 @@ export function ModuleInspector() {
         }}
         showRawInfo={showMoreId === m.moduleDatabaseId}
         modulesByDatabaseId={modulesByDatabaseId}
+        chunksByDatabaseId={chunksByDatabaseId}
       />
     })
 
