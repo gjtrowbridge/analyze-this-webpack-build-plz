@@ -1,7 +1,8 @@
-import { ModuleIdentifier } from './modules'
 import { ChunkIdentifier } from './chunks'
 import { type StatsChunk, StatsModule } from 'webpack'
 import { ChunksById, ModulesById } from '../types'
+
+type ModuleIdentifier = string
 
 export interface ComparisonData {
   modules: {

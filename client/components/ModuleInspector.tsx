@@ -1,12 +1,10 @@
-import type { StatsModule } from 'webpack'
-import {useCallback, useMemo, useState} from "react"
-import { ModuleIdentifier, noDepthFoundConstant, processModules } from "../helpers/modules"
+import {useCallback, useState} from "react"
 import { ModuleRow } from "./ModuleRow"
 import "./styles/ModuleInspector.css"
 import { SortControl } from './SortControl'
 import { getStatistics } from '../helpers/math'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
-import { ImmutableMap, useHookstate } from '@hookstate/core'
+import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState } from '../globalState'
 
 // TODO: Figure out how to do generics for React elements
@@ -15,15 +13,11 @@ import { file1ProcessedGlobalState } from '../globalState'
 const anyInclusionReasonText = "-- Select To Filter --"
 
 export function ModuleInspector() {
-  // const {
-  //   modulesByDatabaseId,
-  //   moduleInclusionReasons,
-  // } = props
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const [sortBy, setSortBy] = useState<string>("Name")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [filterName, setFilterName] = useState<string>("")
-  const [filterByIdentifier, setFilterByIdentifier] = useState<ModuleIdentifier>("")
+  const [filterByIdentifier, setFilterByIdentifier] = useState<string>("")
   const [filterByChunkId, setFilterByChunkId] = useState<string>("")
   const [filterOptimizationBailout, setfilterOptimizationBailout] = useState<string>("")
   const [showMoreId, setShowMoreId] = useState<number>(-1)

@@ -1,6 +1,7 @@
 import { StatsChunk, StatsModule, type StatsModuleReason } from 'webpack'
 import { ChunkRow, ModuleRow } from '../../shared/types'
 import { ImmutableArray } from '@hookstate/core'
+import { getModuleIdentifierKey } from './modules'
 
 /**
  * Including both the parent and child in this is maybe a bit more confusing than having a parent
@@ -135,7 +136,8 @@ export function processModulesAndChunks(args: {
       parentChunkDatabaseIds: [],
     }
     modulesByDatabaseId.set(moduleRow.id, processedModule)
-    modulesByWebpackIdentifier.set(processedModule.rawFromWebpack.identifier, processedModule)
+    const moduleIdentifier = getModuleIdentifierKey(processedModule.rawFromWebpack.identifier)
+    modulesByWebpackIdentifier.set(moduleIdentifier, processedModule)
   })
 
   /**
@@ -234,7 +236,7 @@ function getImportHandler(outerArgs: { isLazy?: boolean }) {
       module: child,
       reason,
     } = args
-    const parentWebpackIdentifier = reason.moduleIdentifier
+    const parentWebpackIdentifier = getModuleIdentifierKey(reason.moduleIdentifier)
     const parent = modulesByWebpackIdentifier.get(parentWebpackIdentifier)
     if (!parent) {
       // @ts-ignore
