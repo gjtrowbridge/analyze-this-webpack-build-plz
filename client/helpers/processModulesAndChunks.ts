@@ -2,6 +2,7 @@ import { StatsChunk, StatsModule, type StatsModuleReason } from 'webpack'
 import { ChunkRow, ModuleRow } from '../../shared/types'
 import { ImmutableArray } from '@hookstate/core'
 import { getModuleIdentifierKey } from './modules'
+import { getSanitizedChunkId } from './chunks'
 
 /**
  * Including both the parent and child in this is maybe a bit more confusing than having a parent
@@ -35,6 +36,7 @@ export type ProcessedState = {
   modulesByDatabaseId: Map<number, ProcessedModuleInfo>
   modulesByWebpackIdentifier: Map<string, ProcessedModuleInfo>
   chunksByDatabaseId: Map<number, ProcessedChunkInfo>
+  chunksByWebpackId: Map<string, ProcessedChunkInfo>
   moduleInclusionReasons: Set<string>
 }
 
@@ -106,7 +108,7 @@ export function processModulesAndChunks(args: {
   const chunksByDatabaseId = new Map<number, ProcessedChunkInfo>
   const modulesByDatabaseId = new Map<number, ProcessedModuleInfo>
 
-  const chunksByWebpackId = new Map<string | number, ProcessedChunkInfo>()
+  const chunksByWebpackId = new Map<string, ProcessedChunkInfo>()
   const modulesByWebpackIdentifier = new Map<string, ProcessedModuleInfo>()
   const moduleInclusionReasons = new Set<string>()
 
@@ -124,7 +126,7 @@ export function processModulesAndChunks(args: {
       childModuleDatabaseIds: new Set<number>(),
     }
     chunksByDatabaseId.set(chunkRow.id, processedChunk)
-    chunksByWebpackId.set(processedChunk.rawFromWebpack.id, processedChunk)
+    chunksByWebpackId.set(getSanitizedChunkId(processedChunk.rawFromWebpack.id), processedChunk)
   })
   moduleRows.forEach((moduleRow) => {
     const processedModule: ProcessedModuleInfo = {
@@ -149,7 +151,7 @@ export function processModulesAndChunks(args: {
      * Process parent chunk <-> module child information
      */
     for (const webpackChunkId of module.rawFromWebpack.chunks) {
-      const chunk = chunksByWebpackId.get(webpackChunkId)
+      const chunk = chunksByWebpackId.get(getSanitizedChunkId(webpackChunkId))
       if (chunk) {
         chunk.childModuleDatabaseIds.add(module.moduleDatabaseId)
         module.parentChunkDatabaseIds.push(chunk.chunkDatabaseId)
@@ -186,7 +188,7 @@ export function processModulesAndChunks(args: {
      * Process parent chunk information
      */
     for (const webpackChunkId of chunk.rawFromWebpack.parents) {
-      const parentChunk = chunksByWebpackId.get(webpackChunkId)
+      const parentChunk = chunksByWebpackId.get(getSanitizedChunkId(webpackChunkId))
       if (parentChunk) {
         chunk.parentChunkDatabaseIds.add(parentChunk.chunkDatabaseId)
         parentChunk.childChunkDatabaseIds.add(chunk.chunkDatabaseId)
@@ -198,7 +200,7 @@ export function processModulesAndChunks(args: {
      * just in case webpack is doing weird things with stats.json, we'll handle both
      */
     for (const webpackChunkId of chunk.rawFromWebpack.children) {
-      const childChunk = chunksByWebpackId.get(webpackChunkId)
+      const childChunk = chunksByWebpackId.get(getSanitizedChunkId(webpackChunkId))
       if (childChunk) {
         chunk.childChunkDatabaseIds.add(childChunk.chunkDatabaseId)
         childChunk.parentChunkDatabaseIds.add(chunk.chunkDatabaseId)
@@ -209,7 +211,7 @@ export function processModulesAndChunks(args: {
      * Process sibling chunk information
      */
     for (const webpackChunkId of chunk.rawFromWebpack.siblings) {
-      const siblingChunk = chunksByWebpackId.get(webpackChunkId)
+      const siblingChunk = chunksByWebpackId.get(getSanitizedChunkId(webpackChunkId))
       if (siblingChunk) {
         chunk.siblingChunkDatabaseIds.add(siblingChunk.chunkDatabaseId)
         // The assumption here is that when webpack marks something as a sibling, it's mutual
@@ -221,6 +223,7 @@ export function processModulesAndChunks(args: {
 
   return {
     chunksByDatabaseId,
+    chunksByWebpackId,
     modulesByDatabaseId,
     modulesByWebpackIdentifier,
     moduleInclusionReasons,

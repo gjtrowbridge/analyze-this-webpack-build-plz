@@ -15,7 +15,7 @@ export function ModuleLink(props: {
   } = props
   let linkText = module.rawFromWebpack.name
   if (includeFileInfo) {
-    linkText = linkText.concat(` ${file}`)
+    linkText = linkText.concat(` (${file})`)
   }
   return (
     <Link to={`/modules/${file}/${module.moduleDatabaseId}`}>

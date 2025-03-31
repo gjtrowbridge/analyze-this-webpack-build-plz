@@ -2,6 +2,9 @@
   "name": "stats-inspector",
   "version": "1.0.0",
   "description": "Help with visualizing and comparing large webpack stats.json files",
+  "engines": {
+    "node": "22.13.1"
+  },
   "scripts": {
     "clean-dist-client": "rm -rf dist/client",
     "build-client": "cross-env TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.client.config.ts",

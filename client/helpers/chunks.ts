@@ -13,3 +13,10 @@ export function getHumanReadableChunkName(chunk: ImmutableObject<ProcessedChunkI
   }
   return name
 }
+
+export function getSanitizedChunkId(chunkId: string | number | null) {
+  if (chunkId === null) {
+    return '~~null~~'
+  }
+  return String(chunkId)
+}
