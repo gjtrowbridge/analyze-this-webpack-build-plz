@@ -18,6 +18,9 @@ export function useProcessState() {
   const chunksFile2 = useHookstate(file2ChunksGlobalState)
 
   const file1IsReadyToProcess = modulesFile1.ready.get() && chunksFile1.ready.get() && file1ProcessedState.ornull === null
+  const file2IsReadyToProcess = modulesFile2.ready.get() && chunksFile2.ready.get() && file2ProcessedState.ornull === null
+  console.log('xcxc file 1', modulesFile1.ready.get(), chunksFile1.ready.get(), file1ProcessedState.ornull)
+  console.log('xcxc file 2', modulesFile2.ready.get(), chunksFile2.ready.get(), file2ProcessedState.ornull)
 
   useEffect(() => {
     if (!file1IsReadyToProcess) {
@@ -35,7 +38,7 @@ export function useProcessState() {
   }, [modulesFile1.ready, chunksFile1.ready, file1ProcessedState.get()])
 
   useEffect(() => {
-    if (!modulesFile2.ready || !chunksFile2.ready || file2ProcessedState !== null) {
+    if (!file2IsReadyToProcess) {
       return
     }
     const modules = modulesFile2.modules
@@ -47,6 +50,6 @@ export function useProcessState() {
     })
     file2ProcessedGlobalState.set(processedState)
 
-  }, [modulesFile2.ready, chunksFile2.ready, file2ProcessedState])
+  }, [modulesFile2.ready, chunksFile2.ready, file2ProcessedState.get()])
 
 }

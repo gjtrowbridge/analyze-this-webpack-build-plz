@@ -5,6 +5,8 @@ import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { getHumanReadableChunkName } from '../helpers/chunks'
 import { Link } from 'react-router'
 import { getModuleIdentifierKey } from '../helpers/modules'
+import { ModuleLink } from './ModuleLink'
+import { ChunkLink } from './ChunkLink'
 
 
 export function ChunkRow(props: {
@@ -26,7 +28,7 @@ export function ChunkRow(props: {
     const module = modulesByDatabaseId.get(moduleDatabaseId)
     return (
       <li key={moduleDatabaseId}>
-        <Link to={`/modules/${moduleDatabaseId}`}>{module.rawFromWebpack.name}</Link>
+        <ModuleLink module={module} file={"file1"} />
       </li>
     )
   })
@@ -39,7 +41,7 @@ export function ChunkRow(props: {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
       <li key={chunkDatabaseId}>
-        <Link to={`/chunks/${chunkDatabaseId}`}>{getHumanReadableChunkName(chunk)}</Link>
+        <ChunkLink chunk={chunk} file={'file1'} />
       </li>
     )
   })
@@ -47,7 +49,7 @@ export function ChunkRow(props: {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
       <li key={chunkDatabaseId}>
-        <Link to={`/chunks/${chunkDatabaseId}`}>{getHumanReadableChunkName(chunk)}</Link>
+        <ChunkLink chunk={chunk} file={'file1'} />
       </li>
     )
   })
@@ -55,7 +57,7 @@ export function ChunkRow(props: {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
       <li key={chunkDatabaseId}>
-        <Link to={`/chunks/${chunkDatabaseId}`}>{getHumanReadableChunkName(chunk)}</Link>
+        <ChunkLink chunk={chunk} file={'file1'} />
       </li>
     )
   })
@@ -63,7 +65,7 @@ export function ChunkRow(props: {
   return (
     <div className="chunkRow">
       <div>
-        <p>Id: {chunk.rawFromWebpack.id}</p>
+        <p>Webpack Id: {chunk.rawFromWebpack.id}</p>
         <p>Name(s): {getHumanReadableChunkName(chunk)}</p>
         <p>Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb</p>
         <p>Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}</p>

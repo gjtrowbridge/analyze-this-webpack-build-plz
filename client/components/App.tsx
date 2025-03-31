@@ -42,6 +42,9 @@ export function App() {
         <NavLink to={"/chunks"} className={({ isActive }) => {
           return isActive ? "active" : ""
         }}>Chunk View</NavLink>
+        <NavLink to={"/comparison"} className={({ isActive }) => {
+          return isActive ? "active" : ""
+        }}>Comparison</NavLink>
       </div>
       <div>
         {errorWarnings}

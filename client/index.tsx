@@ -9,6 +9,7 @@ import { ChunkInspector } from './components/ChunkInspector'
 import { FileSelector } from './components/FileSelector'
 import { ModuleRowPage } from './components/ModuleRowPage'
 import { ChunkRowPage } from './components/ChunkRowPage'
+import { ComparisonView } from './components/ComparisonView'
 
 // Clear the existing HTML content
 document.body.innerHTML = '<div id="app"></div>';
@@ -23,11 +24,16 @@ root.render(
         <Route index element={<FileSelector />} />
         <Route path="modules">
           <Route index element={<ModuleInspector />} />
-          <Route path=":moduleDatabaseId" element={<ModuleRowPage />} />
+          <Route path="file1/:moduleDatabaseId" element={<ModuleRowPage file={'file1'} />} />
+          <Route path="file2/:moduleDatabaseId" element={<ModuleRowPage file={'file2'} />} />
         </Route>
         <Route path="chunks">
           <Route index element={<ChunkInspector />} />
-          <Route path=":chunkDatabaseId" element={<ChunkRowPage />} />
+          <Route path="file1/:chunkDatabaseId" element={<ChunkRowPage file={'file1'} />} />
+          <Route path="file1/:chunkDatabaseId" element={<ChunkRowPage file={'file2'} />} />
+        </Route>
+        <Route path="comparison">
+          <Route index element={<ComparisonView />} />
         </Route>
       </Route>
     </Routes>

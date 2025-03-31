@@ -33,6 +33,7 @@ export interface ProcessedChunkInfo {
 
 export type ProcessedState = {
   modulesByDatabaseId: Map<number, ProcessedModuleInfo>
+  modulesByWebpackIdentifier: Map<string, ProcessedModuleInfo>
   chunksByDatabaseId: Map<number, ProcessedChunkInfo>
   moduleInclusionReasons: Set<string>
 }
@@ -221,6 +222,7 @@ export function processModulesAndChunks(args: {
   return {
     chunksByDatabaseId,
     modulesByDatabaseId,
+    modulesByWebpackIdentifier,
     moduleInclusionReasons,
   }
 }
@@ -239,8 +241,6 @@ function getImportHandler(outerArgs: { isLazy?: boolean }) {
     const parentWebpackIdentifier = getModuleIdentifierKey(reason.moduleIdentifier)
     const parent = modulesByWebpackIdentifier.get(parentWebpackIdentifier)
     if (!parent) {
-      // @ts-ignore
-      window["gregtest"] = modulesByWebpackIdentifier
       console.log('xcxc could not find parent', parentWebpackIdentifier)
       return
     }

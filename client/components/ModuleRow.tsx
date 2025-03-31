@@ -4,6 +4,8 @@ import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModul
 import { ImmutableMap, ImmutableObject, useHookstate } from '@hookstate/core'
 import { Link } from 'react-router'
 import { getHumanReadableChunkName } from '../helpers/chunks'
+import { ModuleLink } from './ModuleLink'
+import { ChunkLink } from './ChunkLink'
 
 export function ModuleRow(props: {
   module: ImmutableObject<ProcessedModuleInfo>
@@ -30,7 +32,7 @@ export function ModuleRow(props: {
     const m = modulesByDatabaseId.get(moduleDatabaseId)
     return (
       <li key={moduleDatabaseId}>
-        <Link to={`/modules/${moduleDatabaseId}`}>{m.rawFromWebpack.name}</Link>
+        <ModuleLink module={m} file={"file1"} />
       </li>
     )
   })
@@ -38,7 +40,7 @@ export function ModuleRow(props: {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
       <li key={chunkDatabaseId}>
-        <Link to={`/chunks/${chunkDatabaseId}`}>{getHumanReadableChunkName(chunk)}</Link>
+        <ChunkLink chunk={chunk} file={'file1'} />
       </li>
     )
   })
@@ -50,7 +52,7 @@ export function ModuleRow(props: {
     const m = modulesByDatabaseId.get(moduleDatabaseId)
     return (
       <li key={moduleDatabaseId}>
-        <Link to={`/modules/${moduleDatabaseId}`}>{m.rawFromWebpack.name}</Link>
+        <ModuleLink module={m} file={"file1"} />
       </li>
     )
   })
@@ -59,7 +61,7 @@ export function ModuleRow(props: {
     const m = modulesByDatabaseId.get(moduleDatabaseId)
     return (
       <li key={moduleDatabaseId}>
-        <Link to={`/modules/${moduleDatabaseId}`}>{m.rawFromWebpack.name}</Link>
+        <ModuleLink module={m} file={"file1"} />
       </li>
     )
   })

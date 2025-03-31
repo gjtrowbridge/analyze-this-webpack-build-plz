@@ -1,118 +1,101 @@
-import { ChunkIdentifier } from './chunks'
-import { type StatsChunk, StatsModule } from 'webpack'
-import { ChunksById, ModulesById } from '../types'
+import { ProcessedModuleInfo } from './processModulesAndChunks'
+import { ImmutableMap, ImmutableObject } from '@hookstate/core'
+import { getModuleIdentifierKey } from './modules'
 
-type ModuleIdentifier = string
-
-export interface ComparisonData {
-  modules: {
-    onlyInFile1: Array<ModuleIdentifier>
-    onlyInFile2: Array<ModuleIdentifier>
-    changed: Array<ModuleIdentifier>
-  },
-  chunks: {
-    onlyInFile1: Array<ChunkIdentifier>
-    onlyInFile2: Array<ChunkIdentifier>
-    changed: Array<ChunkIdentifier>
-  }
+function moduleHasChanged(args: {
+  m1: ImmutableObject<ProcessedModuleInfo>
+  m2: ImmutableObject<ProcessedModuleInfo>
+}): boolean {
+  const { m1, m2 } = args
+  return m1.rawFromWebpack.size !== m2.rawFromWebpack.size
 }
 
-function hasChanged<T extends StatsModule | StatsChunk>(args: {
-  before: T,
-  after: T,
-}) {
-  const { before, after } = args
-  return before.size !== after.size
-}
-
-function getModulesById(modules: Array<StatsModule>): ModulesById {
-  const modulesById = new Map<ModuleIdentifier, StatsModule>()
-  modules.forEach((m) => {
-    modulesById.set(m.identifier, m)
-  })
-  return modulesById
-}
-function getChunksById(chunks: Array<StatsChunk>): ChunksById {
-  const chunksById = new Map<ChunkIdentifier, StatsChunk>()
-  chunks.forEach((c) => {
-    chunksById.set(c.id, c)
-  })
-  return chunksById
-}
-
-export function getComparisonData(args: {
-  modules: {
-    file1: Array<StatsModule>,
-    file2: Array<StatsModule>,
-  },
-  chunks: {
-    file1: Array<StatsChunk>,
-    file2: Array<StatsChunk>,
-  }
+export function compareFiles(args: {
+  file1ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>
+  file2ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>
 }): {
-  data: ComparisonData
-  modulesById1: ModulesById,
-  modulesById2: ModulesById,
-  chunksById1: ChunksById,
-  chunksById2: ChunksById,
-} {
-  const { modules, chunks } = args
-  const modulesById1 = getModulesById(modules.file1)
-  const modulesById2 = getModulesById(modules.file2)
-  const chunksById1 = getChunksById(chunks.file1)
-  const chunksById2 = getChunksById(chunks.file2)
-
-  const comparisonData: ComparisonData = {
-    modules: {
-      onlyInFile1: [],
-      onlyInFile2: [],
-      changed: [],
-    },
-    chunks: {
-      onlyInFile1: [],
-      onlyInFile2: [],
-      changed: [],
-    },
+  modules: {
+    /**
+     * Stores the database ids of two equivalent modules from different files
+     */
+    changed: Array<{
+      file1Module: ImmutableObject<ProcessedModuleInfo>,
+      file2Module: ImmutableObject<ProcessedModuleInfo>,
+    }>,
+    /**
+     * Database ids (can use these because they're only in the one file
+     */
+    onlyInFile1: Array<ImmutableObject<ProcessedModuleInfo>>,
+    onlyInFile2: Array<ImmutableObject<ProcessedModuleInfo>>,
   }
-  modules.file1.forEach((m1) => {
-    const m2 = modulesById2.get(m1.identifier)
-    if (m2 === undefined) {
-      comparisonData.modules.onlyInFile1.push(m1.identifier)
-      return
-    }
-    if (hasChanged({ before: m1, after: m2 })) {
-      comparisonData.modules.changed.push(m1.identifier)
-    }
-  })
-  modules.file2.forEach((m2) => {
-    const m1Exists = modulesById1.has(m2.identifier)
-    if (!m1Exists) {
-      comparisonData.modules.onlyInFile2.push(m2.identifier)
-    }
-  })
+} {
+  const {
+    file1ModulesByWebpackId,
+    file2ModulesByWebpackId,
+  } = args
 
-  chunks.file1.forEach((c1) => {
-    const c2 = chunksById2.get(c1.id)
-    if (c2 === undefined) {
-      comparisonData.chunks.onlyInFile1.push(c1.id)
-      return
+  const changed: Array<{
+    file1Module: ImmutableObject<ProcessedModuleInfo>,
+    file2Module: ImmutableObject<ProcessedModuleInfo>,
+  }> = []
+  const onlyInFile1: Array<ImmutableObject<ProcessedModuleInfo>> = []
+  const onlyInFile2: Array<ImmutableObject<ProcessedModuleInfo>> = []
+
+  const nullWebpackId = getModuleIdentifierKey(null)
+
+  /**
+   * Get modules that exist in both files but have changed from one to the other.
+   * Also store modules that only exist in file 1.
+   */
+  for (const [file1Id, file1Module] of file1ModulesByWebpackId) {
+    /**
+     * Lots of modules have null webpack ids -- we won't bother comparing these...
+     */
+    if (file1Id === nullWebpackId) {
+      continue
     }
-    if (hasChanged({ before: c1, after: c2 })) {
-      comparisonData.chunks.changed.push(c1.id)
+    /**
+     * We do the lookup by webpack id, since that's how we compare apples to apples across different stats files
+     */
+    const file2Module = file2ModulesByWebpackId.get(file1Id)
+    if (file2Module) {
+      const hasChanged = moduleHasChanged({ m1: file1Module, m2: file2Module })
+      /**
+       * But we store the module database id so it's easier to set up navigation / etc in the UI
+       */
+      if (hasChanged) {
+        changed.push({
+          file1Module,
+          file2Module,
+        })
+      }
+    } else {
+      onlyInFile1.push(file1Module)
     }
-  })
-  chunks.file2.forEach((c2) => {
-    const c1Exists = chunksById1.has(c2.id)
-    if (!c1Exists) {
-      comparisonData.chunks.onlyInFile2.push(c2.id)
+  }
+
+  /**
+   * Get modules that only exist in file 2
+   */
+  for (const [file2Id, file2Module] of file2ModulesByWebpackId) {
+    /**
+     * Lots of modules have null webpack ids -- we won't bother comparing these...
+     */
+    if (file2Id === nullWebpackId) {
+      continue
     }
-  })
+    const existsInFile1 = file1ModulesByWebpackId.has(file2Id)
+    if (!existsInFile1) {
+      onlyInFile2.push(file2Module)
+    }
+  }
 
   return {
-    data: comparisonData,
-    chunksById1,
-    chunksById2,
-    modulesById1,
-    modulesById2,
+    modules: {
+      changed,
+      onlyInFile1,
+      onlyInFile2,
+    }
   }
+
 }
