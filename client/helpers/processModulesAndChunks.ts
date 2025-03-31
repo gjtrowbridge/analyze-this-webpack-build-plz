@@ -12,8 +12,10 @@ interface ModuleRelationshipInfo {
   // A value of null indicates that no parent was found for the identifier webpack gave us
   parentModuleDatabaseId: number | null
   childModuleDatabaseId: number
-  isLazy?: boolean
-  reasonType?: string
+  reasons: Array<{
+    isLazy?: boolean
+    reasonType: string
+  }>
 }
 
 export interface ProcessedChunkInfo {
@@ -46,8 +48,12 @@ export interface ProcessedModuleInfo {
    */
   pathFromEntry: Array<number> | null
 
-  parentModules: Array<ModuleRelationshipInfo>
-  childModules: Array<ModuleRelationshipInfo>
+  /**
+   * moduleDatabaseId -> ModuleRelationshipInfo
+   * This is a map because a module in stats.json can list multiple reasons originating from the same file
+   */
+  parentModules: Map<number, ModuleRelationshipInfo>
+  childModules: Map<number, ModuleRelationshipInfo>
 
   parentChunkDatabaseIds: Array<number>
 }
@@ -124,8 +130,8 @@ export function processModulesAndChunks(args: {
       moduleDatabaseId: moduleRow.id,
       rawFromWebpack: JSON.parse(moduleRow.raw_json),
       pathFromEntry: [],
-      parentModules: [],
-      childModules: [],
+      parentModules: new Map<number, ModuleRelationshipInfo>,
+      childModules: new Map<number, ModuleRelationshipInfo>,
       parentChunkDatabaseIds: [],
     }
     modulesByDatabaseId.set(moduleRow.id, processedModule)
@@ -148,7 +154,7 @@ export function processModulesAndChunks(args: {
     }
 
     /**
-     * Process parent module <-> module child information
+     * Process parent module <-> child module information
      */
     for (const reason of module.rawFromWebpack.reasons) {
       moduleInclusionReasons.add(reason.type)
@@ -231,18 +237,23 @@ function getImportHandler(outerArgs: { isLazy?: boolean }) {
     const parentWebpackIdentifier = reason.moduleIdentifier
     const parent = modulesByWebpackIdentifier.get(parentWebpackIdentifier)
     if (!parent) {
-      console.log('xcxc could not find parent')
+      // @ts-ignore
+      window["gregtest"] = modulesByWebpackIdentifier
+      console.log('xcxc could not find parent', parentWebpackIdentifier)
       return
     }
-
-    const relationship: ModuleRelationshipInfo = {
+    const relationship: ModuleRelationshipInfo = parent.childModules.get(child.moduleDatabaseId) || {
+      childModuleDatabaseId: child.moduleDatabaseId,
+      parentModuleDatabaseId: parent.moduleDatabaseId,
+      reasons: [],
+    }
+    relationship.reasons.push({
       isLazy: Boolean(outerArgs.isLazy),
       reasonType: reason.type,
-      childModuleDatabaseId: child.moduleDatabaseId,
-      parentModuleDatabaseId: parent === undefined ? null : parent.moduleDatabaseId,
-    }
-    parent.childModules.push(relationship)
-    child.parentModules.push(relationship)
+    })
+
+    parent.childModules.set(child.moduleDatabaseId, relationship)
+    child.parentModules.set(parent.moduleDatabaseId, relationship)
   }
 }
 
@@ -291,7 +302,7 @@ function bfsUpdatePathToEntry(modulesByDatabaseId: Map<number, ProcessedModuleIn
 
     const module = modulesByDatabaseId.get(moduleDatabaseId)
     module.pathFromEntry = path
-    for (const childModule of module.childModules) {
+    for (const childModule of Array.from(module.childModules.values())) {
       const childDatabaseId = childModule.childModuleDatabaseId
       if (!alreadySeenModuleDatabaseIds.has(childDatabaseId)) {
         alreadySeenModuleDatabaseIds.add(childDatabaseId)

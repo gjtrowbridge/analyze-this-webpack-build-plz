@@ -28,7 +28,7 @@ export function ModuleRow(props: {
   })
   const maxChildrenToShow = 10
   const maxParentsToShow = 10
-  const children = module.childModules.slice(0, maxChildrenToShow).map((relationship) => {
+  const children = Array.from(module.childModules.values()).slice(0, maxChildrenToShow).map((relationship) => {
     const moduleDatabaseId = relationship.childModuleDatabaseId
     const m = modulesByDatabaseId.get(moduleDatabaseId)
     return (
@@ -37,7 +37,7 @@ export function ModuleRow(props: {
       </li>
     )
   })
-  const parents = module.parentModules.slice(0, maxParentsToShow).map((relationship) => {
+  const parents = Array.from(module.parentModules.values()).slice(0, maxParentsToShow).map((relationship) => {
     const moduleDatabaseId = relationship.parentModuleDatabaseId
     const m = modulesByDatabaseId.get(moduleDatabaseId)
     return (
@@ -61,13 +61,13 @@ export function ModuleRow(props: {
         </ul>
       </div>
       <div>
-        <h5>Children ({module.childModules.length} total -- will only show up to {maxChildrenToShow})</h5>
+        <h5>Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</h5>
         <ul>
           {children}
         </ul>
       </div>
       <div>
-        <h5>Parents ({module.parentModules.length} total -- will only show up to {maxParentsToShow})</h5>
+        <h5>Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</h5>
         <ul>
           {parents}
         </ul>
