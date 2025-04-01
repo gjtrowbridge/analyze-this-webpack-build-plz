@@ -8,6 +8,7 @@ In particular, it attempts to make it easier to visualize the "modules" and "chu
 ```bash
 git clone git@github.com:gjtrowbridge/analyze-this-webpack-build-plz.git
 npm install
+npm run db-up-all
 npm run start
 # Go to localhost:8080 in your favorite browser
 ```
