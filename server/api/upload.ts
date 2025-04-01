@@ -39,7 +39,7 @@ function processStatsFile(args: {
    * Insert modules, if they exist in the stats object
    */
   if (stats.modules) {
-    const moduleRows: Array<ModuleRow> = stats.modules.map((m) => {
+    const moduleRows: Array<Omit<ModuleRow, 'id'>> = stats.modules.map((m) => {
       return {
         unique_key: getUniqueModuleKey(m),
         module_id: String(m.id),
@@ -54,7 +54,7 @@ function processStatsFile(args: {
    * Insert chunks, if they exist in the stats object
    */
   if (stats.chunks) {
-    const chunkRows: Array<ChunkRow> = stats.chunks.map((c) => {
+    const chunkRows: Array<Omit<ChunkRow, 'id'>> = stats.chunks.map((c) => {
       return {
         chunk_id: getUniqueChunkKey(c),
         chunk_name: c.names.join(","),
