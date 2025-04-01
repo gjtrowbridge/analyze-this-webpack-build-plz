@@ -56,7 +56,7 @@ function useUpdateModulesForFile(args: {
     if (fileId === null || alreadyUpToDate) {
       return
     }
-    let limit = 200
+    let limit = 50
     let minIdNonInclusive = -1
     let shouldStopEarly = false
     const modules: Array<ModuleRow> = []
