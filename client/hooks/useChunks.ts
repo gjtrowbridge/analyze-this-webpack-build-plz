@@ -56,6 +56,7 @@ export function useUpdateChunksForFile(args: {
     if (fileId === null || alreadyUpToDate) {
       return
     }
+    let canceled = false
     let limit = 50
     let minIdNonInclusive = -1
     let shouldStopEarly = false
@@ -67,6 +68,10 @@ export function useUpdateChunksForFile(args: {
             chunkRows: Array<ChunkRow>
             lastId: number | null
           }>(`/api/chunks/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
+          if (canceled) {
+            console.log('CANCELED: useChunks')
+            return
+          }
           const { chunkRows, lastId } = res.data
           chunkRows.forEach((cr) => {
             chunks.push(cr)
@@ -86,6 +91,6 @@ export function useUpdateChunksForFile(args: {
         chunks,
       })
     })()
-
+    return () => { canceled = true }
   }, [fileId, setChunksState, alreadyUpToDate])
 }

@@ -20,11 +20,16 @@ export function useGetFiles() {
 
   const countDependency = refreshCount.get()
   useEffect(() => {
+    let canceled = false
     void (async () => {
       files.set({ status: 'LOADING' })
       try {
         console.log('xcxc fetchin files...')
         const res = await axios.get<{ fileRows: Array<FileRow>}>(`/api/files`)
+        if (canceled) {
+          console.log('CANCELED use files')
+          return
+        }
         const { fileRows } = res.data
         files.merge({
           status: 'LOADED',
@@ -36,6 +41,9 @@ export function useGetFiles() {
         errors.merge(["[FILES]: something went wrong fetching the list of available files"])
       }
     })()
+    return () => {
+      canceled = true
+    }
   }, [countDependency]);
 }
 

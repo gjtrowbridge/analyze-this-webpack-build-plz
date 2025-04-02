@@ -53,6 +53,7 @@ function useUpdateModulesForFile(args: {
   const { fileId, setModuleState, alreadyUpToDate } = args
   const errors = useHookstate(errorsState)
   useEffect(() => {
+    let canceled = false
     if (fileId === null || alreadyUpToDate) {
       return
     }
@@ -67,6 +68,10 @@ function useUpdateModulesForFile(args: {
             moduleRows: Array<ModuleRow>
             lastId: number | null
           }>(`/api/modules/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
+          if (canceled) {
+            console.log('CANCELED useModules')
+            return
+          }
           const { moduleRows, lastId } = res.data
           moduleRows.forEach((mr) => {
             modules.push(mr)
@@ -86,7 +91,7 @@ function useUpdateModulesForFile(args: {
         modules,
       })
     })()
-
+    return () => { canceled = true }
   }, [fileId, setModuleState, alreadyUpToDate])
 }
 
