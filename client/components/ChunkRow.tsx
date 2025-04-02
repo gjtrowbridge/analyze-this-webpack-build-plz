@@ -25,7 +25,7 @@ export function ChunkRow(props: {
   } = props
 
   const rawInfo = showRawInfo ?
-    <JsonViewer value={chunk} />
+    <JsonViewer value={chunk} defaultInspectControl={() => false} />
     : null
 
   const maxModuleChildrenToShow = noLimitsOnLists ? 100000 : 10

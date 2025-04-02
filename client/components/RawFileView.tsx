@@ -29,7 +29,7 @@ export function RawFileView(props: { fileName: string }) {
   return (
     <div className={"RawFileView"}>
       <h1>{fileName}</h1>
-      <JsonViewer value={contents} />
+      <JsonViewer value={contents} defaultInspectControl={() => false} />
     </div>
   )
 }

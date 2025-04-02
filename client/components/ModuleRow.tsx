@@ -23,7 +23,7 @@ export function ModuleRow(props: {
   } = props
 
   const rawInfo = showRawInfo ?
-    <JsonViewer value={module.rawFromWebpack} />
+    <JsonViewer value={module.rawFromWebpack} defaultInspectControl={() => false} />
     : null
 
   const numTotalModules = module.rawFromWebpack.modules?.length || 1
