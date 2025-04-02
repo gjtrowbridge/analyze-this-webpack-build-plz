@@ -2,10 +2,15 @@ import { FileLoader } from './FileLoader'
 import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
 import { filesState } from '../globalState'
+import { useResetState } from '../hooks/useResetState'
 
 
 export function FileSelector() {
   const files = useHookstate(filesState)
+  const {
+    resetFile1State,
+    resetFile2State,
+  } = useResetState()
   const f = files.get()
 
   let statusEl = null
@@ -40,6 +45,7 @@ export function FileSelector() {
         name="file-select-1"
         onChange={(e) => {
           const newValue = convertToInteger(e.target.value)
+          resetFile1State()
           if (newValue === noFileSelected.value) {
             files.merge({ selectedFileId1: undefined })
             return
@@ -54,6 +60,7 @@ export function FileSelector() {
       name="file-select-2"
       onChange={(e) => {
         const newValue = convertToInteger(e.target.value)
+        resetFile2State()
         if (newValue === noFileSelected.value) {
           files.merge({ selectedFileId2: undefined })
           return
