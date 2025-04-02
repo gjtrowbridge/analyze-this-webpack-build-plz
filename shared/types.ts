@@ -1,4 +1,4 @@
-import type { Database } from 'better-sqlite3'
+import { StatsChunk, StatsModule } from 'webpack'
 
 export interface FileRow {
   id: number
@@ -8,17 +8,12 @@ export interface FileRow {
   done_processing: number
 }
 export interface ModuleRow {
-  id: number
-  unique_key: string
-  module_id: string
-  module_identifier: string
-  raw_json: string
-  file_id: number
+  databaseId: number
+  rawFromWebpack: StatsModule
+  fileId: number
 }
 export interface ChunkRow {
-  id: number
-  chunk_id: string
-  chunk_name: string
-  raw_json: string
-  file_id: number
+  databaseId: number
+  rawFromWebpack: StatsChunk
+  fileId: number
 }

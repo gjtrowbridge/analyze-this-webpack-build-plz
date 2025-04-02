@@ -1,6 +1,6 @@
 import { StatsChunk, StatsModule, type StatsModuleReason } from 'webpack'
 import { ChunkRow, ModuleRow } from '../../shared/types'
-import { ImmutableArray } from '@hookstate/core'
+import { ImmutableArray, ImmutableObject } from '@hookstate/core'
 import { getModuleIdentifierKey } from './modules'
 import { getSanitizedChunkId } from './chunks'
 
@@ -22,7 +22,7 @@ interface ModuleRelationshipInfo {
 
 export interface ProcessedChunkInfo {
   chunkDatabaseId: number
-  rawFromWebpack: StatsChunk
+  rawFromWebpack: ImmutableObject<StatsChunk>
 
   parentChunkDatabaseIds: Set<number>
   siblingChunkDatabaseIds: Set<number>
@@ -42,7 +42,7 @@ export type ProcessedState = {
 
 export interface ProcessedModuleInfo {
   moduleDatabaseId: number
-  rawFromWebpack: StatsModule
+  rawFromWebpack: ImmutableObject<StatsModule>
 
   // -1 => not directly connected to the entry point file
   isEntry: boolean
@@ -118,27 +118,27 @@ export function processModulesAndChunks(args: {
   chunkRows.forEach((chunkRow) => {
     // This will be updated with actual data later
     const processedChunk: ProcessedChunkInfo = {
-      chunkDatabaseId: chunkRow.id,
-      rawFromWebpack: JSON.parse(chunkRow.raw_json),
+      chunkDatabaseId: chunkRow.databaseId,
+      rawFromWebpack: chunkRow.rawFromWebpack,
       parentChunkDatabaseIds: new Set<number>(),
       siblingChunkDatabaseIds: new Set<number>(),
       childChunkDatabaseIds: new Set<number>(),
       childModuleDatabaseIds: new Set<number>(),
     }
-    chunksByDatabaseId.set(chunkRow.id, processedChunk)
+    chunksByDatabaseId.set(chunkRow.databaseId, processedChunk)
     chunksByWebpackId.set(getSanitizedChunkId(processedChunk.rawFromWebpack.id), processedChunk)
   })
   moduleRows.forEach((moduleRow) => {
     const processedModule: ProcessedModuleInfo = {
       isEntry: false,
-      moduleDatabaseId: moduleRow.id,
-      rawFromWebpack: JSON.parse(moduleRow.raw_json),
+      moduleDatabaseId: moduleRow.databaseId,
+      rawFromWebpack: moduleRow.rawFromWebpack,
       pathFromEntry: [],
       parentModules: new Map<number, ModuleRelationshipInfo>,
       childModules: new Map<number, ModuleRelationshipInfo>,
       parentChunkDatabaseIds: [],
     }
-    modulesByDatabaseId.set(moduleRow.id, processedModule)
+    modulesByDatabaseId.set(moduleRow.databaseId, processedModule)
     const moduleIdentifier = getModuleIdentifierKey(processedModule.rawFromWebpack.identifier)
     modulesByWebpackIdentifier.set(moduleIdentifier, processedModule)
   })

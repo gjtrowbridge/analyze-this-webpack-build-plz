@@ -1,6 +1,7 @@
 import { ModuleRow } from '../../../shared/types'
 import { Statement } from 'better-sqlite3'
 import { db } from '../database'
+import { convertToSharedModuleType, DatabaseModuleRow } from '../../helpers/databaseTypes'
 
 
 const insertStatement = `
@@ -30,19 +31,19 @@ const getOneStatement = `
   SELECT * FROM modules WHERE id = ?
 `
 
-export function saveModuleToDatabase(moduleRow: ModuleRow) {
+export function saveModuleToDatabase(dbRow: DatabaseModuleRow) {
   const insert = db.prepare(insertStatement)
-  insert.run(moduleRow)
+  insert.run(dbRow)
 }
 
-export function saveModulesToDatabase(moduleRows: Array<Omit<ModuleRow, 'id'>>) {
+export function saveModulesToDatabase(dbRows: Array<Omit<DatabaseModuleRow, 'id'>>) {
   const insert = db.prepare(insertStatement)
-  const transaction = db.transaction((mrs: Array<Omit<ModuleRow, 'id'>>) => {
-    for (let mr of mrs) {
-      insert.run(mr)
+  const transaction = db.transaction((rows: Array<Omit<DatabaseModuleRow, 'id'>>) => {
+    for (let row of rows) {
+      insert.run(row)
     }
   })
-  transaction(moduleRows)
+  transaction(dbRows)
 }
 
 export function getModulesFromDatabase(args: {
@@ -50,11 +51,13 @@ export function getModulesFromDatabase(args: {
   limit: number,
   minIdNonInclusive: number,
 }): Array<ModuleRow> {
-  const getMany: Statement<unknown[], ModuleRow> = db.prepare(getManyStatement)
-  return getMany.all(args)
+  const getMany: Statement<unknown[], DatabaseModuleRow> = db.prepare(getManyStatement)
+  const dbRows = getMany.all(args)
+  return dbRows.map(convertToSharedModuleType)
 }
 
 export function getModuleFromDatabase(id: number): ModuleRow | undefined {
-  const getOne: Statement<unknown[], ModuleRow> = db.prepare(getOneStatement)
-  return getOne.get(id)
+  const getOne: Statement<unknown[], DatabaseModuleRow> = db.prepare(getOneStatement)
+  const dbRow = getOne.get(id)
+  return convertToSharedModuleType(dbRow)
 }

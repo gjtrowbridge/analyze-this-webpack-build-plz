@@ -22,6 +22,6 @@ modulesRouter.get('/:fileId', async (req, res) => {
   // Return the modules
   res.json({
     moduleRows,
-    lastId: moduleRows.length > 0 ? moduleRows[moduleRows.length - 1].id : null
+    lastId: moduleRows.length > 0 ? moduleRows[moduleRows.length - 1].databaseId : null
   })
 })

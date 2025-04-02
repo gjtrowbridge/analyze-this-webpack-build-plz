@@ -1,6 +1,7 @@
 import { FileRow } from '../../../shared/types'
 import { db } from '../database'
 import { Statement } from 'better-sqlite3'
+import { DatabaseFileRow } from '../../helpers/databaseTypes'
 
 const insertStatement = `
   INSERT INTO files (
@@ -36,23 +37,23 @@ const getOneStatement = `
   SELECT * FROM files WHERE id = ?
 `
 
-export function insertFileToDatabase(fileRow: Omit<FileRow, "id">): number {
+export function insertFileToDatabase(fileRow: Omit<DatabaseFileRow, "id">): number {
   const insert: Statement<unknown[], { id: number }> = db.prepare(insertStatement)
   const { id } = insert.get(fileRow)
   return id
 }
 
-export function updateFileInDatabase(fileRow: FileRow) {
+export function updateFileInDatabase(fileRow: DatabaseFileRow) {
   const update = db.prepare(updateStatement)
   return update.run(fileRow)
 }
 
 export function getFilesFromDatabase(): Array<FileRow> {
-  const getAll: Statement<unknown[], FileRow> = db.prepare(getAllStatement)
+  const getAll: Statement<unknown[], DatabaseFileRow> = db.prepare(getAllStatement)
   return getAll.all()
 }
 
 export function getFileFromDatabase(id: number): FileRow | undefined {
-  const getOne: Statement<unknown[], FileRow> = db.prepare(getOneStatement)
+  const getOne: Statement<unknown[], DatabaseFileRow> = db.prepare(getOneStatement)
   return getOne.get(id)
 }

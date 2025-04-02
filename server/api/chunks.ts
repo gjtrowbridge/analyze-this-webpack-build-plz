@@ -21,6 +21,6 @@ chunksRouter.get('/:fileId', async (req, res) => {
   // Return the modules
   res.json({
     chunkRows,
-    lastId: chunkRows.length > 0 ? chunkRows[chunkRows.length - 1].id : null
+    lastId: chunkRows.length > 0 ? chunkRows[chunkRows.length - 1].databaseId : null
   })
 })

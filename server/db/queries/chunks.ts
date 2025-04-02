@@ -1,6 +1,7 @@
 import { ChunkRow } from '../../../shared/types'
 import { db } from '../database'
 import { Statement } from 'better-sqlite3'
+import { convertToSharedChunkType, DatabaseChunkRow } from '../../helpers/databaseTypes'
 
 
 const insertStatement = `
@@ -26,9 +27,9 @@ const getManyStatement = `
            LIMIT @limit
 `
 
-export function saveChunksToDatabase(chunkRows: Array<Omit<ChunkRow, "id">>) {
+export function saveChunksToDatabase(chunkRows: Array<Omit<DatabaseChunkRow, "id">>) {
   const insert = db.prepare(insertStatement)
-  const transaction = db.transaction((crs: Array<Omit<ChunkRow, "id">>) => {
+  const transaction = db.transaction((crs: Array<Omit<DatabaseChunkRow, "id">>) => {
     for (let cr of crs) {
       insert.run(cr)
     }
@@ -41,6 +42,6 @@ export function getChunksFromDatabase(args: {
   limit: number,
   minIdNonInclusive: number,
 }): Array<ChunkRow> {
-  const getMany: Statement<unknown[], ChunkRow> = db.prepare(getManyStatement)
-  return getMany.all(args)
+  const getMany: Statement<unknown[], DatabaseChunkRow> = db.prepare(getManyStatement)
+  return getMany.all(args).map(convertToSharedChunkType)
 }

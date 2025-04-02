@@ -4,9 +4,9 @@ import { alternateFileNameRegex, getUniqueChunkKey, getUniqueModuleKey } from '.
 import { createParseStream } from 'big-json'
 import { StatsCompilation } from 'webpack'
 import { insertFileToDatabase, updateFileInDatabase } from '../db/queries/files'
-import { ChunkRow, ModuleRow } from '../../shared/types'
 import { saveModulesToDatabase } from '../db/queries/modules'
 import { saveChunksToDatabase } from '../db/queries/chunks'
+import { DatabaseChunkRow, DatabaseFileRow, DatabaseModuleRow } from '../helpers/databaseTypes'
 
 export const uploadRouter = Router()
 
@@ -24,7 +24,7 @@ function processStatsFile(args: {
     originalName,
   } = args
 
-  const fileRow = {
+  const fileRow: Omit<DatabaseFileRow, "id"> = {
     original_name: originalName,
     user_provided_name: customName,
     uploaded_at: Date.now(),
@@ -39,7 +39,7 @@ function processStatsFile(args: {
    * Insert modules, if they exist in the stats object
    */
   if (stats.modules) {
-    const moduleRows: Array<Omit<ModuleRow, 'id'>> = stats.modules.map((m) => {
+    const moduleRows: Array<Omit<DatabaseModuleRow, 'id'>> = stats.modules.map((m) => {
       return {
         unique_key: getUniqueModuleKey(m),
         module_id: String(m.id),
@@ -54,7 +54,7 @@ function processStatsFile(args: {
    * Insert chunks, if they exist in the stats object
    */
   if (stats.chunks) {
-    const chunkRows: Array<Omit<ChunkRow, 'id'>> = stats.chunks.map((c) => {
+    const chunkRows: Array<Omit<DatabaseChunkRow, 'id'>> = stats.chunks.map((c) => {
       return {
         chunk_id: getUniqueChunkKey(c),
         chunk_name: c.names.join(","),
