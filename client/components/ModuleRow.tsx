@@ -1,9 +1,7 @@
 import "./styles/ModuleRow.css"
 import { JsonViewer } from '@textea/json-viewer'
 import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
-import { ImmutableMap, ImmutableObject, useHookstate } from '@hookstate/core'
-import { Link } from 'react-router'
-import { getHumanReadableChunkName } from '../helpers/chunks'
+import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
 
@@ -13,6 +11,7 @@ export function ModuleRow(props: {
   setShowRawInfo: (moduleDatabaseId: number) => void
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
+  noLimitsOnLists?: boolean
 }) {
   const {
     module,
@@ -20,6 +19,7 @@ export function ModuleRow(props: {
     setShowRawInfo,
     modulesByDatabaseId,
     chunksByDatabaseId,
+    noLimitsOnLists,
   } = props
 
   const rawInfo = showRawInfo ?
@@ -45,8 +45,8 @@ export function ModuleRow(props: {
     )
   })
 
-  const maxChildrenToShow = 10
-  const maxParentsToShow = 10
+  const maxChildrenToShow = noLimitsOnLists ? 100000 : 10
+  const maxParentsToShow = noLimitsOnLists ? 100000 : 10
   const children = Array.from(module.childModules.values()).slice(0, maxChildrenToShow).map((relationship) => {
     const moduleDatabaseId = relationship.childModuleDatabaseId
     const m = modulesByDatabaseId.get(moduleDatabaseId)
@@ -68,7 +68,7 @@ export function ModuleRow(props: {
 
   return <div className="moduleRow">
     <div>
-      <p>Name: {module.rawFromWebpack.name}</p>
+      <h2><ModuleLink module={module} file={"file1"} /></h2>
       <p>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</p>
       <p>Size: ~{Math.round(module.rawFromWebpack.size / 1024)} kb</p>
       <p># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</p>

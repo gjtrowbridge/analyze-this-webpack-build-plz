@@ -3,8 +3,6 @@ import { JsonViewer } from '@textea/json-viewer'
 import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { getHumanReadableChunkName } from '../helpers/chunks'
-import { Link } from 'react-router'
-import { getModuleIdentifierKey } from '../helpers/modules'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
 
@@ -15,14 +13,22 @@ export function ChunkRow(props: {
   setShowRawInfo: (chunkDatabaseId: number) => void
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
+  noLimitsOnLists?: boolean
 }) {
-  const { chunk, showRawInfo, setShowRawInfo, chunksByDatabaseId, modulesByDatabaseId } = props
+  const {
+    chunk,
+    showRawInfo,
+    setShowRawInfo,
+    chunksByDatabaseId,
+    modulesByDatabaseId,
+    noLimitsOnLists,
+  } = props
 
   const rawInfo = showRawInfo ?
     <JsonViewer value={chunk} />
     : null
 
-  const maxModuleChildrenToShow = 10
+  const maxModuleChildrenToShow = noLimitsOnLists ? 100000 : 10
 
   const childModules = Array.from(chunk.childModuleDatabaseIds).slice(0, maxModuleChildrenToShow).map((moduleDatabaseId) => {
     const module = modulesByDatabaseId.get(moduleDatabaseId)
@@ -33,9 +39,9 @@ export function ChunkRow(props: {
     )
   })
 
-  const maxChunkParentsToShow = 10
-  const maxChunkChildrenToShow = 10
-  const maxChunkSiblingsToShow = 10
+  const maxChunkParentsToShow = noLimitsOnLists ? 100000 : 10
+  const maxChunkChildrenToShow = noLimitsOnLists ? 100000 : 10
+  const maxChunkSiblingsToShow = noLimitsOnLists ? 100000 : 10
 
   const chunkParents = Array.from(chunk.parentChunkDatabaseIds).slice(0, maxChunkParentsToShow).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
