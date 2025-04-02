@@ -19,7 +19,7 @@ app.use('/', express.static('dist/client'))
  * Serve the index.html file if nothing else matches -- this should help enable client-side routing
  */
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/client', 'index.html'))
+    res.sendFile(path.join(__dirname, '../client', 'index.html'))
 })
 
 app.listen(port, () => {
