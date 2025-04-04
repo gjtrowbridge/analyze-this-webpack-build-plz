@@ -16,6 +16,7 @@ export function useResetState() {
   const file2ProcessedState = useHookstate(file2ProcessedGlobalState)
 
   const resetFile1State = useCallback(() => {
+    console.log('xcxc resetting file state 1')
     file1ModuleState.set({
       ready: false,
       modules: [],
@@ -27,6 +28,7 @@ export function useResetState() {
     file1ProcessedState.set(null)
   }, [file1ModuleState, file1ChunkState, file1ProcessedState]);
   const resetFile2State = useCallback(() => {
+    console.log('xcxc resetting file state 2')
     file2ModuleState.set({
       ready: false,
       modules: [],

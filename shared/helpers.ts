@@ -8,3 +8,7 @@ export function getUniqueModuleKey(m: StatsModule) {
 export function getUniqueChunkKey(c: StatsChunk) {
   return [String(c.id), String(c.names.join(","))].join("~~~")
 }
+
+export function unreachable(a: never) {
+  throw `Unreachable code was reached: ${a}`
+}

@@ -6,10 +6,10 @@ import { ReactElement } from 'react'
 
 export function SetupState(): ReactElement {
   useGetFiles()
-  useModules()
-  useChunks()
-  useProcessState()
+  // useModules()
+  // useChunks()
+  // useProcessState()
 
-  return null
+  return <span />
 }
 

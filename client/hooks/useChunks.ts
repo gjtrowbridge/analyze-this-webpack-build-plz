@@ -3,7 +3,7 @@ import axios from 'axios'
 import { ChunkRow } from '../../shared/types'
 import { ImmutableObject, useHookstate } from '@hookstate/core'
 import {
-  errorsState,
+  errorsGlobalState,
   file1ChunksGlobalState,
   file2ChunksGlobalState
 } from '../globalState'
@@ -16,6 +16,7 @@ export function useChunks() {
   const fileIds = useFileIds()
 
   const chunksState1 = chunks1.get()
+  console.log('xcxc chunks state 1', chunksState1)
   const setChunksState1 = useCallback((cs: ImmutableObject<{
     ready: boolean,
     chunks: Array<ChunkRow>
@@ -23,6 +24,7 @@ export function useChunks() {
     chunks1.set(cs)
   }, [])
   const chunksState2 = chunks2.get()
+  console.log('xcxc chunks state 2', chunksState2)
   const setChunksState2 = useCallback((cs: ImmutableObject<{
     ready: boolean,
     chunks: Array<ChunkRow>
@@ -51,7 +53,7 @@ export function useUpdateChunksForFile(args: {
   }>) => void
 }) {
   const { fileId, alreadyUpToDate, setChunksState } = args
-  const errors = useHookstate(errorsState)
+  const errors = useHookstate(errorsGlobalState)
   useEffect(() => {
     if (fileId === null || alreadyUpToDate) {
       return
@@ -91,6 +93,9 @@ export function useUpdateChunksForFile(args: {
         chunks,
       })
     })()
-    return () => { canceled = true }
+    return () => {
+      console.log('xcxc canceling useChunks')
+      canceled = true
+    }
   }, [fileId, setChunksState, alreadyUpToDate])
 }

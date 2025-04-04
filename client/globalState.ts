@@ -15,10 +15,10 @@ export type FileState = {
 } & LoadedFileData)
 
 export const fileRefreshCountGlobalState = hookstate(0)
-export const filesState = hookstate<FileState>({
+export const filesGlobalState = hookstate<FileState>({
   status: 'NOT_LOADED',
 })
-export const errorsState = hookstate<Array<string>>([])
+export const errorsGlobalState = hookstate<Array<string>>([])
 
 export const file1ModulesGlobalState = hookstate<{ ready: boolean, modules: Array<ModuleRow> }>({
   ready: false,
