@@ -2,7 +2,6 @@ import { FileLoader } from './FileLoader'
 import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
 import { filesGlobalState } from '../globalState'
-import { useResetState } from '../hooks/useResetState'
 import { useState } from 'react'
 import { useStateRefreshFunctions } from '../hooks/useRefresh'
 
@@ -10,14 +9,15 @@ import { useStateRefreshFunctions } from '../hooks/useRefresh'
 export function FileSelector() {
   const files = useHookstate(filesGlobalState)
   const {
-    resetFile1State,
-    resetFile2State,
-  } = useResetState()
-  const {
     refreshFileData,
     clearFileData,
+    rawState1,
+    rawState2,
   } = useStateRefreshFunctions()
   const f = files.get()
+
+  console.log('xcxc raw state 1', rawState1.isReady, rawState1.modulesByDatabaseId.size)
+  console.log('xcxc raw state 2', rawState2.isReady, rawState2.modulesByDatabaseId.size)
 
   let statusEl = null
   let existingFileOptionsElements = null
@@ -51,7 +51,6 @@ export function FileSelector() {
         name="file-select-1"
         onChange={(e) => {
           const newValue = convertToInteger(e.target.value)
-          resetFile1State()
           if (newValue === noFileSelected.value) {
             files.merge({ selectedFileId1: undefined })
             return
@@ -66,7 +65,6 @@ export function FileSelector() {
       name="file-select-2"
       onChange={(e) => {
         const newValue = convertToInteger(e.target.value)
-        resetFile2State()
         if (newValue === noFileSelected.value) {
           files.merge({ selectedFileId2: undefined })
           return

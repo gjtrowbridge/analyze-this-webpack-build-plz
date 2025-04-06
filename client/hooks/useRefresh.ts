@@ -3,12 +3,13 @@ import { ChunkRow, ModuleRow } from '../../shared/types'
 import axios from 'axios'
 import { useHookstate } from '@hookstate/core'
 import {
+  defaultProcessedState,
   errorsGlobalState,
   file1ProcessedGlobalState,
   file2ProcessedGlobalState,
   filesGlobalState
 } from '../globalState'
-import { processModulesAndChunks } from '../helpers/processModulesAndChunks'
+import { ProcessedState, processModulesAndChunks } from '../helpers/processModulesAndChunks'
 import { unreachable } from '../../shared/helpers'
 
 export function useStateRefreshFunctions() {
@@ -20,6 +21,9 @@ export function useStateRefreshFunctions() {
     file1?: number,
     file2?: number,
   }>({})
+  const [rawState1, setRawState1] = useState<ProcessedState>({ ...defaultProcessedState })
+  const [rawState2, setRawState2] = useState<ProcessedState>({ ...defaultProcessedState })
+
 
   const queryModules = useCallback(async (args: {
     file: 'file1' | 'file2'
@@ -96,7 +100,21 @@ export function useStateRefreshFunctions() {
     return chunks
   }, [runIds, errors])
 
+  const clearFileData = useCallback((file: 'file1' | 'file2') => {
+    console.log('xcxc clearing data', file)
+    runIds.current[file] = undefined
+    if (file === 'file1') {
+      setRawState1({ ...defaultProcessedState })
+      file1State.set({ ...defaultProcessedState })
+    } else if (file === 'file2') {
+      setRawState2({ ...defaultProcessedState })
+      file2State.set({ ...defaultProcessedState })
+    } else {
+      unreachable(file)
+    }
+  }, [file1State, file2State])
   const refreshFileData = useCallback(async (file: 'file1' | 'file2') => {
+    clearFileData(file)
     const filesState = files.get()
     let fileId: number | undefined = undefined
     if (filesState.status !== "LOADED") {
@@ -132,27 +150,21 @@ export function useStateRefreshFunctions() {
       chunkRows,
     })
     if (file === 'file1') {
-      file1State.set(processedState)
+      // setRawState1(processedState)
+      // file1State.set(processedState)
     } else if (file === 'file2') {
-      file2State.set(processedState)
+      // setRawState2(processedState)
+      // file2State.set(processedState)
     } else {
       unreachable(file)
     }
-  }, [files, file1State, file2State, errors, runIds])
-  const clearFileData = useCallback((file: 'file1' | 'file2') => {
-    runIds.current[file] = undefined
-    if (file === 'file1') {
-      file1State.set(null)
-    } else if (file === 'file2') {
-      file2State.set(null)
-    } else {
-      unreachable(file)
-    }
-  }, [file1State, file2State])
+  }, [files, file1State, file2State, errors, runIds, setRawState1, setRawState2])
 
   return {
     refreshFileData,
     clearFileData,
+    rawState1,
+    rawState2,
   }
 }
 

@@ -44,5 +44,4 @@ export function useResetState() {
     resetFile1State,
     resetFile2State,
   }
-
 }

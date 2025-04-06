@@ -37,5 +37,13 @@ export const file2ChunksGlobalState = hookstate<{ ready: boolean, chunks: Array<
   chunks: [],
 })
 
-export const file1ProcessedGlobalState: State<ProcessedState | null> = hookstate<ProcessedState | null>(null)
-export const file2ProcessedGlobalState: State<ProcessedState | null> = hookstate<ProcessedState | null>(null)
+export const defaultProcessedState: ProcessedState = {
+  isReady: false,
+  modulesByDatabaseId: new Map(),
+  modulesByWebpackIdentifier: new Map(),
+  chunksByDatabaseId: new Map(),
+  chunksByWebpackId: new Map(),
+  moduleInclusionReasons: new Set(),
+}
+export const file1ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })
+export const file2ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })
