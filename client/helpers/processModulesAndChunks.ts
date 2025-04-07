@@ -39,6 +39,7 @@ export type ProcessedState = {
   chunksByDatabaseId: Map<number, ProcessedChunkInfo>
   chunksByWebpackId: Map<string, ProcessedChunkInfo>
   moduleInclusionReasons: Set<string>
+  randomNumber?: Number,
 }
 
 export interface ProcessedModuleInfo {

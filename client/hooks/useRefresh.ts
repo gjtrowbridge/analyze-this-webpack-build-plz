@@ -3,11 +3,10 @@ import { ChunkRow, ModuleRow } from '../../shared/types'
 import axios from 'axios'
 import { useHookstate } from '@hookstate/core'
 import {
-  defaultProcessedState,
   errorsGlobalState,
   file1ProcessedGlobalState,
   file2ProcessedGlobalState,
-  filesGlobalState
+  filesGlobalState, getDefaultProcessedState
 } from '../globalState'
 import { ProcessedState, processModulesAndChunks } from '../helpers/processModulesAndChunks'
 import { unreachable } from '../../shared/helpers'
@@ -21,8 +20,8 @@ export function useStateRefreshFunctions() {
     file1?: number,
     file2?: number,
   }>({})
-  const [rawState1, setRawState1] = useState<ProcessedState>({ ...defaultProcessedState })
-  const [rawState2, setRawState2] = useState<ProcessedState>({ ...defaultProcessedState })
+  const [rawState1, setRawState1] = useState<ProcessedState>(getDefaultProcessedState())
+  const [rawState2, setRawState2] = useState<ProcessedState>(getDefaultProcessedState())
 
 
   const queryModules = useCallback(async (args: {
@@ -104,11 +103,11 @@ export function useStateRefreshFunctions() {
     console.log('xcxc clearing data', file)
     runIds.current[file] = undefined
     if (file === 'file1') {
-      setRawState1({ ...defaultProcessedState })
-      file1State.set({ ...defaultProcessedState })
+      // setRawState1(getDefaultProcessedState())
+      file1State.set(getDefaultProcessedState())
     } else if (file === 'file2') {
-      setRawState2({ ...defaultProcessedState })
-      file2State.set({ ...defaultProcessedState })
+      // setRawState2(getDefaultProcessedState())
+      file2State.set(getDefaultProcessedState())
     } else {
       unreachable(file)
     }
@@ -150,11 +149,11 @@ export function useStateRefreshFunctions() {
       chunkRows,
     })
     if (file === 'file1') {
-      // setRawState1(processedState)
-      // file1State.set(processedState)
+      // setRawState1({ ...getDefaultProcessedState(), ...processedState})
+      file1State.set({ ...getDefaultProcessedState(), ...processedState })
     } else if (file === 'file2') {
-      // setRawState2(processedState)
-      // file2State.set(processedState)
+      // setRawState2({ ...getDefaultProcessedState(), ...processedState})
+      file2State.set({ ...getDefaultProcessedState(), ...processedState})
     } else {
       unreachable(file)
     }
