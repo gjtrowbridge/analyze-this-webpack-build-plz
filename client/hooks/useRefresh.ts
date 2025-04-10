@@ -22,7 +22,7 @@ export function useStateRefreshFunctions() {
   }>({})
   const [rawState1, setRawState1] = useState<ProcessedState>(getDefaultProcessedState())
   const [rawState2, setRawState2] = useState<ProcessedState>(getDefaultProcessedState())
-  const shouldUseHookState = false
+  const shouldUseHookState = true
 
   const queryModules = useCallback(async (args: {
     file: 'file1' | 'file2'
