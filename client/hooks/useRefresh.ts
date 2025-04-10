@@ -22,7 +22,7 @@ export function useStateRefreshFunctions() {
   }>({})
   const [rawState1, setRawState1] = useState<ProcessedState>(getDefaultProcessedState())
   const [rawState2, setRawState2] = useState<ProcessedState>(getDefaultProcessedState())
-
+  const shouldUseHookState = false
 
   const queryModules = useCallback(async (args: {
     file: 'file1' | 'file2'
@@ -103,15 +103,21 @@ export function useStateRefreshFunctions() {
     console.log('xcxc clearing data', file)
     runIds.current[file] = undefined
     if (file === 'file1') {
-      // setRawState1(getDefaultProcessedState())
-      file1State.set(getDefaultProcessedState())
+      if (shouldUseHookState) {
+        file1State.set(getDefaultProcessedState())
+      } else {
+        setRawState1(getDefaultProcessedState())
+      }
     } else if (file === 'file2') {
-      // setRawState2(getDefaultProcessedState())
-      file2State.set(getDefaultProcessedState())
+      if (shouldUseHookState) {
+        file2State.set(getDefaultProcessedState())
+      } else {
+        setRawState2(getDefaultProcessedState())
+      }
     } else {
       unreachable(file)
     }
-  }, [file1State, file2State])
+  }, [file1State, file2State, setRawState1, setRawState2])
   const refreshFileData = useCallback(async (file: 'file1' | 'file2') => {
     clearFileData(file)
     const filesState = files.get()
@@ -149,11 +155,17 @@ export function useStateRefreshFunctions() {
       chunkRows,
     })
     if (file === 'file1') {
-      // setRawState1({ ...getDefaultProcessedState(), ...processedState})
-      file1State.set({ ...getDefaultProcessedState(), ...processedState })
+      if (shouldUseHookState) {
+        file1State.set({ ...getDefaultProcessedState(), ...processedState })
+      } else {
+        setRawState1({ ...getDefaultProcessedState(), ...processedState})
+      }
     } else if (file === 'file2') {
-      // setRawState2({ ...getDefaultProcessedState(), ...processedState})
-      file2State.set({ ...getDefaultProcessedState(), ...processedState})
+      if (shouldUseHookState) {
+        file2State.set({ ...getDefaultProcessedState(), ...processedState})
+      } else {
+        setRawState2({ ...getDefaultProcessedState(), ...processedState})
+      }
     } else {
       unreachable(file)
     }

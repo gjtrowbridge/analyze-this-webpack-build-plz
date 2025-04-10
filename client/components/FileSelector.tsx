@@ -79,6 +79,8 @@ export function FileSelector() {
   return (
     <>
       <h1>Files</h1>
+      <p>Raw State 1: {!rawState1.isReady ? "Not Ready" : rawState1.modulesByDatabaseId.size}</p>
+      <p>Raw State 2: {!rawState2.isReady ? "Not Ready" : rawState2.modulesByDatabaseId.size}</p>
       {/*<button onClick={() => {*/}
       {/*  resetFile1State()*/}
       {/*  resetFile2State()*/}
