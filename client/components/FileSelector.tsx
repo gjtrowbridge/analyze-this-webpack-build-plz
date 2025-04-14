@@ -2,7 +2,6 @@ import { FileLoader } from './FileLoader'
 import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
 import { filesGlobalState } from '../globalState'
-import { useState } from 'react'
 import { useStateRefreshFunctions } from '../hooks/useRefresh'
 
 
@@ -15,9 +14,6 @@ export function FileSelector() {
     rawState2,
   } = useStateRefreshFunctions()
   const f = files.get()
-
-  console.log('xcxc raw state 1', rawState1.isReady, rawState1.modulesByDatabaseId.size)
-  console.log('xcxc raw state 2', rawState2.isReady, rawState2.modulesByDatabaseId.size)
 
   let statusEl = null
   let existingFileOptionsElements = null

@@ -52,7 +52,6 @@ export function useStateRefreshFunctions() {
           break
         }
         minIdNonInclusive = lastId
-        console.log('last module id...', lastId)
       } catch(e) {
         errors.merge("[MODULES]: Something went wrong fetching the list of available modules")
         return null
@@ -91,7 +90,6 @@ export function useStateRefreshFunctions() {
           break
         }
         minIdNonInclusive = lastId
-        console.log('last chunk id...', lastId)
       } catch(e) {
         errors.merge(["[CHUNKS]: Something went wrong fetching the list of available chunks"])
         return
@@ -151,10 +149,10 @@ export function useStateRefreshFunctions() {
     })
     if (file === 'file1') {
       // setRawState1(processedState)
-      // file1State.set(processedState)
+      file1State.set(processedState)
     } else if (file === 'file2') {
       // setRawState2(processedState)
-      // file2State.set(processedState)
+      file2State.set(processedState)
     } else {
       unreachable(file)
     }

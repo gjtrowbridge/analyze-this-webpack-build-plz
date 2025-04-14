@@ -19,8 +19,6 @@ export function useProcessState() {
 
   const file1IsReadyToProcess = modulesFile1.ready.get() && chunksFile1.ready.get() && file1ProcessedState.ornull === null
   const file2IsReadyToProcess = modulesFile2.ready.get() && chunksFile2.ready.get() && file2ProcessedState.ornull === null
-  console.log('xcxc file 1', modulesFile1.ready.get(), chunksFile1.ready.get(), file1ProcessedState.ornull)
-  console.log('xcxc file 2', modulesFile2.ready.get(), chunksFile2.ready.get(), file2ProcessedState.ornull)
 
   useEffect(() => {
     if (!file1IsReadyToProcess) {

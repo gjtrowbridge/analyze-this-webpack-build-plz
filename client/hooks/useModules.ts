@@ -16,7 +16,6 @@ export function useModules() {
   const fileIds = useFileIds()
 
   const modulesState1 = modules1.get()
-  console.log('xcxc mods state 1', modulesState1)
   const setModuleState1 = useCallback((ms: ImmutableObject<{
     ready: boolean,
     modules: Array<ModuleRow>
@@ -24,7 +23,6 @@ export function useModules() {
     modules1.set(ms)
   }, [])
   const modulesState2 = modules2.get()
-  console.log('xcxc mods state 2', modulesState2)
   const setModuleState2 = useCallback((ms: ImmutableObject<{
     ready: boolean,
     modules: Array<ModuleRow>
@@ -82,7 +80,6 @@ function useUpdateModulesForFile(args: {
             break
           }
           minIdNonInclusive = lastId
-          console.log('last module id...', lastId)
         } catch(e) {
           errors.merge("[MODULES]: Something went wrong fetching the list of available modules")
           return

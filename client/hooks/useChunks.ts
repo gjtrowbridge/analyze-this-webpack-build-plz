@@ -16,7 +16,6 @@ export function useChunks() {
   const fileIds = useFileIds()
 
   const chunksState1 = chunks1.get()
-  console.log('xcxc chunks state 1', chunksState1)
   const setChunksState1 = useCallback((cs: ImmutableObject<{
     ready: boolean,
     chunks: Array<ChunkRow>
@@ -24,7 +23,6 @@ export function useChunks() {
     chunks1.set(cs)
   }, [])
   const chunksState2 = chunks2.get()
-  console.log('xcxc chunks state 2', chunksState2)
   const setChunksState2 = useCallback((cs: ImmutableObject<{
     ready: boolean,
     chunks: Array<ChunkRow>
@@ -82,7 +80,6 @@ export function useUpdateChunksForFile(args: {
             break
           }
           minIdNonInclusive = lastId
-          console.log('last chunk id...', lastId)
         } catch(e) {
           errors.merge(["[CHUNKS]: Something went wrong fetching the list of available chunks"])
           return
