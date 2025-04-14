@@ -14,3 +14,8 @@ export function getStatistics(arr: Array<number>) {
     standardDeviation,
   }
 }
+
+export function inKB(num: number) {
+  const kb = num / 1024
+  return Math.round(kb * 10) / 10
+}

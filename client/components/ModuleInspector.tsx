@@ -9,6 +9,7 @@ import { file1ProcessedGlobalState } from '../globalState'
 import { ModuleSortBy } from '../types'
 import { unreachable } from '../../shared/helpers'
 import { convertToInteger } from '../../server/helpers/misc'
+import { getModuleExtraSizeDueToDuplication, getModuleNumberOfChunks } from '../helpers/modules'
 
 // TODO: Figure out how to do generics for React elements
 const anyInclusionReasonText = "-- Select To Filter --"
@@ -40,7 +41,13 @@ export function ModuleInspector() {
     } else if (sortBy === 'Name') {
       return (a.rawFromWebpack.name.localeCompare(b.rawFromWebpack.name)) * sortOrder
     } else if (sortBy === '# Chunks') {
-      return ((a.rawFromWebpack.chunks?.length ?? 0) - (b.rawFromWebpack.chunks?.length ?? 0)) * sortOrder
+      const aNumChunks = getModuleNumberOfChunks(a)
+      const bNumChunks = getModuleNumberOfChunks(b)
+      return (aNumChunks - bNumChunks) * sortOrder
+    } else if (sortBy === 'Extra Duplication Size') {
+      const aExtra = getModuleExtraSizeDueToDuplication(a)
+      const bExtra = getModuleExtraSizeDueToDuplication(b)
+      return (aExtra - bExtra) * sortOrder
     } else {
       unreachable(sortBy)
     }
@@ -104,7 +111,7 @@ export function ModuleInspector() {
       })
     })
     .filter((m) => {
-      const numChunks = m.rawFromWebpack.chunks?.length ?? 0
+      const numChunks = getModuleNumberOfChunks(m)
       if (numChunks >= filterByMinNumberChunks) {
         return true
       }
@@ -148,6 +155,7 @@ export function ModuleInspector() {
           <SortControl<ModuleSortBy> controlFor={"Depth"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
           <SortControl<ModuleSortBy> controlFor={"# Optimization Bailouts"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
           <SortControl<ModuleSortBy> controlFor={"# Chunks"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ModuleSortBy> controlFor={"Extra Duplication Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
         </div>
         <div className={"filters"}>
           <label>Filter By Name:<input onChange={(e) => {

@@ -4,6 +4,8 @@ import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModul
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
+import { getModuleExtraSizeDueToDuplication } from '../helpers/modules'
+import { inKB } from '../helpers/math'
 
 export function ModuleRow(props: {
   module: ImmutableObject<ProcessedModuleInfo>
@@ -70,7 +72,8 @@ export function ModuleRow(props: {
     <div>
       <h2><ModuleLink module={module} file={"file1"} /></h2>
       <p>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</p>
-      <p>Size: ~{Math.round(module.rawFromWebpack.size / 1024)} kb</p>
+      <p>Size: ~{inKB(module.rawFromWebpack.size)} kb</p>
+      <p>Extra Size In Bundle Due To Duplication: ~{inKB(getModuleExtraSizeDueToDuplication(module))} kb</p>
       <p># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</p>
       <p>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</p>
       <div>

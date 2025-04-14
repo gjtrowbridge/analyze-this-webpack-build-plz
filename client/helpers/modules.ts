@@ -1,3 +1,6 @@
+import { ProcessedModuleInfo } from './processModulesAndChunks'
+import { ImmutableObject } from '@hookstate/core'
+
 /**
  * Strip out some parts of the stats.json moduleIdentifier to make it
  * internally consistent.
@@ -8,10 +11,31 @@
  * This removes that extra crap so we can properly match modules up with their
  * parents and children in (hopefully) almost all cases.
  */
-export function getModuleIdentifierKey(moduleIdentifer: string | null) {
-  if (moduleIdentifer === null) {
+export function getModuleIdentifierKey(moduleIdentifier: string | null) {
+  if (moduleIdentifier === null) {
     return '~~null~~'
   }
   const regexToReplace = /\|[a-zA-Z0-9]+$/
-  return moduleIdentifer.replace(regexToReplace, '')
+  return moduleIdentifier.replace(regexToReplace, '')
+}
+
+export function getModuleSize(m: ImmutableObject<ProcessedModuleInfo>): number {
+  return m.rawFromWebpack.size
+}
+
+/**
+ * Returns the number of chunks that have this module in it
+ */
+export function getModuleNumberOfChunks(m: ImmutableObject<ProcessedModuleInfo>): number {
+  return m.rawFromWebpack.chunks?.length ?? 0
+}
+
+/**
+ * Calculates the amount of extra code in our bundle that is a direct result of this module
+ * being duplicated across many chunks
+ */
+export function getModuleExtraSizeDueToDuplication(m: ImmutableObject<ProcessedModuleInfo>): number {
+  const numChunks = getModuleNumberOfChunks(m)
+  const size = getModuleSize(m)
+  return size * (numChunks - 1)
 }
