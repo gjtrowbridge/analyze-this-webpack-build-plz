@@ -91,7 +91,6 @@ function useUpdateModulesForFile(args: {
       })
     })()
     return () => {
-      console.log('xcxc canceling useModules')
       canceled = true
     }
   }, [fileId, setModuleState, alreadyUpToDate])

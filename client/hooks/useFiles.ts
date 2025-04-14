@@ -42,7 +42,6 @@ export function useGetFiles() {
       }
     })()
     return () => {
-      console.log('xcxc canceling useFiles')
       canceled = true
     }
   }, [countDependency]);

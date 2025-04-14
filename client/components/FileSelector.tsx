@@ -10,8 +10,6 @@ export function FileSelector() {
   const {
     refreshFileData,
     clearFileData,
-    rawState1,
-    rawState2,
   } = useStateRefreshFunctions()
   const f = files.get()
 
@@ -75,10 +73,6 @@ export function FileSelector() {
   return (
     <>
       <h1>Files</h1>
-      {/*<button onClick={() => {*/}
-      {/*  resetFile1State()*/}
-      {/*  resetFile2State()*/}
-      {/*}}>Reset State</button>*/}
       <button onClick={() => {
         void refreshFileData('file1')
         void refreshFileData('file2')

@@ -26,30 +26,11 @@ export function useProcessState() {
     }
     const modules = modulesFile1.modules
     const chunks = chunksFile1.chunks
-    const rnd = Math.random()
-    console.log('xcxc processing modules and chunks file 1...', rnd)
     const processedState = processModulesAndChunks({
       moduleRows: modules.get(),
       chunkRows: chunks.get(),
     })
-    console.log('xcxc done processing modules and chunks file 1...', rnd)
     file1ProcessedState.set(processedState)
 
   }, [modulesFile1.ready, chunksFile1.ready, file1ProcessedState.get()])
-
-  // useEffect(() => {
-  //   if (!file2IsReadyToProcess) {
-  //     return
-  //   }
-  //   const modules = modulesFile2.modules
-  //   const chunks = chunksFile2.chunks
-  //   console.log('xcxc processing modules and chunks file 2...')
-  //   const processedState = processModulesAndChunks({
-  //     moduleRows: modules.get(),
-  //     chunkRows: chunks.get(),
-  //   })
-  //   file2ProcessedGlobalState.set(processedState)
-  //
-  // }, [modulesFile2.ready, chunksFile2.ready, file2ProcessedState.get()])
-
 }

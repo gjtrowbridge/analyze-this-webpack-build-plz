@@ -91,7 +91,6 @@ export function useUpdateChunksForFile(args: {
       })
     })()
     return () => {
-      console.log('xcxc canceling useChunks')
       canceled = true
     }
   }, [fileId, setChunksState, alreadyUpToDate])
