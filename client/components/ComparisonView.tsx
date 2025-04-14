@@ -8,13 +8,13 @@
 //
 
 import { useHookstate } from '@hookstate/core'
-import { file1ProcessedGlobalState, file2ProcessedGlobalState, filesState } from '../globalState'
+import { file1ProcessedGlobalState, file2ProcessedGlobalState, filesGlobalState } from '../globalState'
 import { ChunkComparisonData, compareFiles, ModuleComparisonData } from '../helpers/comparison'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
 
 export function ComparisonView() {
-  const fileData = useHookstate(filesState)
+  const fileData = useHookstate(filesGlobalState)
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const file2ProcessedState = useHookstate(file2ProcessedGlobalState)
 

@@ -15,10 +15,10 @@ export type FileState = {
 } & LoadedFileData)
 
 export const fileRefreshCountGlobalState = hookstate(0)
-export const filesState = hookstate<FileState>({
+export const filesGlobalState = hookstate<FileState>({
   status: 'NOT_LOADED',
 })
-export const errorsState = hookstate<Array<string>>([])
+export const errorsGlobalState = hookstate<Array<string>>([])
 
 export const file1ModulesGlobalState = hookstate<{ ready: boolean, modules: Array<ModuleRow> }>({
   ready: false,
@@ -37,5 +37,13 @@ export const file2ChunksGlobalState = hookstate<{ ready: boolean, chunks: Array<
   chunks: [],
 })
 
-export const file1ProcessedGlobalState: State<ProcessedState | null> = hookstate<ProcessedState | null>(null)
-export const file2ProcessedGlobalState: State<ProcessedState | null> = hookstate<ProcessedState | null>(null)
+export const defaultProcessedState: ProcessedState = {
+  isReady: false,
+  modulesByDatabaseId: new Map(),
+  modulesByWebpackIdentifier: new Map(),
+  chunksByDatabaseId: new Map(),
+  chunksByWebpackId: new Map(),
+  moduleInclusionReasons: new Set(),
+}
+export const file1ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })
+export const file2ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })

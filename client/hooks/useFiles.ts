@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 import { FileRow } from '../../shared/types'
-import { errorsState, fileRefreshCountGlobalState, filesState, FileState, LoadedFileData } from '../globalState'
+import { errorsGlobalState, fileRefreshCountGlobalState, filesGlobalState, FileState, LoadedFileData } from '../globalState'
 import { useHookstate } from '@hookstate/core'
 
 export function useRefreshFilesFn() {
@@ -14,8 +14,8 @@ export function useRefreshFilesFn() {
 }
 
 export function useGetFiles() {
-  const files = useHookstate(filesState)
-  const errors = useHookstate(errorsState)
+  const files = useHookstate(filesGlobalState)
+  const errors = useHookstate(errorsGlobalState)
   const refreshCount = useHookstate(fileRefreshCountGlobalState)
 
   const countDependency = refreshCount.get()
@@ -48,7 +48,7 @@ export function useGetFiles() {
 }
 
 export function useFileNames() {
-  const files = useHookstate(filesState)
+  const files = useHookstate(filesGlobalState)
   const f = files.get()
 
   const fileNames = { file1: 'None', file2: 'None', bothAreSelected: false }
@@ -75,7 +75,7 @@ export function useFileNames() {
 }
 
 export function useFileIds() {
-  const files = useHookstate(filesState)
+  const files = useHookstate(filesGlobalState)
   const f = files.get()
 
   let fileIds: {

@@ -1,16 +1,16 @@
 import { FileLoader } from './FileLoader'
 import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
-import { filesState } from '../globalState'
-import { useResetState } from '../hooks/useResetState'
+import { filesGlobalState } from '../globalState'
+import { useStateRefreshFunctions } from '../hooks/useRefresh'
 
 
 export function FileSelector() {
-  const files = useHookstate(filesState)
+  const files = useHookstate(filesGlobalState)
   const {
-    resetFile1State,
-    resetFile2State,
-  } = useResetState()
+    refreshFileData,
+    clearFileData,
+  } = useStateRefreshFunctions()
   const f = files.get()
 
   let statusEl = null
@@ -45,7 +45,6 @@ export function FileSelector() {
         name="file-select-1"
         onChange={(e) => {
           const newValue = convertToInteger(e.target.value)
-          resetFile1State()
           if (newValue === noFileSelected.value) {
             files.merge({ selectedFileId1: undefined })
             return
@@ -60,7 +59,6 @@ export function FileSelector() {
       name="file-select-2"
       onChange={(e) => {
         const newValue = convertToInteger(e.target.value)
-        resetFile2State()
         if (newValue === noFileSelected.value) {
           files.merge({ selectedFileId2: undefined })
           return
@@ -75,6 +73,14 @@ export function FileSelector() {
   return (
     <>
       <h1>Files</h1>
+      <button onClick={() => {
+        void refreshFileData('file1')
+        void refreshFileData('file2')
+      }}>Refresh File Data</button>
+      <button onClick={() => {
+        clearFileData('file1')
+        clearFileData('file2')
+      }}>Clear File Data</button>
       <h2>Upload New File(s)</h2>
       <FileLoader />
       <h2>Select File(s) To Analyze</h2>

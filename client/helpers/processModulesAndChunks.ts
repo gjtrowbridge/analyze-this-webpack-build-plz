@@ -33,6 +33,7 @@ export interface ProcessedChunkInfo {
 }
 
 export type ProcessedState = {
+  isReady: boolean
   modulesByDatabaseId: Map<number, ProcessedModuleInfo>
   modulesByWebpackIdentifier: Map<string, ProcessedModuleInfo>
   chunksByDatabaseId: Map<number, ProcessedChunkInfo>
@@ -222,6 +223,7 @@ export function processModulesAndChunks(args: {
   }
 
   return {
+    isReady: true,
     chunksByDatabaseId,
     chunksByWebpackId,
     modulesByDatabaseId,

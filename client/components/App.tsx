@@ -3,13 +3,13 @@ import { FileSelector } from './FileSelector'
 import "./styles/App.css"
 import { useFileNames } from '../hooks/useFiles'
 import { useHookstate } from '@hookstate/core'
-import { errorsState, file1ProcessedGlobalState, filesState } from '../globalState'
+import { errorsGlobalState, file1ProcessedGlobalState, filesGlobalState } from '../globalState'
 import { NavLink, Outlet } from 'react-router'
 
 
 export function App() {
-  const files = useHookstate(filesState)
-  const errors = useHookstate(errorsState)
+  const files = useHookstate(filesGlobalState)
+  const errors = useHookstate(errorsGlobalState)
   const f = files.get()
   const fileNames = useFileNames()
   const [view, setView] = useState<"module" | "chunk" | "file_selector" | "comparison" | "raw_file">("file_selector")
@@ -25,7 +25,7 @@ export function App() {
     mainElement = null
   }
 
-  const e = errorsState.get()
+  const e = errorsGlobalState.get()
   const errorWarnings = e.map((a, index) => {
     return <p className="error" key={index}>{a}</p>
   })
