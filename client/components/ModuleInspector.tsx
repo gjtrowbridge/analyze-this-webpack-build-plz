@@ -6,19 +6,21 @@ import { getStatistics } from '../helpers/math'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState } from '../globalState'
+import { ModuleSortBy } from '../types'
+import { unreachable } from '../../shared/helpers'
+import { convertToInteger } from '../../server/helpers/misc'
 
 // TODO: Figure out how to do generics for React elements
-// type SortBy = "Name" | "Size" | "Depth" | "# Optimization Bailouts"
-
 const anyInclusionReasonText = "-- Select To Filter --"
 
 export function ModuleInspector() {
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
-  const [sortBy, setSortBy] = useState<string>("Name")
+  const [sortBy, setSortBy] = useState<ModuleSortBy>("Name")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [filterName, setFilterName] = useState<string>("")
   const [filterByIdentifier, setFilterByIdentifier] = useState<string>("")
   const [filterByChunkId, setFilterByChunkId] = useState<string>("")
+  const [filterByMinNumberChunks, setFilterByMinNumberChunks] = useState<number>(0)
   const [filterOptimizationBailout, setfilterOptimizationBailout] = useState<string>("")
   const [showMoreId, setShowMoreId] = useState<number>(-1)
   const [inclusionReasonFilter, setInclusionReasonFilter] = useState<string>(anyInclusionReasonText)
@@ -35,9 +37,12 @@ export function ModuleInspector() {
       const aLength = a.rawFromWebpack.optimizationBailout?.length ?? 0
       const bLength = b.rawFromWebpack.optimizationBailout?.length ?? 0
       return (aLength - bLength) * sortOrder
-    } else {
-      // Default to "name"
+    } else if (sortBy === 'Name') {
       return (a.rawFromWebpack.name.localeCompare(b.rawFromWebpack.name)) * sortOrder
+    } else if (sortBy === '# Chunks') {
+      return ((a.rawFromWebpack.chunks?.length ?? 0) - (b.rawFromWebpack.chunks?.length ?? 0)) * sortOrder
+    } else {
+      unreachable(sortBy)
     }
   }, [sortAscending, sortBy])
 
@@ -98,6 +103,12 @@ export function ModuleInspector() {
         return reason.type === inclusionReasonFilter
       })
     })
+    .filter((m) => {
+      const numChunks = m.rawFromWebpack.chunks?.length ?? 0
+      if (numChunks >= filterByMinNumberChunks) {
+        return true
+      }
+    })
     .sort(sortFn)
   const moduleRows = filteredModules
     .slice(0, 100)
@@ -132,10 +143,11 @@ export function ModuleInspector() {
     <div className="moduleInspector">
       <div className={"inspectorControls"}>
         <div className={"sorts"}>Sort by:
-          <SortControl controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl controlFor={"Depth"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl controlFor={"# Optimization Bailouts"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ModuleSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ModuleSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ModuleSortBy> controlFor={"Depth"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ModuleSortBy> controlFor={"# Optimization Bailouts"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ModuleSortBy> controlFor={"# Chunks"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
         </div>
         <div className={"filters"}>
           <label>Filter By Name:<input onChange={(e) => {
@@ -147,6 +159,16 @@ export function ModuleInspector() {
           <label>Filter By Chunk Id:<input onChange={(e) => {
             setFilterByChunkId(e.target.value)
           }} value={filterByChunkId} /></label>
+          <label>Filter By Min Chunks:
+            <input
+              onChange={(e) => {
+                setFilterByMinNumberChunks(convertToInteger(e.target.value))
+              }}
+              value={filterByMinNumberChunks}
+              type="number"
+              step="1"
+              min="0"
+            /></label>
           <label>Filter By Optimization Bailout Reason:<input onChange={(e) => {
             setfilterOptimizationBailout(e.target.value)
           }} value={filterOptimizationBailout} /></label>

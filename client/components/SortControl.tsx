@@ -1,5 +1,5 @@
 
-export function SortControl<SortBy = string>(args: {
+export function SortControl<SortBy extends string>(args: {
   controlFor: SortBy
   sortBy: SortBy
   setSortBy: (sortBy: SortBy) => void

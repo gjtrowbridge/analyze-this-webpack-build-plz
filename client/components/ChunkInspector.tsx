@@ -6,13 +6,13 @@ import { getStatistics } from '../helpers/math'
 import { useHookstate } from '@hookstate/core'
 import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
 import { file1ProcessedGlobalState } from '../globalState'
-
-type SortBy = "Size" | "Name"
+import { ChunkSortBy } from '../types'
+import { unreachable } from '../../shared/helpers'
 
 export function ChunkInspector() {
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const [filterById, setFilterById] = useState<string>("")
-  const [sortBy, setSortBy] = useState<string>("Size")
+  const [sortBy, setSortBy] = useState<ChunkSortBy>("Size")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [showMoreId, setShowMoreId] = useState<ChunkIdentifier>("")
   const [filterName, setFilterName] = useState<string>("")
@@ -21,13 +21,19 @@ export function ChunkInspector() {
 
   const sortFn = useCallback((a: ProcessedChunkInfo, b: ProcessedChunkInfo) => {
     const sortOrder = sortAscending ? 1 : -1
-    if (sortBy === "Size") {
+    if (sortBy === 'Size') {
       return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
-    } else {
+    } else if (sortBy === 'Name') {
       const aName = a.rawFromWebpack.names?.join("|") || ""
       const bName = b.rawFromWebpack.names?.join("|") || ""
       // Default to "name"
       return (aName.localeCompare(bName)) * sortOrder
+    } else if (sortBy === '# JS Assets') {
+      const aJsAssets = a.rawFromWebpack.files?.filter((f) => { return f.toLowerCase().includes('.js') }).length ?? 0
+      const bJsAssets = a.rawFromWebpack.files?.filter((f) => { return f.toLowerCase().includes('.js') }).length ?? 0
+      return (aJsAssets - bJsAssets) * sortOrder
+    } else {
+      unreachable(sortBy)
     }
   }, [sortAscending, sortBy])
 
@@ -96,8 +102,9 @@ export function ChunkInspector() {
     <div className="ChunkInspector">
       <div className={"inspectorControls"}>
         <div className={"sorts"}>Sort by:
-          <SortControl controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ChunkSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ChunkSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+          <SortControl<ChunkSortBy> controlFor={"# JS Assets"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
         </div>
         <div className={"filters"}>
           <label>Filter By Id:<input onChange={(e) => {
