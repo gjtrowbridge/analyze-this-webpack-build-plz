@@ -37,6 +37,10 @@ function processStatsFile(args: {
     user_provided_name: customName,
     uploaded_at: Date.now(),
     done_processing: 0,
+    modules_count: stats.modules?.length ?? 0,
+    chunks_count: stats.chunks?.length ?? 0,
+    assets_count: stats.assets?.length ?? 0,
+    named_chunk_groups_count: stats.namedChunkGroups !== undefined ? Object.keys(stats.namedChunkGroups).length : 0,
   }
 
   /**

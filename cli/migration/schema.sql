@@ -3,7 +3,7 @@ CREATE TABLE files(
       original_name TEXT NOT NULL,
       user_provided_name TEXT NOT NULL,
       uploaded_at INTEGER,
-      done_processing INTEGER NOT NULL,
+      done_processing INTEGER NOT NULL, modules_count INTEGER, chunks_count INTEGER, named_chunk_groups_count INTEGER, assets_count INTEGER,
       
       PRIMARY KEY(id ASC),
       UNIQUE(original_name, uploaded_at)

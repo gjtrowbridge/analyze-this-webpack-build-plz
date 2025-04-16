@@ -1,8 +1,10 @@
 import { Migration } from './types'
-import { createBasicTablesMigration } from './create-basic-tables-2025-03-20_09-25'
+
+import { addCountsToFileMigration } from './2025-04-16_03-42-add-counts-to-files'
+import { createBasicTablesMigration } from './2025-03-20_09-25-create-basic-tables'
 import {
   createAssetsAndChunkGroupsTablesMigration
-} from './create-assets-and-named-chunk-groups-tables-2025-04-16_02-38'
+} from './2025-04-16_02-38-create-assets-and-named-chunk-groups-tables'
 
 /**
  * Manually add your migrations here when you make 'em
@@ -10,4 +12,5 @@ import {
 export const migrations: Array<Migration> = [
   createBasicTablesMigration,
   createAssetsAndChunkGroupsTablesMigration,
+  addCountsToFileMigration,
 ]

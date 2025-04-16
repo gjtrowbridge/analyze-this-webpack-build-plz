@@ -8,12 +8,20 @@ const insertStatement = `
                      original_name,
                      user_provided_name,
                      uploaded_at,
-                     done_processing
+                     done_processing,
+                     modules_count,
+                     chunks_count,
+                     assets_count,
+                     named_chunk_groups_count
   ) VALUES (
                      @original_name,
                      @user_provided_name,
                      @uploaded_at,
-                     @done_processing
+                     @done_processing,
+                     @modules_count,
+                     @chunks_count,
+                     @assets_count,
+                     @named_chunk_groups_count
   ) RETURNING id
 `
 const updateStatement = `
@@ -22,7 +30,11 @@ const updateStatement = `
     original_name = @original_name,
     user_provided_name = @user_provided_name,
     uploaded_at = @uploaded_at,
-    done_processing = @done_processing
+    done_processing = @done_processing,
+    modules_count = @modules_count,
+    chunks_count = @chunks_count,
+    assets_count = @assets_count,
+    named_chunk_groups_count = @named_chunk_groups_count
   WHERE
     id = @id
 `
