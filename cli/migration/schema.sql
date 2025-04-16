@@ -35,3 +35,27 @@ CREATE TABLE chunks(
       UNIQUE(chunk_id, chunk_name, file_id)
   ) STRICT
 ;
+CREATE TABLE assets(
+      id INTEGER,
+      
+      name TEXT NOT NULL,
+      raw_json TEXT NOT NULL,
+      file_id INTEGER NOT NULL,
+      
+      PRIMARY KEY(id ASC),
+      FOREIGN KEY(file_id) REFERENCES files(id),
+      UNIQUE(name, file_id)
+  ) STRICT
+;
+CREATE TABLE named_chunk_groups(
+      id INTEGER,
+      
+      name TEXT NOT NULL,
+      raw_json TEXT NOT NULL,
+      file_id INTEGER NOT NULL,
+      
+      PRIMARY KEY(id ASC),
+      FOREIGN KEY(file_id) REFERENCES files(id),
+      UNIQUE(name, file_id)
+  ) STRICT
+;
