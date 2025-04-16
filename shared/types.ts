@@ -1,4 +1,4 @@
-import { StatsChunk, StatsModule } from 'webpack'
+import { StatsAsset, StatsChunk, StatsChunkGroup, StatsModule } from 'webpack'
 
 export interface FileRow {
   id: number
@@ -15,5 +15,15 @@ export interface ModuleRow {
 export interface ChunkRow {
   databaseId: number
   rawFromWebpack: StatsChunk
+  fileId: number
+}
+export interface AssetRow {
+  databaseId: number,
+  rawFromWebpack: StatsAsset
+  fileId: number
+}
+export interface NamedChunkGroupRow {
+  databaseId: number,
+  rawFromWebpack: StatsChunkGroup
   fileId: number
 }
