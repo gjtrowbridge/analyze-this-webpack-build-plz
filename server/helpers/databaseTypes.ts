@@ -1,4 +1,4 @@
-import { ChunkRow, FileRow, ModuleRow } from '../../shared/types'
+import { AssetRow, ChunkRow, FileRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
 
 export type DatabaseFileRow = FileRow
 
@@ -19,6 +19,20 @@ export interface DatabaseChunkRow {
   file_id: number
 }
 
+export interface DatabaseAssetRow {
+  id: number
+  name: string
+  raw_json: string
+  file_id: number
+}
+
+export interface DatabaseNamedChunkGroupRow {
+  id: number
+  name: string
+  raw_json: string
+  file_id: number
+}
+
 export function convertToSharedModuleType(dbRow: DatabaseModuleRow): ModuleRow {
   return {
     databaseId: dbRow.id,
@@ -32,5 +46,21 @@ export function convertToSharedChunkType(dbRow: DatabaseChunkRow): ChunkRow {
     databaseId: dbRow.id,
     rawFromWebpack: JSON.parse(dbRow.raw_json),
     fileId: dbRow.file_id
+  }
+}
+
+export function convertToSharedAssetType(dbRow: DatabaseAssetRow): AssetRow {
+  return {
+    databaseId: dbRow.id,
+    rawFromWebpack: JSON.parse(dbRow.raw_json),
+    fileId: dbRow.file_id,
+  }
+}
+
+export function convertToSharedNamedChunkGroupType(dbRow: DatabaseNamedChunkGroupRow): NamedChunkGroupRow {
+  return {
+    databaseId: dbRow.id,
+    rawFromWebpack: JSON.parse(dbRow.raw_json),
+    fileId: dbRow.file_id,
   }
 }
