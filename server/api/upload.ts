@@ -6,7 +6,15 @@ import { StatsCompilation } from 'webpack'
 import { insertFileToDatabase, updateFileInDatabase } from '../db/queries/files'
 import { saveModulesToDatabase } from '../db/queries/modules'
 import { saveChunksToDatabase } from '../db/queries/chunks'
-import { DatabaseChunkRow, DatabaseFileRow, DatabaseModuleRow } from '../helpers/databaseTypes'
+import {
+  DatabaseAssetRow,
+  DatabaseChunkRow,
+  DatabaseFileRow,
+  DatabaseModuleRow,
+  DatabaseNamedChunkGroupRow
+} from '../helpers/databaseTypes'
+import { saveAssetsToDatabase } from '../db/queries/assets'
+import { saveNamedChunkGroupsToDatabase } from '../db/queries/namedChunkGroups'
 
 export const uploadRouter = Router()
 
@@ -63,6 +71,36 @@ function processStatsFile(args: {
       }
     })
     saveChunksToDatabase(chunkRows)
+  }
+  /**
+   * Insert assets, if they exist in the stats object
+   */
+  if (stats.assets) {
+    const assetRows: Array<Omit<DatabaseAssetRow, 'id'>> = stats.assets.map((a) => {
+      return {
+        id: a.id,
+        name: a.name,
+        raw_json: JSON.stringify(a),
+        file_id,
+      }
+    })
+    saveAssetsToDatabase(assetRows)
+  }
+  /**
+   * Insert named chunk groups, if they exist in the stats object
+   */
+  if (stats.namedChunkGroups) {
+    const keys = Object.keys(stats.namedChunkGroups)
+    const namedChunkGroups: Array<Omit<DatabaseNamedChunkGroupRow, 'id'>> = keys.map((key) => {
+      const ncg = stats.namedChunkGroups[key]
+      return {
+        id: ncg.id,
+        name: ncg.name,
+        raw_json: JSON.stringify(ncg),
+        file_id,
+      }
+    })
+    saveNamedChunkGroupsToDatabase(namedChunkGroups)
   }
 
   /**
