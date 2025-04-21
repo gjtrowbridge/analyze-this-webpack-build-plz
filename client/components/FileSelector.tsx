@@ -3,6 +3,7 @@ import { convertToInteger } from '../../server/helpers/misc'
 import { useHookstate } from '@hookstate/core'
 import { filesGlobalState } from '../globalState'
 import { useStateRefreshFunctions } from '../hooks/useRefresh'
+import Button from '@mui/material/Button'
 
 
 export function FileSelector() {
@@ -73,14 +74,14 @@ export function FileSelector() {
   return (
     <>
       <h1>Files</h1>
-      <button onClick={() => {
+      <Button variant={"outlined"} onClick={() => {
         void refreshFileData('file1')
         void refreshFileData('file2')
-      }}>Refresh File Data</button>
-      <button onClick={() => {
+      }}>Refresh File Data</Button>
+      <Button variant={"outlined"} onClick={() => {
         clearFileData('file1')
         clearFileData('file2')
-      }}>Clear File Data</button>
+      }}>Clear File Data</Button>
       <h2>Upload New File(s)</h2>
       <FileLoader />
       <h2>Select File(s) To Analyze</h2>

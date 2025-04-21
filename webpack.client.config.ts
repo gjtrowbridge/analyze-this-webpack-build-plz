@@ -53,7 +53,11 @@ const config: webpack.Configuration = {
     publicPath: "/"
   },
   plugins: [
-    new HtmlWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      meta: {
+        viewport: 'initial-scale=1, width=device-width'
+      }
+    }),
   ],
   // resolve: {
   //     extensions: ['.ts']
