@@ -15,6 +15,17 @@ export function getStatistics(arr: Array<number>) {
   }
 }
 
+export function getPercentage(args: {
+  numerator: number,
+  denominator: number
+}): string {
+  const { numerator, denominator } = args
+  if (denominator === 0) {
+    return 'Unknown %'
+  }
+  return `${Math.round(numerator / denominator * 1000) / 10}%`
+}
+
 export function inKB(num: number) {
   const kb = num / 1024
   return Math.round(kb * 10) / 10

@@ -11,6 +11,7 @@ import {
 } from '../globalState'
 import { ProcessedState, processModulesAndChunks } from '../helpers/processModulesAndChunks'
 import { unreachable } from '../../shared/helpers'
+import { getPercentage } from '../helpers/math'
 
 export function useStateRefreshFunctions() {
   const errors = useHookstate(errorsGlobalState)
@@ -24,13 +25,23 @@ export function useStateRefreshFunctions() {
   const [rawState1, setRawState1] = useState<ProcessedState>({ ...defaultProcessedState })
   const [rawState2, setRawState2] = useState<ProcessedState>({ ...defaultProcessedState })
 
-
   const queryModules = useCallback(async (args: {
     file: 'file1' | 'file2'
-    fileId: number
+    fileId?: number
     currentRunId: number
   }) => {
     const { fileId, file, currentRunId } = args
+    if (!fileId) {
+      return []
+    }
+    const fileData = files.get()
+    if (fileData.status !== 'LOADED') {
+      throw 'Trying to refresh an unloaded module...'
+    }
+    const fileRow = fileData.existingFiles.find((f) => {
+      return f.id === fileId
+    })
+
     const limit = 50
     let minIdNonInclusive = -1
     const modules: Array<ModuleRow> = []
@@ -48,6 +59,11 @@ export function useStateRefreshFunctions() {
         moduleRows.forEach((mr) => {
           modules.push(mr)
         })
+        const percentageDone = getPercentage({
+          numerator: modules.length,
+          denominator: fileRow.modules_count,
+        })
+        console.log(`QUERYING FOR MODULES: ${percentageDone}`)
         if (lastId === null) {
           break
         }
@@ -58,7 +74,7 @@ export function useStateRefreshFunctions() {
       }
     }
     return modules
-  }, [runIds, errors])
+  }, [runIds, errors, files])
   const queryChunks = useCallback(async (args: {
     file: 'file1' | 'file2'
     fileId: number
@@ -69,6 +85,9 @@ export function useStateRefreshFunctions() {
       fileId,
       currentRunId,
     } = args
+    if (!fileId) {
+      return []
+    }
     const limit = 50
     let minIdNonInclusive = -1
     const chunks: Array<ChunkRow> = []
