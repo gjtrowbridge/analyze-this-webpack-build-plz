@@ -2,6 +2,7 @@ import {ChangeEvent, ChangeEventHandler, useCallback, useState, ReactElement} fr
 import axios from 'axios'
 import { alternateFileNameRegex } from '../../shared/helpers'
 import { useRefreshFilesFn } from '../hooks/useFiles'
+import { TextField } from '@mui/material'
 
 export function FileLoader() {
   const refreshFilesFn = useRefreshFilesFn()
@@ -57,10 +58,17 @@ export function FileLoader() {
         </label>
       </div>
       <div>
-        <label>
-          (Optional) Enter a custom file name prefix (alphanumeric, dash, underscore only)
-          <input type="text" onChange={onChangeText} value={alternateName} />
-        </label>
+        <TextField
+          style={{
+            marginTop: '10px'
+          }}
+          id="outlined-basic"
+          label="(Optional) Enter custom file prefix"
+          variant="outlined"
+          value={alternateName}
+          onChange={onChangeText}
+          fullWidth={true}
+        />
       </div>
       {uploadButton}
     </>
