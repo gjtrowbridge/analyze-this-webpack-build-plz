@@ -4,7 +4,7 @@ import { useHookstate } from '@hookstate/core'
 import { filesGlobalState } from '../globalState'
 import { useStateRefreshFunctions } from '../hooks/useRefresh'
 import Button from '@mui/material/Button'
-import { MenuItem, TextField } from '@mui/material'
+import { MenuItem, TextField, Typography } from '@mui/material'
 
 
 export function FileSelector() {
@@ -54,7 +54,7 @@ export function FileSelector() {
 
     newFileSelector1 = (
       <TextField
-        style={{
+        sx={{
           marginTop: '10px'
         }}
         label={"Main File (used everywhere)"}
@@ -75,11 +75,11 @@ export function FileSelector() {
     )
     newFileSelector2 = (
       <TextField
-        style={{
+        sx={{
           marginTop: '10px'
         }}
         variant={'outlined'}
-        label={"Comparison File"}
+        label={"Comparison File (used in comparisons only)"}
         value={selectedFileId2 === undefined ? noFileSelected.value : selectedFileId2}
         select={true}
         fullWidth={true}
@@ -99,7 +99,13 @@ export function FileSelector() {
 
   return (
     <>
-      <h1>Files</h1>
+      <Typography variant={'h3'}>Files</Typography>
+      <Typography variant={'h4'}>Select File(s) To Analyze</Typography>
+      <div className="FileSelector">
+        {statusEl}
+        {newFileSelector1}
+        {newFileSelector2}
+      </div>
       <Button variant={"outlined"} onClick={() => {
         void refreshFileData('file1')
         void refreshFileData('file2')
@@ -108,14 +114,8 @@ export function FileSelector() {
         clearFileData('file1')
         clearFileData('file2')
       }}>Clear File Data</Button>
-      <h2>Upload New File(s)</h2>
+      <Typography variant={'h4'}>Upload New File(s)</Typography>
       <FileLoader />
-      <h2>Select File(s) To Analyze</h2>
-      <div className="FileSelector">
-        {statusEl}
-        {newFileSelector1}
-        {newFileSelector2}
-      </div>
     </>
   )
 }

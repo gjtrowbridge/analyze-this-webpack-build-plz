@@ -2,7 +2,9 @@ import {ChangeEvent, ChangeEventHandler, useCallback, useState, ReactElement} fr
 import axios from 'axios'
 import { alternateFileNameRegex } from '../../shared/helpers'
 import { useRefreshFilesFn } from '../hooks/useFiles'
-import { TextField } from '@mui/material'
+import { Input, TextField, Typography } from '@mui/material'
+import Button from '@mui/material/Button'
+import { styled } from '@mui/material/styles'
 
 export function FileLoader() {
   const refreshFilesFn = useRefreshFilesFn()
@@ -45,32 +47,43 @@ export function FileLoader() {
 
   let uploadButton: ReactElement = null
   if (file) {
-    uploadButton = <button onClick={onClickButton}>Upload</button>
+    uploadButton = <Button sx={{ marginTop: '10px' }} variant={'contained'} onClick={onClickButton}>Upload</Button>
   }
 
   return (
     <>
-      <p>{loadingState}</p>
-      <div>
-        <label>
-          Select a file:
-          <input type="file" onChange={onChangeFile} accept={".json"} />
-        </label>
-      </div>
+      <Typography variant={'body1'}>{loadingState}</Typography>
+      <Button
+        component={'label'}
+        role={undefined}
+        variant={'outlined'}
+
+      >
+        Select A stats.json File To Upload
+        <Input
+          type={'file'}
+          onChange={onChangeFile}
+        />
+      </Button>
       <div>
         <TextField
-          style={{
+          sx={{
             marginTop: '10px'
           }}
           id="outlined-basic"
-          label="(Optional) Enter custom file prefix"
+          label="(Required) Enter custom file prefix"
           variant="outlined"
           value={alternateName}
           onChange={onChangeText}
           fullWidth={true}
         />
       </div>
-      {uploadButton}
+      <Button
+        sx={{ marginTop: '10px' }}
+        variant={'contained'}
+        onClick={onClickButton}
+        disabled={file === null || alternateName === ''}
+      >Upload</Button>
     </>
   )
 }
