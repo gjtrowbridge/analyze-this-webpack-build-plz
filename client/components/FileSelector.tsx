@@ -100,12 +100,6 @@ export function FileSelector() {
   return (
     <>
       <Typography variant={'h3'}>Files</Typography>
-      <Typography variant={'h4'}>Select File(s) To Analyze</Typography>
-      <div className="FileSelector">
-        {statusEl}
-        {newFileSelector1}
-        {newFileSelector2}
-      </div>
       <Button variant={"outlined"} onClick={() => {
         void refreshFileData('file1')
         void refreshFileData('file2')
@@ -114,6 +108,12 @@ export function FileSelector() {
         clearFileData('file1')
         clearFileData('file2')
       }}>Clear File Data</Button>
+      <Typography variant={'h4'}>Select File(s) To Analyze</Typography>
+      <div className="FileSelector">
+        {statusEl}
+        {newFileSelector1}
+        {newFileSelector2}
+      </div>
       <Typography variant={'h4'}>Upload New File(s)</Typography>
       <FileLoader />
     </>

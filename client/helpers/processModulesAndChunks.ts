@@ -33,7 +33,11 @@ export interface ProcessedChunkInfo {
 }
 
 export type ProcessedState = {
-  isReady: boolean
+  status: 'NOT_LOADED' | 'LOADING' | 'LOADED'
+  progress: {
+    modules: number
+    chunks: number
+  }
   modulesByDatabaseId: Map<number, ProcessedModuleInfo>
   modulesByWebpackIdentifier: Map<string, ProcessedModuleInfo>
   chunksByDatabaseId: Map<number, ProcessedChunkInfo>
@@ -223,7 +227,11 @@ export function processModulesAndChunks(args: {
   }
 
   return {
-    isReady: true,
+    status: 'LOADED',
+    progress: {
+      modules: 100,
+      chunks: 100,
+    },
     chunksByDatabaseId,
     chunksByWebpackId,
     modulesByDatabaseId,

@@ -38,7 +38,11 @@ export const file2ChunksGlobalState = hookstate<{ ready: boolean, chunks: Array<
 })
 
 export const defaultProcessedState: ProcessedState = {
-  isReady: false,
+  status: 'NOT_LOADED',
+  progress: {
+    modules: 0,
+    chunks: 0,
+  },
   modulesByDatabaseId: new Map(),
   modulesByWebpackIdentifier: new Map(),
   chunksByDatabaseId: new Map(),

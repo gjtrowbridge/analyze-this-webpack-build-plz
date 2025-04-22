@@ -9,7 +9,7 @@ import {
   file2ProcessedGlobalState,
   filesGlobalState
 } from '../globalState'
-import { ProcessedState, processModulesAndChunks } from '../helpers/processModulesAndChunks'
+import { processModulesAndChunks } from '../helpers/processModulesAndChunks'
 import { unreachable } from '../../shared/helpers'
 import { getPercentage } from '../helpers/math'
 
@@ -22,8 +22,6 @@ export function useStateRefreshFunctions() {
     file1?: number,
     file2?: number,
   }>({})
-  const [rawState1, setRawState1] = useState<ProcessedState>({ ...defaultProcessedState })
-  const [rawState2, setRawState2] = useState<ProcessedState>({ ...defaultProcessedState })
 
   const queryModules = useCallback(async (args: {
     file: 'file1' | 'file2'
@@ -42,9 +40,32 @@ export function useStateRefreshFunctions() {
       return f.id === fileId
     })
 
-    const limit = 50
+    const limit = 100
     let minIdNonInclusive = -1
     const modules: Array<ModuleRow> = []
+    if (file === 'file1') {
+      file1State.merge((prev) => {
+        return {
+          status: 'LOADING',
+          progress: {
+            ...prev.progress,
+            modules: 0,
+          }
+        }
+      })
+    } else if (file === 'file2') {
+      file2State.merge((prev) => {
+        return {
+          status: 'LOADING',
+          progress: {
+            ...prev.progress,
+            modules: 0,
+          }
+        }
+      })
+    } else {
+      unreachable(file)
+    }
     while (true) {
       try {
         const res = await axios.get<{
@@ -59,11 +80,35 @@ export function useStateRefreshFunctions() {
         moduleRows.forEach((mr) => {
           modules.push(mr)
         })
-        const percentageDone = getPercentage({
+        const modulePercentage = getPercentage({
           numerator: modules.length,
           denominator: fileRow.modules_count,
         })
-        console.log(`QUERYING FOR MODULES: ${percentageDone}`)
+        if (file === 'file1') {
+          file1State.set((prev) => {
+            return {
+              ...prev,
+              progress: {
+                ...prev.progress,
+                modules: modulePercentage,
+              }
+            }
+          })
+        } else if (file === 'file2') {
+          file2State.set((prev) => {
+            return {
+              ...prev,
+              progress: {
+                ...prev.progress,
+                modules: modulePercentage,
+              }
+            }
+          })
+        } else {
+          unreachable(file)
+        }
+        
+        // console.log(`QUERYING FOR MODULES: ${progress}`)
         if (lastId === null) {
           break
         }
@@ -74,7 +119,7 @@ export function useStateRefreshFunctions() {
       }
     }
     return modules
-  }, [runIds, errors, files])
+  }, [runIds, errors, files, file1State, file2State])
   const queryChunks = useCallback(async (args: {
     file: 'file1' | 'file2'
     fileId: number
@@ -121,10 +166,8 @@ export function useStateRefreshFunctions() {
     console.log('xcxc clearing data', file)
     runIds.current[file] = undefined
     if (file === 'file1') {
-      setRawState1({ ...defaultProcessedState })
       file1State.set({ ...defaultProcessedState })
     } else if (file === 'file2') {
-      setRawState2({ ...defaultProcessedState })
       file2State.set({ ...defaultProcessedState })
     } else {
       unreachable(file)
@@ -167,21 +210,17 @@ export function useStateRefreshFunctions() {
       chunkRows,
     })
     if (file === 'file1') {
-      // setRawState1(processedState)
       file1State.set(processedState)
     } else if (file === 'file2') {
-      // setRawState2(processedState)
       file2State.set(processedState)
     } else {
       unreachable(file)
     }
-  }, [files, file1State, file2State, errors, runIds, setRawState1, setRawState2])
+  }, [files, file1State, file2State, errors, runIds])
 
   return {
     refreshFileData,
     clearFileData,
-    rawState1,
-    rawState2,
   }
 }
 

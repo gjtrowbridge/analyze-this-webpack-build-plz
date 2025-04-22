@@ -3,8 +3,14 @@ import { FileSelector } from './FileSelector'
 import "./styles/App.css"
 import { useFileNames } from '../hooks/useFiles'
 import { useHookstate } from '@hookstate/core'
-import { errorsGlobalState, file1ProcessedGlobalState, filesGlobalState } from '../globalState'
+import {
+  errorsGlobalState,
+  file1ProcessedGlobalState,
+  file2ProcessedGlobalState,
+  filesGlobalState
+} from '../globalState'
 import { NavLink, Outlet } from 'react-router'
+import { CircularProgress, Snackbar } from '@mui/material'
 
 
 export function App() {
@@ -13,9 +19,8 @@ export function App() {
   const f = files.get()
   const fileNames = useFileNames()
   const [view, setView] = useState<"module" | "chunk" | "file_selector" | "comparison" | "raw_file">("file_selector")
-
-
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
+  const file2ProcessedState = useHookstate(file2ProcessedGlobalState)
 
   // TODO: Make it so these don't lose unmount / lose state between view changes...
   let mainElement = null
@@ -51,6 +56,24 @@ export function App() {
       </div>
       <p>Main file: {fileNames.file1}, Comparison file: {fileNames.file2}</p>
       <Outlet />
+      <Snackbar
+        open={file1ProcessedState.status.get() === 'LOADING'}
+        message={'File 1 Is Loading'}
+        action={(
+          <CircularProgress variant="determinate" value={file1ProcessedState.progress.modules.get()} />
+        )}
+      />
+      <Snackbar
+        open={file2ProcessedState.status.get() === 'LOADING'}
+        message={'File 2 Is Loading'}
+        action={(
+          <CircularProgress variant="determinate" value={file2ProcessedState.progress.modules.get()} />
+        )}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+      />
     </div>
   )
 }
