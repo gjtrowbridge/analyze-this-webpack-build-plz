@@ -28,6 +28,7 @@
     "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.2.5",
     "@hookstate/core": "^4.0.2",
+    "@mui/icons-material": "^6.4.11",
     "@mui/material": "^6.4.11",
     "@textea/json-viewer": "^4.0.1",
     "@types/busboy": "^1.5.4",

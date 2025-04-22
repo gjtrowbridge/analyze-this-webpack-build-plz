@@ -1,3 +1,6 @@
+import { Button, ButtonGroup } from '@mui/material'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
 export function SortControl<SortBy extends string>(args: {
   controlFor: SortBy
@@ -16,27 +19,22 @@ export function SortControl<SortBy extends string>(args: {
 
   const alreadySortingByThis = controlFor === sortBy
 
-  const style = {
-    fontWeight: alreadySortingByThis ? 500 : 300,
-  }
   const onClick = () => {
     if (alreadySortingByThis) {
       setSortAscending(!sortAscending)
     }
     setSortBy(controlFor)
   }
-  let text: string = String(controlFor)
-  if (alreadySortingByThis) {
-    text = `${text} (${sortAscending ? "asc" : "dsc"})`
-  }
-  const classNames = ["sortControl"]
-  if (alreadySortingByThis) {
-    classNames.push("active")
-  }
 
   return (
-    <button className={classNames.join(" ")} onClick={onClick}>
-      {text}
-    </button>
+    <ButtonGroup variant="outlined" size="small">
+      <Button
+        onClick={onClick}
+        variant={alreadySortingByThis ? "contained" : "outlined"}
+        startIcon={alreadySortingByThis ? (sortAscending ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />) : undefined}
+      >
+        {controlFor}
+      </Button>
+    </ButtonGroup>
   )
 }

@@ -5,7 +5,16 @@ import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { getHumanReadableChunkName } from '../helpers/chunks'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
-
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  List, 
+  ListItem, 
+  Typography,
+  Divider
+} from '@mui/material'
 
 export function ChunkRow(props: {
   chunk: ImmutableObject<ProcessedChunkInfo>
@@ -29,79 +38,121 @@ export function ChunkRow(props: {
     : null
 
   const maxModuleChildrenToShow = noLimitsOnLists ? 100000 : 10
-
-  const childModules = Array.from(chunk.childModuleDatabaseIds).slice(0, maxModuleChildrenToShow).map((moduleDatabaseId) => {
-    const module = modulesByDatabaseId.get(moduleDatabaseId)
-    return (
-      <li key={moduleDatabaseId}>
-        <ModuleLink module={module} file={"file1"} />
-      </li>
-    )
-  })
-
   const maxChunkParentsToShow = noLimitsOnLists ? 100000 : 10
   const maxChunkChildrenToShow = noLimitsOnLists ? 100000 : 10
   const maxChunkSiblingsToShow = noLimitsOnLists ? 100000 : 10
 
+  const childModules = Array.from(chunk.childModuleDatabaseIds).slice(0, maxModuleChildrenToShow).map((moduleDatabaseId) => {
+    const module = modulesByDatabaseId.get(moduleDatabaseId)
+    return (
+      <ListItem key={moduleDatabaseId}>
+        <ModuleLink module={module} file={"file1"} />
+      </ListItem>
+    )
+  })
+
   const chunkParents = Array.from(chunk.parentChunkDatabaseIds).slice(0, maxChunkParentsToShow).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
-      <li key={chunkDatabaseId}>
+      <ListItem key={chunkDatabaseId}>
         <ChunkLink chunk={chunk} file={'file1'} />
-      </li>
+      </ListItem>
     )
   })
+
   const chunkChildren = Array.from(chunk.childChunkDatabaseIds).slice(0, maxChunkChildrenToShow).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
-      <li key={chunkDatabaseId}>
+      <ListItem key={chunkDatabaseId}>
         <ChunkLink chunk={chunk} file={'file1'} />
-      </li>
+      </ListItem>
     )
   })
+
   const chunkSiblings = Array.from(chunk.siblingChunkDatabaseIds).slice(0, maxChunkSiblingsToShow).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     return (
-      <li key={chunkDatabaseId}>
+      <ListItem key={chunkDatabaseId}>
         <ChunkLink chunk={chunk} file={'file1'} />
-      </li>
+      </ListItem>
     )
   })
 
   return (
-    <div className="chunkRow">
-      <div>
-        <p>Webpack Id: {chunk.rawFromWebpack.id}</p>
-        <p>Name(s): {getHumanReadableChunkName(chunk)}</p>
-        <p>Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb</p>
-        <p>Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}</p>
-        <div>
-          <h5>Chunk Parents ({chunk.parentChunkDatabaseIds.size} total -- will only show up to {maxChunkParentsToShow})</h5>
-          <ul>
+    <Card sx={{ mb: 2 }}>
+      <CardContent>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            {getHumanReadableChunkName(chunk)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Webpack Id: {chunk.rawFromWebpack.id}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}
+          </Typography>
+        </Box>
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Chunk Parents ({chunk.parentChunkDatabaseIds.size} total -- will only show up to {maxChunkParentsToShow})
+          </Typography>
+          <List dense>
             {chunkParents}
-          </ul>
-        </div>
-        <div>
-          <h5>Chunk Children ({chunk.childChunkDatabaseIds.size} total -- will only show up to {maxChunkChildrenToShow})</h5>
-          <ul>
+          </List>
+        </Box>
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Chunk Children ({chunk.childChunkDatabaseIds.size} total -- will only show up to {maxChunkChildrenToShow})
+          </Typography>
+          <List dense>
             {chunkChildren}
-          </ul>
-        </div>
-        <div>
-          <h5>Chunk Siblings ({chunk.siblingChunkDatabaseIds.size} total -- will only show up to {maxChunkSiblingsToShow})</h5>
-          <ul>
+          </List>
+        </Box>
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Chunk Siblings ({chunk.siblingChunkDatabaseIds.size} total -- will only show up to {maxChunkSiblingsToShow})
+          </Typography>
+          <List dense>
             {chunkSiblings}
-          </ul>
-        </div>
-        <div>
-          <h5>Module Children ({chunk.childModuleDatabaseIds.size} total -- will only show up to {maxModuleChildrenToShow})</h5>
-          <ul>
+          </List>
+        </Box>
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Module Children ({chunk.childModuleDatabaseIds.size} total -- will only show up to {maxModuleChildrenToShow})
+          </Typography>
+          <List dense>
             {childModules}
-          </ul>
-        </div>
-        <button onClick={() => { if (showRawInfo) { setShowRawInfo(-1) } else { setShowRawInfo(chunk.chunkDatabaseId)}}}>Show {showRawInfo ? "Less" : "More"}</button>
-      </div>
-      {rawInfo}
-    </div>
+          </List>
+        </Box>
+
+        <Button 
+          variant="outlined" 
+          size="small"
+          onClick={() => { 
+            if (showRawInfo) { 
+              setShowRawInfo(-1) 
+            } else { 
+              setShowRawInfo(chunk.chunkDatabaseId)
+            }
+          }}
+        >
+          Show {showRawInfo ? "Less" : "More"}
+        </Button>
+
+        {rawInfo && (
+          <Box sx={{ mt: 2 }}>
+            <Divider sx={{ my: 2 }} />
+            {rawInfo}
+          </Box>
+        )}
+      </CardContent>
+    </Card>
   )
 }

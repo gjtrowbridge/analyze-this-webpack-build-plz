@@ -1,6 +1,5 @@
 import {useCallback, useState} from "react"
 import { ModuleRow } from "./ModuleRow"
-import "./styles/ModuleInspector.css"
 import { SortControl } from './SortControl'
 import { getStatistics } from '../helpers/math'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
@@ -10,6 +9,19 @@ import { ModuleSortBy } from '../types'
 import { unreachable } from '../../shared/helpers'
 import { convertToInteger } from '../../server/helpers/misc'
 import { getModuleExtraSizeDueToDuplication, getModuleNumberOfChunks } from '../helpers/modules'
+import { 
+  Box, 
+  Card, 
+  CardContent, 
+  Grid, 
+  TextField, 
+  Typography,
+  Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
+} from '@mui/material'
 
 // TODO: Figure out how to do generics for React elements
 const anyInclusionReasonText = "-- Select To Filter --"
@@ -55,7 +67,7 @@ export function ModuleInspector() {
 
   const stateOrNull = file1ProcessedState.ornull
   if (stateOrNull === null) {
-    return <p>Loading and processing data, module data will be visible soon...</p>
+    return <Typography>Loading and processing data, module data will be visible soon...</Typography>
   }
 
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
@@ -134,72 +146,111 @@ export function ModuleInspector() {
 
   const inclusionReasonOptions = inclusionReasons.map((reasonType) => {
     return (
-      <option key={reasonType} value={reasonType}>{reasonType}</option>
+      <MenuItem key={reasonType} value={reasonType}>{reasonType}</MenuItem>
     )
   })
-  inclusionReasonOptions.unshift(<option key={anyInclusionReasonText} value={anyInclusionReasonText}>{anyInclusionReasonText}</option>)
+  inclusionReasonOptions.unshift(<MenuItem key={anyInclusionReasonText} value={anyInclusionReasonText}>{anyInclusionReasonText}</MenuItem>)
 
   const {
     mean,
     standardDeviation,
   } = getStatistics(filteredModules.map((m) => { return m.rawFromWebpack.size }))
 
-  const noModuleWarning = finalModules.length > 0 ? null : <h2 className="warning">No modules found -- Make sure you generate your stats.json file with module output enabled!</h2>
+  const noModuleWarning = finalModules.length > 0 ? null : (
+    <Alert severity="warning" sx={{ mb: 2 }}>
+      No modules found -- Make sure you generate your stats.json file with module output enabled!
+    </Alert>
+  )
 
   return (
-    <div className="moduleInspector">
-      <div className={"inspectorControls"}>
-        <div className={"sorts"}>Sort by:
-          <SortControl<ModuleSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl<ModuleSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl<ModuleSortBy> controlFor={"Depth"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl<ModuleSortBy> controlFor={"# Optimization Bailouts"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl<ModuleSortBy> controlFor={"# Chunks"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-          <SortControl<ModuleSortBy> controlFor={"Extra Duplication Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-        </div>
-        <div className={"filters"}>
-          <label>Filter By Name:<input onChange={(e) => {
-            setFilterName(e.target.value)
-          }} value={filterName} /></label>
-          <label>Filter By Module Identifier:<input onChange={(e) => {
-            setFilterByIdentifier(e.target.value)
-          }} value={filterByIdentifier} /></label>
-          <label>Filter By Chunk Id:<input onChange={(e) => {
-            setFilterByChunkId(e.target.value)
-          }} value={filterByChunkId} /></label>
-          <label>Filter By Min Chunks:
-            <input
-              onChange={(e) => {
-                setFilterByMinNumberChunks(convertToInteger(e.target.value))
-              }}
-              value={filterByMinNumberChunks}
-              type="number"
-              step="1"
-              min="0"
-            /></label>
-          <label>Filter By Optimization Bailout Reason:<input onChange={(e) => {
-            setfilterOptimizationBailout(e.target.value)
-          }} value={filterOptimizationBailout} /></label>
-          <label>
-            Filter By Inclusion Reason:
-            <select
-              name="bailout-reason-filter"
-              value={inclusionReasonFilter}
-              onChange={(e) => {
-                setInclusionReasonFilter(e.target.value)
-              }}
-            >
-              {inclusionReasonOptions}
-            </select>
-          </label>
-        </div>
-      </div>
-      <h2>There are {finalModules.length} total modules, and {filteredModules.length} modules that passed your filters</h2>
+    <Box sx={{ p: 2 }}>
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>Sort by:</Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <SortControl<ModuleSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"Depth"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"# Optimization Bailouts"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"# Chunks"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"Extra Duplication Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Name"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Module Identifier"
+                value={filterByIdentifier}
+                onChange={(e) => setFilterByIdentifier(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Chunk Id"
+                value={filterByChunkId}
+                onChange={(e) => setFilterByChunkId(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Min Chunks"
+                type="number"
+                value={filterByMinNumberChunks}
+                onChange={(e) => setFilterByMinNumberChunks(convertToInteger(e.target.value))}
+                size="small"
+                inputProps={{ min: 0, step: 1 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Optimization Bailout Reason"
+                value={filterOptimizationBailout}
+                onChange={(e) => setfilterOptimizationBailout(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Filter By Inclusion Reason</InputLabel>
+                <Select
+                  value={inclusionReasonFilter}
+                  onChange={(e) => setInclusionReasonFilter(e.target.value)}
+                  label="Filter By Inclusion Reason"
+                >
+                  {inclusionReasonOptions}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      <Typography variant="h5" gutterBottom>
+        There are {finalModules.length} total modules, and {filteredModules.length} modules that passed your filters
+      </Typography>
       {noModuleWarning}
-      <h3>For the ones passing filters, the mean module size is {Math.round(mean / 1024)} kb, the std deviation is {Math.round(standardDeviation / 1024)} kb</h3>
-      <div className="rows">
+      <Typography variant="subtitle1" gutterBottom>
+        For the ones passing filters, the mean module size is {Math.round(mean / 1024)} kb, the std deviation is {Math.round(standardDeviation / 1024)} kb
+      </Typography>
+      <Box sx={{ mt: 2 }}>
         {moduleRows}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }
