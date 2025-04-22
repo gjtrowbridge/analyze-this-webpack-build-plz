@@ -9,9 +9,8 @@ import {
   file2ProcessedGlobalState,
   filesGlobalState
 } from '../globalState'
-import { NavLink, Outlet } from 'react-router'
-import { CircularProgress, Snackbar } from '@mui/material'
-
+import { NavLink, Outlet, useLocation } from 'react-router'
+import { AppBar, Box, CircularProgress, Snackbar, Tab, Tabs, Typography } from '@mui/material'
 
 export function App() {
   const files = useHookstate(filesGlobalState)
@@ -21,6 +20,7 @@ export function App() {
   const [view, setView] = useState<"module" | "chunk" | "file_selector" | "comparison" | "raw_file">("file_selector")
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const file2ProcessedState = useHookstate(file2ProcessedGlobalState)
+  const location = useLocation()
 
   // TODO: Make it so these don't lose unmount / lose state between view changes...
   let mainElement = null
@@ -35,27 +35,74 @@ export function App() {
     return <p className="error" key={index}>{a}</p>
   })
 
+  const getCurrentTab = () => {
+    const path = location.pathname
+    if (path === '/') return 0
+    if (path.startsWith('/modules')) return 1
+    if (path.startsWith('/chunks')) return 2
+    if (path.startsWith('/assets')) return 3
+    if (path.startsWith('/named-chunk-groups')) return 4
+    if (path.startsWith('/comparison')) return 5
+    return 0
+  }
+
   return (
-    <div className="App">
-      <div className="TopBar">
-        <NavLink to={"/"} className={({ isActive }) => {
-          return isActive ? "active" : ""
-        }}>Select File(s)</NavLink>
-        <NavLink to={"/modules"} className={({ isActive }) => {
-          return isActive ? "active" : ""
-        }}>Module View</NavLink>
-        <NavLink to={"/chunks"} className={({ isActive }) => {
-          return isActive ? "active" : ""
-        }}>Chunk View</NavLink>
-        <NavLink to={"/comparison"} className={({ isActive }) => {
-          return isActive ? "active" : ""
-        }}>Comparison</NavLink>
-      </div>
-      <div>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Tabs 
+          value={getCurrentTab()} 
+          indicatorColor="secondary"
+          textColor="inherit"
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab 
+            label="Select File(s)" 
+            component={NavLink} 
+            to="/" 
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+          <Tab 
+            label="Module View" 
+            component={NavLink} 
+            to="/modules" 
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+          <Tab 
+            label="Chunk View" 
+            component={NavLink} 
+            to="/chunks" 
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+          <Tab 
+            label="Asset View" 
+            component={NavLink} 
+            to="/assets" 
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+          <Tab 
+            label="Named Chunk Groups" 
+            component={NavLink} 
+            to="/named-chunk-groups" 
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+          <Tab 
+            label="Comparison" 
+            component={NavLink} 
+            to="/comparison" 
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+        </Tabs>
+      </AppBar>
+      
+      <Box sx={{ p: 2 }}>
         {errorWarnings}
-      </div>
-      <p>Main file: {fileNames.file1}, Comparison file: {fileNames.file2}</p>
-      <Outlet />
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Main file: {fileNames.file1}, Comparison file: {fileNames.file2}
+        </Typography>
+        <Outlet />
+      </Box>
+
       <Snackbar
         open={file1ProcessedState.status.get() === 'LOADING'}
         message={'File 1 Is Loading'}
@@ -74,6 +121,6 @@ export function App() {
           horizontal: 'right',
         }}
       />
-    </div>
+    </Box>
   )
 }
