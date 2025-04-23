@@ -26,6 +26,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/quicksand": "^5.2.6",
     "@fontsource/roboto": "^5.2.5",
     "@hookstate/core": "^4.0.2",
     "@mui/icons-material": "^6.4.11",
