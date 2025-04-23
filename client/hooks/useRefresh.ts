@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react'
-import { ChunkRow, ModuleRow } from '../../shared/types'
+import { useCallback, useRef } from 'react'
+import { ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
 import axios from 'axios'
 import { useHookstate } from '@hookstate/core'
 import {
@@ -9,7 +9,7 @@ import {
   file2ProcessedGlobalState,
   filesGlobalState
 } from '../globalState'
-import { processModulesAndChunks } from '../helpers/processModulesAndChunks'
+import { processState } from '../helpers/processModulesAndChunks'
 import { unreachable } from '../../shared/helpers'
 import { getPercentage } from '../helpers/math'
 
@@ -161,6 +161,47 @@ export function useStateRefreshFunctions() {
     }
     return chunks
   }, [runIds, errors])
+  const queryNamedChunkGroups = useCallback(async (args: {
+    file: 'file1' | 'file2'
+    fileId: number
+    currentRunId: number
+  }) =>  {
+    const {
+      file,
+      fileId,
+      currentRunId,
+    } = args
+    if (!fileId) {
+      return []
+    }
+    const limit = 50
+    let minIdNonInclusive = -1
+    const namedChunkGroups: Array<NamedChunkGroupRow> = []
+    while (true) {
+      try {
+        const res = await axios.get<{
+          namedChunkGroupRows: Array<NamedChunkGroupRow>
+          lastId: number | null
+        }>(`/api/named-chunk-groups/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
+        if (currentRunId !== runIds.current[file]) {
+          console.log(`exiting named chunk groups query early for file ${file}, (${currentRunId} !== ${runIds.current[file]})`)
+          return null
+        }
+        const { namedChunkGroupRows, lastId } = res.data
+        namedChunkGroupRows.forEach((ncgr) => {
+          namedChunkGroups.push(ncgr)
+        })
+        if (lastId === null) {
+          break
+        }
+        minIdNonInclusive = lastId
+      } catch(e) {
+        errors.merge(["[CHUNKS]: Something went wrong fetching the list of available named chunk groups"])
+        return
+      }
+    }
+    return namedChunkGroups
+  }, [runIds])
 
   const clearFileData = useCallback((file: 'file1' | 'file2') => {
     console.log('xcxc clearing data', file)
@@ -201,13 +242,19 @@ export function useStateRefreshFunctions() {
       fileId,
       currentRunId,
     })
+    const namedChunkGroupRows = await queryNamedChunkGroups({
+      file,
+      fileId,
+      currentRunId,
+    })
     if (currentRunId !== runIds.current[file]) {
       console.log(`xcxc canceled processing for file ${file}`)
       return
     }
-    const processedState = processModulesAndChunks({
+    const processedState = processState({
       moduleRows,
       chunkRows,
+      namedChunkGroupRows,
     })
     if (file === 'file1') {
       file1State.set(processedState)

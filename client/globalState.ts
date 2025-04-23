@@ -48,6 +48,7 @@ export const defaultProcessedState: ProcessedState = {
   chunksByDatabaseId: new Map(),
   chunksByWebpackId: new Map(),
   moduleInclusionReasons: new Set(),
+  namedChunkGroupsByDatabaseId: new Map(),
 }
 export const file1ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })
 export const file2ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })

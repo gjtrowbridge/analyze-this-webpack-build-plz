@@ -61,6 +61,7 @@ export function ChunkInspector() {
 
   const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
+  const namedChunkGroupsByDatabaseId = stateOrNull.namedChunkGroupsByDatabaseId.get()
   const chunks = Array.from(chunksByDatabaseId.values())
   const chunkRows = chunks
     .filter((c) => {
@@ -111,6 +112,7 @@ export function ChunkInspector() {
         chunk={chunk}
         modulesByDatabaseId={modulesByDatabaseId}
         chunksByDatabaseId={chunksByDatabaseId}
+        namedChunkGroupsByDatabaseId={namedChunkGroupsByDatabaseId}
       />
     })
 

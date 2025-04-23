@@ -1,5 +1,5 @@
-import { StatsChunk, StatsModule, type StatsModuleReason } from 'webpack'
-import { ChunkRow, ModuleRow } from '../../shared/types'
+import { StatsChunk, StatsModule, type StatsModuleReason, StatsChunkGroup } from 'webpack'
+import { ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
 import { ImmutableArray, ImmutableObject } from '@hookstate/core'
 import { getModuleIdentifierKey } from './modules'
 import { getSanitizedChunkId } from './chunks'
@@ -20,6 +20,13 @@ interface ModuleRelationshipInfo {
   }>
 }
 
+export interface ProcessedNamedChunkGroupInfo {
+  namedChunkGroupDatabaseId: number
+  name: string
+  rawFromWebpack: ImmutableObject<StatsChunkGroup>
+  chunkDatabaseIds: Set<number>
+}
+
 export interface ProcessedChunkInfo {
   chunkDatabaseId: number
   rawFromWebpack: ImmutableObject<StatsChunk>
@@ -27,6 +34,7 @@ export interface ProcessedChunkInfo {
   parentChunkDatabaseIds: Set<number>
   siblingChunkDatabaseIds: Set<number>
   childChunkDatabaseIds: Set<number>
+  namedChunkGroupDatabaseIds: Set<number>
 
   childModuleDatabaseIds: Set<number>
   pathFromEntry: Array<number>
@@ -44,6 +52,7 @@ export type ProcessedState = {
   chunksByDatabaseId: Map<number, ProcessedChunkInfo>
   chunksByWebpackId: Map<string, ProcessedChunkInfo>
   moduleInclusionReasons: Set<string>
+  namedChunkGroupsByDatabaseId: Map<number, ProcessedNamedChunkGroupInfo>
 }
 
 export interface ProcessedModuleInfo {
@@ -103,16 +112,19 @@ const moduleReasonTypeHandlers: {
   "loader import": getImportHandler({ isLazy: false }),
 }
 
-export function processModulesAndChunks(args: {
+export function processState(args: {
   moduleRows: ImmutableArray<ModuleRow>
   chunkRows: ImmutableArray<ChunkRow>
+  namedChunkGroupRows: ImmutableArray<NamedChunkGroupRow>
 }): ProcessedState {
   const {
     moduleRows,
     chunkRows,
+    namedChunkGroupRows,
   } = args
   const chunksByDatabaseId = new Map<number, ProcessedChunkInfo>
   const modulesByDatabaseId = new Map<number, ProcessedModuleInfo>
+  const namedChunkGroupsByDatabaseId = new Map<number, ProcessedNamedChunkGroupInfo>
 
   const chunksByWebpackId = new Map<string, ProcessedChunkInfo>()
   const modulesByWebpackIdentifier = new Map<string, ProcessedModuleInfo>()
@@ -130,6 +142,7 @@ export function processModulesAndChunks(args: {
       siblingChunkDatabaseIds: new Set<number>(),
       childChunkDatabaseIds: new Set<number>(),
       childModuleDatabaseIds: new Set<number>(),
+      namedChunkGroupDatabaseIds: new Set<number>(),
       pathFromEntry: [],
     }
     chunksByDatabaseId.set(chunkRow.databaseId, processedChunk)
@@ -148,6 +161,24 @@ export function processModulesAndChunks(args: {
     modulesByDatabaseId.set(moduleRow.databaseId, processedModule)
     const moduleIdentifier = getModuleIdentifierKey(processedModule.rawFromWebpack.identifier)
     modulesByWebpackIdentifier.set(moduleIdentifier, processedModule)
+  })
+  namedChunkGroupRows.forEach((namedChunkGroupRow) => {
+    const processedNamedChunkGroup: ProcessedNamedChunkGroupInfo = {
+      rawFromWebpack: namedChunkGroupRow.rawFromWebpack,
+      namedChunkGroupDatabaseId: namedChunkGroupRow.databaseId,
+      chunkDatabaseIds: new Set<number>,
+      name: namedChunkGroupRow.rawFromWebpack.name,
+    }
+    // Update the database ids for chunks and named chunk groups
+    namedChunkGroupRow.rawFromWebpack.chunks.forEach((c) => {
+      const chunkWebpackId = getSanitizedChunkId(c)
+      if (chunksByWebpackId.has(chunkWebpackId)) {
+        const chunk = chunksByWebpackId.get(chunkWebpackId)
+        chunk.namedChunkGroupDatabaseIds.add(processedNamedChunkGroup.namedChunkGroupDatabaseId)
+        processedNamedChunkGroup.chunkDatabaseIds.add(chunk.chunkDatabaseId)
+      }
+    })
+    namedChunkGroupsByDatabaseId.set(processedNamedChunkGroup.namedChunkGroupDatabaseId, processedNamedChunkGroup)
   })
 
   /**
@@ -244,6 +275,7 @@ export function processModulesAndChunks(args: {
     modulesByDatabaseId,
     modulesByWebpackIdentifier,
     moduleInclusionReasons,
+    namedChunkGroupsByDatabaseId,
   }
 }
 

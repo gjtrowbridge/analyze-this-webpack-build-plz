@@ -25,6 +25,7 @@ export function ChunkRowPage(props: { file: FileNumber }) {
 
   const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
+  const namedChunkGroupsByDatabaseId = stateOrNull.namedChunkGroupsByDatabaseId.get()
   const chunk = chunksByDatabaseId.get(chunkDatabaseId)
   if (!chunk) {
     return <p>No chunk found with id: {chunkDatabaseId}</p>
@@ -37,6 +38,7 @@ export function ChunkRowPage(props: { file: FileNumber }) {
       setShowRawInfo={setShowFinal}
       chunksByDatabaseId={chunksByDatabaseId}
       modulesByDatabaseId={modulesByDatabaseId}
+      namedChunkGroupsByDatabaseId={namedChunkGroupsByDatabaseId}
       noLimitsOnLists={true}
     />
   )

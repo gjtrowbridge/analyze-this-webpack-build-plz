@@ -1,9 +1,10 @@
 import React from 'react';
+import { Box, Typography } from '@mui/material'
 
 export const NamedChunkGroupInspector: React.FC = () => {
   return (
-    <div>
-      <h1>Named Chunk Group Inspector</h1>
-    </div>
+    <Box>
+      <Typography variant={'h3'}>Named Chunk Group Inspector</Typography>
+    </Box>
   );
 }; 

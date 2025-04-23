@@ -1,6 +1,10 @@
 import "./styles/ChunkRow.css"
 import { JsonViewer } from '@textea/json-viewer'
-import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import {
+  ProcessedChunkInfo,
+  ProcessedModuleInfo,
+  ProcessedNamedChunkGroupInfo
+} from '../helpers/processModulesAndChunks'
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { getHumanReadableChunkName } from '../helpers/chunks'
 import { ModuleLink } from './ModuleLink'
@@ -15,6 +19,7 @@ import {
   Typography,
   Divider
 } from '@mui/material'
+import { NamedChunkGroupLink } from './NamedChunkGroupLink'
 
 export function ChunkRow(props: {
   chunk: ImmutableObject<ProcessedChunkInfo>
@@ -22,6 +27,7 @@ export function ChunkRow(props: {
   setShowRawInfo: (chunkDatabaseId: number) => void
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
+  namedChunkGroupsByDatabaseId: ImmutableMap<number, ProcessedNamedChunkGroupInfo>
   noLimitsOnLists?: boolean
 }) {
   const {
@@ -30,6 +36,7 @@ export function ChunkRow(props: {
     setShowRawInfo,
     chunksByDatabaseId,
     modulesByDatabaseId,
+    namedChunkGroupsByDatabaseId,
     noLimitsOnLists,
   } = props
 
@@ -107,7 +114,23 @@ export function ChunkRow(props: {
             Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}
           </Typography>
         </Box>
-
+        <Box>
+          <Typography variant={'h6'}>
+            <List>
+              {Array.from(chunk.namedChunkGroupDatabaseIds).map((ncgId) => {
+                const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+                if (!ncg) {
+                  return null
+                }
+                return (
+                  <ListItem key={ncgId}>
+                    <NamedChunkGroupLink namedChunkGroup={ncg} file={'file1'} />
+                  </ListItem>
+                )
+              })}
+            </List>
+          </Typography>
+        </Box>
         <Box sx={{ mt: 2 }}>
           <Typography variant="h6" gutterBottom>Shortest path to entry point</Typography>
           <List>
