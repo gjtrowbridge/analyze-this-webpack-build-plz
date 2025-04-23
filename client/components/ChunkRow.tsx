@@ -46,47 +46,80 @@ export function ChunkRow(props: {
   } = props
 
   const [expanded, setExpanded] = useState(false)
+  const [namedChunkGroupsExpanded, setNamedChunkGroupsExpanded] = useState(false)
+  const [shortestPathExpanded, setShortestPathExpanded] = useState(false)
+  const [chunkChildrenExpanded, setChunkChildrenExpanded] = useState(false)
+  const [chunkParentsExpanded, setChunkParentsExpanded] = useState(false)
+  const [chunkSiblingsExpanded, setChunkSiblingsExpanded] = useState(false)
+  const [moduleChildrenExpanded, setModuleChildrenExpanded] = useState(false)
 
-  const maxModuleChildrenToShow = noLimitsOnLists ? 100000 : 10
-  const maxChunkParentsToShow = noLimitsOnLists ? 100000 : 10
-  const maxChunkChildrenToShow = noLimitsOnLists ? 100000 : 10
-  const maxChunkSiblingsToShow = noLimitsOnLists ? 100000 : 10
-
-  const childModules = Array.from(chunk.childModuleDatabaseIds).slice(0, maxModuleChildrenToShow).map((moduleDatabaseId) => {
-    const module = modulesByDatabaseId.get(moduleDatabaseId)
-    return (
-      <ListItem key={moduleDatabaseId}>
+  const childModules = Array.from(chunk.childModuleDatabaseIds)
+    .map((moduleDatabaseId) => {
+      const module = modulesByDatabaseId.get(moduleDatabaseId)
+      return {
+        id: moduleDatabaseId,
+        module,
+        name: module?.rawFromWebpack.name || ''
+      }
+    })
+    .filter(item => item.module) // Filter out any null modules
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(({ id, module }) => (
+      <ListItem key={id}>
         <ModuleLink module={module} file={"file1"} />
       </ListItem>
-    )
-  })
+    ))
 
-  const chunkParents = Array.from(chunk.parentChunkDatabaseIds).slice(0, maxChunkParentsToShow).map((chunkDatabaseId) => {
-    const chunk = chunksByDatabaseId.get(chunkDatabaseId)
-    return (
-      <ListItem key={chunkDatabaseId}>
+  const chunkParents = Array.from(chunk.parentChunkDatabaseIds)
+    .map((chunkDatabaseId) => {
+      const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+      return {
+        id: chunkDatabaseId,
+        chunk,
+        name: chunk ? getHumanReadableChunkName(chunk) : ''
+      }
+    })
+    .filter(item => item.chunk) // Filter out any null chunks
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(({ id, chunk }) => (
+      <ListItem key={id}>
         <ChunkLink chunk={chunk} file={'file1'} />
       </ListItem>
-    )
-  })
+    ))
 
-  const chunkChildren = Array.from(chunk.childChunkDatabaseIds).slice(0, maxChunkChildrenToShow).map((chunkDatabaseId) => {
-    const chunk = chunksByDatabaseId.get(chunkDatabaseId)
-    return (
-      <ListItem key={chunkDatabaseId}>
+  const chunkChildren = Array.from(chunk.childChunkDatabaseIds)
+    .map((chunkDatabaseId) => {
+      const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+      return {
+        id: chunkDatabaseId,
+        chunk,
+        name: chunk ? getHumanReadableChunkName(chunk) : ''
+      }
+    })
+    .filter(item => item.chunk) // Filter out any null chunks
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(({ id, chunk }) => (
+      <ListItem key={id}>
         <ChunkLink chunk={chunk} file={'file1'} />
       </ListItem>
-    )
-  })
+    ))
 
-  const chunkSiblings = Array.from(chunk.siblingChunkDatabaseIds).slice(0, maxChunkSiblingsToShow).map((chunkDatabaseId) => {
-    const chunk = chunksByDatabaseId.get(chunkDatabaseId)
-    return (
-      <ListItem key={chunkDatabaseId}>
+  const chunkSiblings = Array.from(chunk.siblingChunkDatabaseIds)
+    .map((chunkDatabaseId) => {
+      const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+      return {
+        id: chunkDatabaseId,
+        chunk,
+        name: chunk ? getHumanReadableChunkName(chunk) : ''
+      }
+    })
+    .filter(item => item.chunk) // Filter out any null chunks
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(({ id, chunk }) => (
+      <ListItem key={id}>
         <ChunkLink chunk={chunk} file={'file1'} />
       </ListItem>
-    )
-  })
+    ))
 
   const shortestPath = chunk.pathFromEntry.map((chunkDatabaseId) => {
     const c = chunksByDatabaseId.get(chunkDatabaseId)
@@ -102,7 +135,7 @@ export function ChunkRow(props: {
       <CardContent>
         <Box sx={{ mb: 2 }}>
           <Typography variant="h6" gutterBottom>
-            {getHumanReadableChunkName(chunk)}
+            <ChunkLink chunk={chunk} file={'file1'} />
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Webpack Id: {chunk.rawFromWebpack.id}
@@ -118,79 +151,91 @@ export function ChunkRow(props: {
           </Typography>
         </Box>
 
-        <Accordion>
+        <Accordion expanded={namedChunkGroupsExpanded} onChange={() => setNamedChunkGroupsExpanded(!namedChunkGroupsExpanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Named Chunk Groups ({chunk.namedChunkGroupDatabaseIds.size})</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List>
-              {Array.from(chunk.namedChunkGroupDatabaseIds).map((ncgId) => {
-                const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
-                if (!ncg) {
-                  return null
-                }
-                return (
-                  <ListItem key={ncgId}>
-                    <NamedChunkGroupLink namedChunkGroup={ncg} file={'file1'} />
-                  </ListItem>
-                )
-              })}
-            </List>
+            {namedChunkGroupsExpanded && (
+              <List>
+                {Array.from(chunk.namedChunkGroupDatabaseIds).map((ncgId) => {
+                  const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+                  if (!ncg) {
+                    return null
+                  }
+                  return (
+                    <ListItem key={ncgId}>
+                      <NamedChunkGroupLink namedChunkGroup={ncg} file={'file1'} />
+                    </ListItem>
+                  )
+                })}
+              </List>
+            )}
           </AccordionDetails>
         </Accordion>
 
-        <Accordion>
+        <Accordion expanded={shortestPathExpanded} onChange={() => setShortestPathExpanded(!shortestPathExpanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Shortest Path to Entry Point ({chunk.pathFromEntry.length})</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List>
-              {shortestPath}
-            </List>
+            {shortestPathExpanded && (
+              <List>
+                {shortestPath}
+              </List>
+            )}
           </AccordionDetails>
         </Accordion>
 
-        <Accordion>
+        <Accordion expanded={chunkChildrenExpanded} onChange={() => setChunkChildrenExpanded(!chunkChildrenExpanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Chunk Children ({chunk.childChunkDatabaseIds.size} total -- will only show up to {maxChunkChildrenToShow})</Typography>
+            <Typography>Chunk Children ({chunk.childChunkDatabaseIds.size})</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List dense>
-              {chunkChildren}
-            </List>
+            {chunkChildrenExpanded && (
+              <List dense>
+                {chunkChildren}
+              </List>
+            )}
           </AccordionDetails>
         </Accordion>
 
-        <Accordion>
+        <Accordion expanded={chunkParentsExpanded} onChange={() => setChunkParentsExpanded(!chunkParentsExpanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Chunk Parents ({chunk.parentChunkDatabaseIds.size} total -- will only show up to {maxChunkParentsToShow})</Typography>
+            <Typography>Chunk Parents ({chunk.parentChunkDatabaseIds.size})</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List dense>
-              {chunkParents}
-            </List>
+            {chunkParentsExpanded && (
+              <List dense>
+                {chunkParents}
+              </List>
+            )}
           </AccordionDetails>
         </Accordion>
 
-        <Accordion>
+        <Accordion expanded={chunkSiblingsExpanded} onChange={() => setChunkSiblingsExpanded(!chunkSiblingsExpanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Chunk Siblings ({chunk.siblingChunkDatabaseIds.size} total -- will only show up to {maxChunkSiblingsToShow})</Typography>
+            <Typography>Chunk Siblings ({chunk.siblingChunkDatabaseIds.size})</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List dense>
-              {chunkSiblings}
-            </List>
+            {chunkSiblingsExpanded && (
+              <List dense>
+                {chunkSiblings}
+              </List>
+            )}
           </AccordionDetails>
         </Accordion>
 
-        <Accordion>
+        <Accordion expanded={moduleChildrenExpanded} onChange={() => setModuleChildrenExpanded(!moduleChildrenExpanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Module Children ({chunk.childModuleDatabaseIds.size} total -- will only show up to {maxModuleChildrenToShow})</Typography>
+            <Typography>Module Children ({chunk.childModuleDatabaseIds.size})</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <List dense>
-              {childModules}
-            </List>
+            {moduleChildrenExpanded && (
+              <List dense>
+                {childModules}
+              </List>
+            )}
           </AccordionDetails>
         </Accordion>
 
@@ -199,7 +244,9 @@ export function ChunkRow(props: {
             <Typography>See raw webpack JSON</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <JsonViewer value={chunk} defaultInspectControl={() => false} />
+            {expanded && (
+              <JsonViewer value={chunk} defaultInspectControl={() => false} />
+            )}
           </AccordionDetails>
         </Accordion>
       </CardContent>
