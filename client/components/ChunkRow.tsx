@@ -78,6 +78,15 @@ export function ChunkRow(props: {
     )
   })
 
+  const shortestPath = chunk.pathFromEntry.map((chunkDatabaseId) => {
+    const c = chunksByDatabaseId.get(chunkDatabaseId)
+    return (
+      <ListItem key={chunkDatabaseId}>
+        <ChunkLink chunk={c} file={"file1"} />
+      </ListItem>
+    )
+  })
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -91,9 +100,19 @@ export function ChunkRow(props: {
           <Typography variant="body2" color="text.secondary">
             Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb
           </Typography>
+          <Typography variant="body2" color={"text.secondary"}>
+            Depth From Entry: {chunk.pathFromEntry.length}
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}
           </Typography>
+        </Box>
+
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6" gutterBottom>Shortest path to entry point</Typography>
+          <List>
+            {shortestPath}
+          </List>
         </Box>
 
         <Box sx={{ mb: 2 }}>

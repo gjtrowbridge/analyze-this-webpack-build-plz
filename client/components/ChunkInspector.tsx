@@ -38,9 +38,17 @@ export function ChunkInspector() {
       const bName = b.rawFromWebpack.names?.join("|") || ""
       return (aName.localeCompare(bName)) * sortOrder
     } else if (sortBy === '# JS Assets') {
-      const aJsAssets = a.rawFromWebpack.files?.filter((f) => { return f.toLowerCase().includes('.js') }).length ?? 0
-      const bJsAssets = a.rawFromWebpack.files?.filter((f) => { return f.toLowerCase().includes('.js') }).length ?? 0
+      const aJsAssets = a.rawFromWebpack.files?.filter((f) => {
+        return f.toLowerCase().includes('.js')
+      }).length ?? 0
+      const bJsAssets = a.rawFromWebpack.files?.filter((f) => {
+        return f.toLowerCase().includes('.js')
+      }).length ?? 0
       return (aJsAssets - bJsAssets) * sortOrder
+    } else if (sortBy === 'Depth From Entry') {
+      const depthA = a.pathFromEntry.length
+      const depthB = b.pathFromEntry.length
+      return (depthA - depthB) * sortOrder
     } else {
       unreachable(sortBy)
     }
@@ -55,6 +63,12 @@ export function ChunkInspector() {
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const chunks = Array.from(chunksByDatabaseId.values())
   const chunkRows = chunks
+    .filter((c) => {
+      if (sortBy === 'Depth From Entry' && c.pathFromEntry.length === 0) {
+        return false
+      }
+      return true
+    })
     .filter((c) => {
       if (filterName === "") {
         return true
@@ -122,6 +136,7 @@ export function ChunkInspector() {
                 <SortControl<ChunkSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ChunkSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ChunkSortBy> controlFor={"# JS Assets"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ChunkSortBy> controlFor={"Depth From Entry"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>

@@ -37,5 +37,8 @@ export function getModuleNumberOfChunks(m: ImmutableObject<ProcessedModuleInfo>)
 export function getModuleExtraSizeDueToDuplication(m: ImmutableObject<ProcessedModuleInfo>): number {
   const numChunks = getModuleNumberOfChunks(m)
   const size = getModuleSize(m)
+  if (numChunks === 0) {
+    return 0
+  }
   return size * (numChunks - 1)
 }

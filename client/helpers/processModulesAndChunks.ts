@@ -29,6 +29,7 @@ export interface ProcessedChunkInfo {
   childChunkDatabaseIds: Set<number>
 
   childModuleDatabaseIds: Set<number>
+  pathFromEntry: Array<number>
   // originModuleDatabaseIds: Array<number>
 }
 
@@ -55,7 +56,7 @@ export interface ProcessedModuleInfo {
    * The chain from the entry point module to this module (if any).
    * This will be null if the module is not connected to the webpack entry point at all.
    */
-  pathFromEntry: Array<number> | null
+  pathFromEntry: Array<number>
 
   /**
    * moduleDatabaseId -> ModuleRelationshipInfo
@@ -129,6 +130,7 @@ export function processModulesAndChunks(args: {
       siblingChunkDatabaseIds: new Set<number>(),
       childChunkDatabaseIds: new Set<number>(),
       childModuleDatabaseIds: new Set<number>(),
+      pathFromEntry: [],
     }
     chunksByDatabaseId.set(chunkRow.databaseId, processedChunk)
     chunksByWebpackId.set(getSanitizedChunkId(processedChunk.rawFromWebpack.id), processedChunk)
@@ -183,7 +185,7 @@ export function processModulesAndChunks(args: {
   /**
    * Updates .pathToEntry for any modules connected to the entry point
    */
-  bfsUpdatePathToEntry(modulesByDatabaseId)
+  bfsUpdatePathToEntryModules(modulesByDatabaseId)
 
   /**
    * Iterate over chunks and process parent/child stuff for chunks
@@ -225,6 +227,11 @@ export function processModulesAndChunks(args: {
       }
     }
   }
+
+  /**
+   * Updates .pathToEntry for any chunks connected to the chunk entry point(s)
+   */
+  bfsUpdatePathToEntryChunks(chunksByDatabaseId)
 
   return {
     status: 'LOADED',
@@ -275,7 +282,7 @@ function getImportHandler(outerArgs: { isLazy?: boolean }) {
 /**
  * Does a breadth-first search down the chain from the entry point to any connected modules
  */
-function bfsUpdatePathToEntry(modulesByDatabaseId: Map<number, ProcessedModuleInfo>) {
+function bfsUpdatePathToEntryModules(modulesByDatabaseId: Map<number, ProcessedModuleInfo>) {
   type QueueItem = {
     moduleDatabaseId: number,
     // The shortest path (if any) of module database ids leading up to the entry point
@@ -324,6 +331,41 @@ function bfsUpdatePathToEntry(modulesByDatabaseId: Map<number, ProcessedModuleIn
         queue.push({
           moduleDatabaseId: childDatabaseId,
           path: [...path, childDatabaseId],
+        })
+      }
+    }
+  }
+}
+
+function bfsUpdatePathToEntryChunks(chunksByDatabaseId: Map<number, ProcessedChunkInfo>) {
+  type QueueItem = {
+    chunkDatabaseId: number,
+    path: Array<number>,
+  }
+  const queue: Array<QueueItem> = []
+  const alreadySeenChunkDatabaseIds = new Set<number>() 
+  for (const [_, chunk] of chunksByDatabaseId) {
+    if (chunk.rawFromWebpack.entry) {
+      queue.push({
+        chunkDatabaseId: chunk.chunkDatabaseId,
+        path: [chunk.chunkDatabaseId],
+      })
+    }
+  }
+  while (queue.length > 0) {
+    const item = queue.shift()
+    const { chunkDatabaseId, path } = item
+    const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+    if (chunk.rawFromWebpack.names.includes('main')) {
+      console.log(chunk.rawFromWebpack.names, Array.from(chunk.childChunkDatabaseIds))
+    }
+    chunk.pathFromEntry = path
+    for (const childChunk of Array.from(chunk.childChunkDatabaseIds)) {
+      if (!alreadySeenChunkDatabaseIds.has(childChunk)) {
+        alreadySeenChunkDatabaseIds.add(childChunk)
+        queue.push({
+          chunkDatabaseId: childChunk,
+          path: [...path, childChunk],
         })
       }
     }
