@@ -8,14 +8,17 @@ import { getModuleExtraSizeDueToDuplication } from '../helpers/modules'
 import { inKB } from '../helpers/math'
 import { 
   Box, 
-  Button, 
   Card, 
   CardContent, 
   List, 
   ListItem, 
   Typography,
-  Divider
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { useState } from 'react'
 
 export function ModuleRow(props: {
   module: ImmutableObject<ProcessedModuleInfo>
@@ -34,9 +37,7 @@ export function ModuleRow(props: {
     noLimitsOnLists,
   } = props
 
-  const rawInfo = showRawInfo ?
-    <JsonViewer value={module.rawFromWebpack} defaultInspectControl={() => false} />
-    : null
+  const [expanded, setExpanded] = useState(false)
 
   const numTotalModules = module.rawFromWebpack.modules?.length || 1
   const depth = module.pathFromEntry.length
@@ -91,55 +92,59 @@ export function ModuleRow(props: {
           <Typography variant="body1" gutterBottom># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</Typography>
           <Typography variant="body1" gutterBottom>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</Typography>
           
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>Chunk Parent(s)</Typography>
-            <List>
-              {chunkParents}
-            </List>
-          </Box>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Chunk Parents ({module.parentChunkDatabaseIds.length})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {chunkParents}
+              </List>
+            </AccordionDetails>
+          </Accordion>
 
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>Shortest path to entry point</Typography>
-            <List>
-              {shortestPath}
-            </List>
-          </Box>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Shortest Path to Entry Point ({module.pathFromEntry.length})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {shortestPath}
+              </List>
+            </AccordionDetails>
+          </Accordion>
 
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>Module Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</Typography>
-            <List>
-              {children}
-            </List>
-          </Box>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Module Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {children}
+              </List>
+            </AccordionDetails>
+          </Accordion>
 
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>Module Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</Typography>
-            <List>
-              {parents}
-            </List>
-          </Box>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Module Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {parents}
+              </List>
+            </AccordionDetails>
+          </Accordion>
 
-          <Box sx={{ mt: 2 }}>
-            <Button 
-              variant="outlined" 
-              onClick={() => { 
-                if (showRawInfo) { 
-                  setShowRawInfo(-1) 
-                } else { 
-                  setShowRawInfo(module.moduleDatabaseId)
-                }
-              }}
-            >
-              {showRawInfo ? "Hide" : "Show"} Raw JSON
-            </Button>
-          </Box>
+          <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>See raw webpack JSON</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <JsonViewer value={module.rawFromWebpack} defaultInspectControl={() => false} />
+            </AccordionDetails>
+          </Accordion>
         </Box>
-        {rawInfo && (
-          <>
-            <Divider sx={{ my: 2 }} />
-            {rawInfo}
-          </>
-        )}
       </CardContent>
     </Card>
   )
