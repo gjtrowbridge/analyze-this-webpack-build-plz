@@ -40,6 +40,7 @@ export function ChunkRowPage(props: { file: FileNumber }) {
       modulesByDatabaseId={modulesByDatabaseId}
       namedChunkGroupsByDatabaseId={namedChunkGroupsByDatabaseId}
       noLimitsOnLists={true}
+      file={file}
     />
   )
 }

@@ -34,6 +34,7 @@ export function ChunkRow(props: {
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
   namedChunkGroupsByDatabaseId: ImmutableMap<number, ProcessedNamedChunkGroupInfo>
   noLimitsOnLists?: boolean
+  file: 'file1' | 'file2'
 }) {
   const {
     chunk,
@@ -43,6 +44,7 @@ export function ChunkRow(props: {
     modulesByDatabaseId,
     namedChunkGroupsByDatabaseId,
     noLimitsOnLists,
+    file,
   } = props
 
   const [expanded, setExpanded] = useState(false)
@@ -66,7 +68,7 @@ export function ChunkRow(props: {
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(({ id, module }) => (
       <ListItem key={id}>
-        <ModuleLink module={module} file={"file1"} />
+        <ModuleLink module={module} file={file} />
       </ListItem>
     ))
 

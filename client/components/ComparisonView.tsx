@@ -1,12 +1,3 @@
-// import { ChunksById, ModulesById, ReactChunkState, ReactModuleState } from '../types'
-// import { ComparisonData, getComparisonData } from '../helpers/comparison'
-// import { StatsChunk, StatsModule } from 'webpack'
-// import { ChunkRow } from './ChunkRow'
-// import { useState } from 'react'
-// import { ModuleRow } from './ModuleRow'
-// import { useFileNames } from '../hooks/useFiles'
-//
-
 import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState, file2ProcessedGlobalState, filesGlobalState } from '../globalState'
 import { ChunkComparisonData, compareFiles, ModuleComparisonData } from '../helpers/comparison'

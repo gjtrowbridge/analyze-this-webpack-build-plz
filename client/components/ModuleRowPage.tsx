@@ -31,6 +31,7 @@ export function ModuleRowPage(props: { file: FileNumber }) {
 
   return (
     <ModuleRow
+      file={file}
       module={module}
       showRawInfo={showRawInfo}
       setShowRawInfo={setShowFinal}

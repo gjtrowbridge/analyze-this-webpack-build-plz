@@ -21,6 +21,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
 
 export function ModuleRow(props: {
+  file: 'file1' | 'file2'
   module: ImmutableObject<ProcessedModuleInfo>
   showRawInfo: boolean,
   setShowRawInfo: (moduleDatabaseId: number) => void
@@ -29,6 +30,7 @@ export function ModuleRow(props: {
   noLimitsOnLists?: boolean
 }) {
   const {
+    file,
     module,
     showRawInfo,
     setShowRawInfo,
@@ -45,7 +47,7 @@ export function ModuleRow(props: {
     const m = modulesByDatabaseId.get(moduleDatabaseId)
     return (
       <ListItem key={moduleDatabaseId}>
-        <ModuleLink module={m} file={"file1"} />
+        <ModuleLink module={m} file={file} />
       </ListItem>
     )
   })

@@ -104,6 +104,7 @@ export function ChunkInspector() {
     .slice(0, 100)
     .map((chunk) => {
       return <ChunkRow
+        file={'file1'}
         setShowRawInfo={(chunkDatabaseId) => {
           setShowMoreId(chunkDatabaseId)
         }}

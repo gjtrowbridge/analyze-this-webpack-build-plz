@@ -38,7 +38,7 @@ root.render(
         <Route path="chunks">
           <Route index element={<ChunkInspector />} />
           <Route path="file1/:chunkDatabaseId" element={<ChunkRowPage file={'file1'} />} />
-          <Route path="file1/:chunkDatabaseId" element={<ChunkRowPage file={'file2'} />} />
+          <Route path="file2/:chunkDatabaseId" element={<ChunkRowPage file={'file2'} />} />
         </Route>
         <Route path="assets">
           <Route index element={<AssetInspector />} />

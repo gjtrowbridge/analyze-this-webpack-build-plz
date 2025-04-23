@@ -134,6 +134,7 @@ export function ModuleInspector() {
     .map((m) => {
       return <ModuleRow
         key={m.moduleDatabaseId}
+        file={'file1'}
         module={m}
         setShowRawInfo={(moduleDatabaseId: number) => {
           setShowMoreId(moduleDatabaseId)
