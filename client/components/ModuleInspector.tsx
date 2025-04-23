@@ -199,7 +199,7 @@ export function ModuleInspector() {
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
-                label="Filter By Chunk Id"
+                label="Filter By Webpack Chunk Id"
                 value={filterByChunkId}
                 onChange={(e) => setFilterByChunkId(e.target.value)}
                 size="small"

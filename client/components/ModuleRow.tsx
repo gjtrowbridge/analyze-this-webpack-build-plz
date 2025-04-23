@@ -49,14 +49,19 @@ export function ModuleRow(props: {
       </ListItem>
     )
   })
+  const associatedAssets = []
   const chunkParents = module.parentChunkDatabaseIds.map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+    chunk.rawFromWebpack.files?.forEach((file) => {
+      associatedAssets.push(file)
+    })
     return (
       <ListItem key={chunkDatabaseId}>
         <ChunkLink chunk={chunk} file={'file1'} />
       </ListItem>
     )
   })
+
 
   const maxChildrenToShow = noLimitsOnLists ? 100000 : 10
   const maxParentsToShow = noLimitsOnLists ? 100000 : 10
@@ -87,6 +92,7 @@ export function ModuleRow(props: {
             <ModuleLink module={module} file={"file1"} />
           </Typography>
           <Typography variant="body1" gutterBottom>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</Typography>
+          <Typography variant="body1" gutterBottom># Associated Files: { associatedAssets.length } (See Chunk Parents for more info)</Typography>
           <Typography variant="body1" gutterBottom>Size: ~{inKB(module.rawFromWebpack.size)} kb</Typography>
           <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: ~{inKB(getModuleExtraSizeDueToDuplication(module))} kb</Typography>
           <Typography variant="body1" gutterBottom># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</Typography>
