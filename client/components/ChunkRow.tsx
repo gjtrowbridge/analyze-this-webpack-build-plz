@@ -143,7 +143,7 @@ export function ChunkRow(props: {
             Webpack Id: {chunk.rawFromWebpack.id}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb
+            Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb ({chunk.rawFromWebpack.size} bytes)
           </Typography>
           <Typography variant="body2" color={"text.secondary"}>
             Depth From Entry: {chunk.pathFromEntry.length}

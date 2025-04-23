@@ -3,6 +3,7 @@ import { file1ProcessedGlobalState, file2ProcessedGlobalState, filesGlobalState 
 import { ChunkComparisonData, compareFiles, ModuleComparisonData } from '../helpers/comparison'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
+import { CompareChunkLink } from './CompareChunkLink'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -99,7 +100,7 @@ function ChunkComparison(props: { data: ChunkComparisonData}) {
     const { file1Chunk, file2Chunk } = args
     return (
       <li key={file1Chunk.chunkDatabaseId}>
-        <ChunkLink chunk={file1Chunk} file={'file1'} includeFileInfo={true} /> vs <ChunkLink chunk={file2Chunk} file={'file2'} includeFileInfo={true} />
+        <CompareChunkLink chunk1={file1Chunk} chunk2={file2Chunk} />
       </li>
     )
   })

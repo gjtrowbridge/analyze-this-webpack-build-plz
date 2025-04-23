@@ -2,10 +2,11 @@ import { Link } from 'react-router'
 import { Typography } from '@mui/material'
 import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
 import { getHumanReadableChunkName } from '../helpers/chunks'
+import { ImmutableObject } from '@hookstate/core'
 
 interface CompareChunkLinkProps {
-  chunk1: ProcessedChunkInfo
-  chunk2: ProcessedChunkInfo
+  chunk1: ImmutableObject<ProcessedChunkInfo>
+  chunk2: ImmutableObject<ProcessedChunkInfo>
 }
 
 export function CompareChunkLink(props: CompareChunkLinkProps) {
