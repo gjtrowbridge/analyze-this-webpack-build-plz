@@ -45,6 +45,7 @@ export function CompareChunkPage() {
             modulesByDatabaseId={file1ProcessedState.modulesByDatabaseId.get()}
             chunksByDatabaseId={file1ProcessedState.chunksByDatabaseId.get()}
             namedChunkGroupsByDatabaseId={file1ProcessedState.namedChunkGroupsByDatabaseId.get()}
+            includeModuleDuplicationAmount={true}
           />
         </Box>
       )}
@@ -60,6 +61,7 @@ export function CompareChunkPage() {
             modulesByDatabaseId={file2ProcessedState.modulesByDatabaseId.get()}
             chunksByDatabaseId={file2ProcessedState.chunksByDatabaseId.get()}
             namedChunkGroupsByDatabaseId={file2ProcessedState.namedChunkGroupsByDatabaseId.get()}
+            includeModuleDuplicationAmount={true}
           />
         </Box>
       )}

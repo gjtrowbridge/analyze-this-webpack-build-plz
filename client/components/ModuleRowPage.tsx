@@ -37,7 +37,6 @@ export function ModuleRowPage(props: { file: FileNumber }) {
       setShowRawInfo={setShowFinal}
       modulesByDatabaseId={modulesByDatabaseId}
       chunksByDatabaseId={chunksByDatabaseId}
-      noLimitsOnLists={true}
     />
   )
 }

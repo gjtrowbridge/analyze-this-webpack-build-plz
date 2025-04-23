@@ -11,13 +11,11 @@ import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
 import { 
   Box, 
-  Button, 
   Card, 
   CardContent, 
   List, 
   ListItem, 
   Typography,
-  Divider,
   Accordion,
   AccordionSummary,
   AccordionDetails
@@ -33,18 +31,16 @@ export function ChunkRow(props: {
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
   namedChunkGroupsByDatabaseId: ImmutableMap<number, ProcessedNamedChunkGroupInfo>
-  noLimitsOnLists?: boolean
   file: 'file1' | 'file2'
+  includeModuleDuplicationAmount?: boolean
 }) {
   const {
     chunk,
-    showRawInfo,
-    setShowRawInfo,
     chunksByDatabaseId,
     modulesByDatabaseId,
     namedChunkGroupsByDatabaseId,
-    noLimitsOnLists,
     file,
+    includeModuleDuplicationAmount,
   } = props
 
   const [expanded, setExpanded] = useState(false)
@@ -61,14 +57,14 @@ export function ChunkRow(props: {
       return {
         id: moduleDatabaseId,
         module,
-        name: module?.rawFromWebpack.name || ''
+        name: module?.rawFromWebpack.name || '',
       }
     })
     .filter(item => item.module) // Filter out any null modules
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(({ id, module }) => (
       <ListItem key={id}>
-        <ModuleLink module={module} file={file} />
+        <ModuleLink module={module} file={file} includeDuplicationAmount={includeModuleDuplicationAmount} />
       </ListItem>
     ))
 
