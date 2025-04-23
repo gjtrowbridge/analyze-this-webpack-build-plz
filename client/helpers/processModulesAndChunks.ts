@@ -388,9 +388,6 @@ function bfsUpdatePathToEntryChunks(chunksByDatabaseId: Map<number, ProcessedChu
     const item = queue.shift()
     const { chunkDatabaseId, path } = item
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
-    if (chunk.rawFromWebpack.names.includes('main')) {
-      console.log(chunk.rawFromWebpack.names, Array.from(chunk.childChunkDatabaseIds))
-    }
     chunk.pathFromEntry = path
     for (const childChunk of Array.from(chunk.childChunkDatabaseIds)) {
       if (!alreadySeenChunkDatabaseIds.has(childChunk)) {
