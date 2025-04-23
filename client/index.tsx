@@ -18,6 +18,7 @@ import { ChunkRowPage } from './components/ChunkRowPage'
 import { AssetRowPage } from './components/AssetRowPage'
 import { NamedChunkGroupRowPage } from './components/NamedChunkGroupRowPage'
 import { ComparisonView } from './components/ComparisonView'
+import { CompareChunkPage } from './components/CompareChunkPage';
 
 // Clear the existing HTML content
 document.body.innerHTML = '<div id="app"></div>';
@@ -52,6 +53,7 @@ root.render(
         </Route>
         <Route path="comparison">
           <Route index element={<ComparisonView />} />
+          <Route path="/:chunkDatabaseIdFile1/:chunkDatabaseIdFile2" element={<CompareChunkPage />} />
         </Route>
       </Route>
     </Routes>
