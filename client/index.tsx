@@ -53,7 +53,7 @@ root.render(
         </Route>
         <Route path="comparison">
           <Route index element={<ComparisonView />} />
-          <Route path="/:chunkDatabaseIdFile1/:chunkDatabaseIdFile2" element={<CompareChunkPage />} />
+          <Route path="chunks/:chunkDatabaseIdFile1/:chunkDatabaseIdFile2" element={<CompareChunkPage />} />
         </Route>
       </Route>
     </Routes>
