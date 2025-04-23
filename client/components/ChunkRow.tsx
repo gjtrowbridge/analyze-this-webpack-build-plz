@@ -17,9 +17,14 @@ import {
   List, 
   ListItem, 
   Typography,
-  Divider
+  Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material'
 import { NamedChunkGroupLink } from './NamedChunkGroupLink'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { useState } from 'react'
 
 export function ChunkRow(props: {
   chunk: ImmutableObject<ProcessedChunkInfo>
@@ -40,9 +45,7 @@ export function ChunkRow(props: {
     noLimitsOnLists,
   } = props
 
-  const rawInfo = showRawInfo ?
-    <JsonViewer value={chunk} defaultInspectControl={() => false} />
-    : null
+  const [expanded, setExpanded] = useState(false)
 
   const maxModuleChildrenToShow = noLimitsOnLists ? 100000 : 10
   const maxChunkParentsToShow = noLimitsOnLists ? 100000 : 10
@@ -114,8 +117,12 @@ export function ChunkRow(props: {
             Generated Asset Name(s): {chunk.rawFromWebpack.files?.join(", ")}
           </Typography>
         </Box>
-        <Box>
-          <Typography variant={'h6'}>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Named Chunk Groups ({chunk.namedChunkGroupDatabaseIds.size})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
             <List>
               {Array.from(chunk.namedChunkGroupDatabaseIds).map((ncgId) => {
                 const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
@@ -129,71 +136,72 @@ export function ChunkRow(props: {
                 )
               })}
             </List>
-          </Typography>
-        </Box>
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6" gutterBottom>Shortest path to entry point</Typography>
-          <List>
-            {shortestPath}
-          </List>
-        </Box>
+          </AccordionDetails>
+        </Accordion>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Chunk Parents ({chunk.parentChunkDatabaseIds.size} total -- will only show up to {maxChunkParentsToShow})
-          </Typography>
-          <List dense>
-            {chunkParents}
-          </List>
-        </Box>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Shortest Path to Entry Point ({chunk.pathFromEntry.length})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List>
+              {shortestPath}
+            </List>
+          </AccordionDetails>
+        </Accordion>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Chunk Children ({chunk.childChunkDatabaseIds.size} total -- will only show up to {maxChunkChildrenToShow})
-          </Typography>
-          <List dense>
-            {chunkChildren}
-          </List>
-        </Box>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Chunk Children ({chunk.childChunkDatabaseIds.size} total -- will only show up to {maxChunkChildrenToShow})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {chunkChildren}
+            </List>
+          </AccordionDetails>
+        </Accordion>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Chunk Siblings ({chunk.siblingChunkDatabaseIds.size} total -- will only show up to {maxChunkSiblingsToShow})
-          </Typography>
-          <List dense>
-            {chunkSiblings}
-          </List>
-        </Box>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Chunk Parents ({chunk.parentChunkDatabaseIds.size} total -- will only show up to {maxChunkParentsToShow})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {chunkParents}
+            </List>
+          </AccordionDetails>
+        </Accordion>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Module Children ({chunk.childModuleDatabaseIds.size} total -- will only show up to {maxModuleChildrenToShow})
-          </Typography>
-          <List dense>
-            {childModules}
-          </List>
-        </Box>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Chunk Siblings ({chunk.siblingChunkDatabaseIds.size} total -- will only show up to {maxChunkSiblingsToShow})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {chunkSiblings}
+            </List>
+          </AccordionDetails>
+        </Accordion>
 
-        <Button 
-          variant="outlined" 
-          size="small"
-          onClick={() => { 
-            if (showRawInfo) { 
-              setShowRawInfo(-1) 
-            } else { 
-              setShowRawInfo(chunk.chunkDatabaseId)
-            }
-          }}
-        >
-          Show {showRawInfo ? "Less" : "More"}
-        </Button>
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Module Children ({chunk.childModuleDatabaseIds.size} total -- will only show up to {maxModuleChildrenToShow})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {childModules}
+            </List>
+          </AccordionDetails>
+        </Accordion>
 
-        {rawInfo && (
-          <Box sx={{ mt: 2 }}>
-            <Divider sx={{ my: 2 }} />
-            {rawInfo}
-          </Box>
-        )}
+        <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>See raw webpack JSON</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <JsonViewer value={chunk} defaultInspectControl={() => false} />
+          </AccordionDetails>
+        </Accordion>
       </CardContent>
     </Card>
   )
