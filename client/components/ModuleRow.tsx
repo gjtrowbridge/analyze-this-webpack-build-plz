@@ -57,7 +57,7 @@ export function ModuleRow(props: {
     })
     return (
       <ListItem key={chunkDatabaseId}>
-        <ChunkLink chunk={chunk} file={'file1'} />
+        <ChunkLink chunk={chunk} file={'file1'} includeAssociatedAssets={true} />
       </ListItem>
     )
   })
