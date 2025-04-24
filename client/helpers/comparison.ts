@@ -31,6 +31,7 @@ export type ModuleComparisonData = {
    */
   onlyInFile1: Array<ImmutableObject<ProcessedModuleInfo>>,
   onlyInFile2: Array<ImmutableObject<ProcessedModuleInfo>>,
+  relevant: Set<string>,
 }
 
 export type ChunkComparisonData = {
@@ -49,6 +50,8 @@ export type ChunkComparisonData = {
 }
 
 export function compareFiles(args: {
+  file1ModulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
+  file2ModulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   file1ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>
   file2ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>
   file1ChunksByWebpackId: ImmutableMap<string, ProcessedChunkInfo>
@@ -58,6 +61,8 @@ export function compareFiles(args: {
   chunks: ChunkComparisonData
 } {
   const {
+    file1ModulesByDatabaseId,
+    file2ModulesByDatabaseId,
     file1ModulesByWebpackId,
     file2ModulesByWebpackId,
     file1ChunksByWebpackId,
@@ -70,7 +75,7 @@ export function compareFiles(args: {
   }> = []
   const modulesOnlyInFile1: Array<ImmutableObject<ProcessedModuleInfo>> = []
   const modulesOnlyInFile2: Array<ImmutableObject<ProcessedModuleInfo>> = []
-
+  const relevantModules = new Set<string>()
   const nullWebpackId = getModuleIdentifierKey(null)
 
   /**
@@ -98,9 +103,12 @@ export function compareFiles(args: {
           file1Module,
           file2Module,
         })
+        relevantModules.add(getModuleIdentifierKey(file1Module.rawFromWebpack.identifier))
+        relevantModules.add(getModuleIdentifierKey(file2Module.rawFromWebpack.identifier))
       }
     } else {
       modulesOnlyInFile1.push(file1Module)
+      relevantModules.add(getModuleIdentifierKey(file1Module.rawFromWebpack.identifier))
     }
   }
 
@@ -152,9 +160,12 @@ export function compareFiles(args: {
           file1Chunk,
           file2Chunk,
         })
+        addChunkModulesToRelevantSet({ chunk: file1Chunk, modulesByDatabaseId: file1ModulesByDatabaseId, relevantModules })
+        addChunkModulesToRelevantSet({ chunk: file2Chunk, relevantModules, modulesByDatabaseId: file2ModulesByDatabaseId })
       }
     } else {
       chunksOnlyInFile1.push(file1Chunk)
+      addChunkModulesToRelevantSet({ chunk: file1Chunk, relevantModules, modulesByDatabaseId: file1ModulesByDatabaseId })
     }
   }
 
@@ -171,6 +182,7 @@ export function compareFiles(args: {
     const existsInFile1 = file1ChunksByWebpackId.has(file2Id)
     if (!existsInFile1) {
       chunksOnlyInFile2.push(file2Chunk)
+      addChunkModulesToRelevantSet({ chunk: file2Chunk, relevantModules, modulesByDatabaseId: file2ModulesByDatabaseId })
     }
   }
 
@@ -179,11 +191,26 @@ export function compareFiles(args: {
       changed: modulesChanged,
       onlyInFile1: modulesOnlyInFile1,
       onlyInFile2: modulesOnlyInFile2,
+      relevant: relevantModules,
     },
     chunks: {
       changed: chunksChanged,
       onlyInFile1: chunksOnlyInFile1,
       onlyInFile2: chunksOnlyInFile2,
+    }
+  }
+}
+
+function addChunkModulesToRelevantSet(args: {
+  chunk: ImmutableObject<ProcessedChunkInfo>,
+  modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>,
+  relevantModules: Set<string>,
+}) {
+  const { chunk, modulesByDatabaseId, relevantModules } = args
+  for (const moduleDatabaseId of chunk.childModuleDatabaseIds) {
+    const module = modulesByDatabaseId.get(moduleDatabaseId)
+    if (module) {
+      relevantModules.add(getModuleIdentifierKey(module.rawFromWebpack.identifier))
     }
   }
 }

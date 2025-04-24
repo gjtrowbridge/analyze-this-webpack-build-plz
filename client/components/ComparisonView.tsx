@@ -1,9 +1,12 @@
-import { useHookstate } from '@hookstate/core'
+import { ImmutableMap, useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState, file2ProcessedGlobalState, filesGlobalState } from '../globalState'
 import { ChunkComparisonData, compareFiles, ModuleComparisonData } from '../helpers/comparison'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
 import { CompareChunkLink } from './CompareChunkLink'
+import { Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -26,18 +29,28 @@ export function ComparisonView() {
   const file2ModulesByWebpackId = file2ProcessedState.modulesByWebpackIdentifier.get()
   const file1ChunksByWebpackId = file1ProcessedState.chunksByWebpackId.get()
   const file2ChunksByWebpackId = file2ProcessedState.chunksByWebpackId.get()
+  const file1ModulesByDatabaseId = file1ProcessedState.modulesByDatabaseId.get()
+  const file2ModulesByDatabaseId = file2ProcessedState.modulesByDatabaseId.get()
 
   const { modules, chunks } = compareFiles({
+    file1ModulesByDatabaseId,
+    file2ModulesByDatabaseId,
     file1ModulesByWebpackId,
     file2ModulesByWebpackId,
     file1ChunksByWebpackId,
     file2ChunksByWebpackId,
+
   })
 
   return (
     <div id="ComparisonView">
       <ModuleComparison data={modules} />
       <ChunkComparison data={chunks} />
+      <RelevantModules data={{
+        relevantModules: modules.relevant,
+        file1ModulesByWebpackId,
+        file2ModulesByWebpackId,
+      }} />
     </div>
   )
 }
@@ -71,24 +84,38 @@ function ModuleComparison(props: { data: ModuleComparisonData}) {
 
   return (
     <div id="ModuleComparison">
-      <div>
-        <h2>Modules that changed</h2>
-        <ul>
-          {modulesThatChanged}
-        </ul>
-      </div>
-      <div>
-        <h2>Modules that exist only in file 1</h2>
-        <ul>
-          {file1OnlyModules}
-        </ul>
-      </div>
-      <div>
-        <h2>Modules that exist only in file 2</h2>
-        <ul>
-          {file2OnlyModules}
-        </ul>
-      </div>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Modules that changed ({changed.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {modulesThatChanged}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Modules that exist only in file 1 ({onlyInFile1.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {file1OnlyModules}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Modules that exist only in file 2 ({onlyInFile2.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {file2OnlyModules}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
     </div>
   )
 }
@@ -122,24 +149,78 @@ function ChunkComparison(props: { data: ChunkComparisonData}) {
 
   return (
     <div id="ChunkComparison">
-      <div>
-        <h2>Chunks that changed</h2>
-        <ul>
-          {chunksThatChanged}
-        </ul>
-      </div>
-      <div>
-        <h2>Chunks that exist only in file 1</h2>
-        <ul>
-          {file1OnlyChunks}
-        </ul>
-      </div>
-      <div>
-        <h2>Chunks that exist only in file 2</h2>
-        <ul>
-          {file2OnlyChunks}
-        </ul>
-      </div>
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Chunks that changed ({changed.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {chunksThatChanged}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Chunks that exist only in file 1 ({onlyInFile1.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {file1OnlyChunks}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Chunks that exist only in file 2 ({onlyInFile2.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {file2OnlyChunks}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
+    </div>
+  )
+}
+
+function RelevantModules(props: {
+  data:{
+    relevantModules: Set<string>,
+    file1ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>,
+    file2ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>,
+  }
+}) {
+  const { data } = props
+  const { relevantModules, file1ModulesByWebpackId, file2ModulesByWebpackId } = data
+  const tableData: Array<{
+    name: string,
+    moduleSizeFile1: number,
+    moduleSizeFile2: number,
+    differenceInModuleSize: number,
+    numChunksFile1: number,
+    numChunksFile2: number,
+    differenceInNumChunks: number,
+    totalSizeFile1: number,
+    totalSizeFile2: number,
+    differenceInTotalSize: number,
+  }> = []
+
+  return (
+    <div id="RelevantModules">
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Relevant modules ({relevantModules.size})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ul>
+            {Array.from(relevantModules).map((module) => {
+              return <li key={module}>{module}</li>
+            })}
+          </ul>
+        </AccordionDetails>
+      </Accordion>
     </div>
   )
 }
