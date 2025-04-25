@@ -7,6 +7,7 @@ import { CompareChunkLink } from './CompareChunkLink'
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import { GridColDef, DataGrid } from '@mui/x-data-grid'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -194,7 +195,20 @@ function RelevantModules(props: {
 }) {
   const { data } = props
   const { relevantModules, file1ModulesByWebpackId, file2ModulesByWebpackId } = data
+  const tableColumns: Array<GridColDef> = [
+    { field: 'name', headerName: 'Name', width: 200},
+    { field: 'moduleSizeFile1', headerName: 'Module Size (File 1)', width: 150},
+    { field: 'moduleSizeFile2', headerName: 'Module Size (File 2)', width: 150},
+    { field: 'differenceInModuleSize', headerName: 'Diff', width: 150},
+    { field: 'numChunksFile1', headerName: '# Chunks (File 1)', width: 150},
+    { field: 'numChunksFile2', headerName: '# Chunks (File 2)', width: 150},
+    { field: 'differenceInNumChunks', headerName: 'Diff', width: 150},
+    { field: 'totalSizeFile1', headerName: 'Total Size (File 1)', width: 150},
+    { field: 'totalSizeFile2', headerName: 'Total Size (File 2)', width: 150},
+    { field: 'differenceInTotalSize', headerName: 'Total Diff', width: 150},
+  ]
   const tableData: Array<{
+    id: string,
     name: string,
     moduleSizeFile1: number,
     moduleSizeFile2: number,
@@ -205,7 +219,35 @@ function RelevantModules(props: {
     totalSizeFile1: number,
     totalSizeFile2: number,
     differenceInTotalSize: number,
-  }> = []
+  }> = Array.from(relevantModules).map((moduleId: string) => {
+    const module1 = file1ModulesByWebpackId.get(moduleId)
+    const module2 = file2ModulesByWebpackId.get(moduleId)
+
+    const name = module1 ? module1.rawFromWebpack.name : module2?.rawFromWebpack.name
+    const moduleSizeFile1 = module1?.rawFromWebpack.size ?? 0
+    const moduleSizeFile2 = module2?.rawFromWebpack.size ?? 0
+    const differenceInModuleSize = moduleSizeFile1 - moduleSizeFile2 
+    const numChunksFile1 = module1?.parentChunkDatabaseIds.length ?? 0
+    const numChunksFile2 = module2?.parentChunkDatabaseIds.length ?? 0
+    const differenceInNumChunks = numChunksFile1 - numChunksFile2
+    const totalSizeFile1 = numChunksFile1 * moduleSizeFile1
+    const totalSizeFile2 = numChunksFile2 * moduleSizeFile2
+    const differenceInTotalSize = totalSizeFile1 - totalSizeFile2
+
+    return {
+      id: moduleId,
+      name,
+      moduleSizeFile1,
+      moduleSizeFile2,
+      differenceInModuleSize,
+      numChunksFile1,
+      numChunksFile2,
+      differenceInNumChunks,
+      totalSizeFile1,
+      totalSizeFile2,
+      differenceInTotalSize,
+    }
+  })
 
   return (
     <div id="RelevantModules">
@@ -214,11 +256,22 @@ function RelevantModules(props: {
           <Typography variant="h6">Relevant modules ({relevantModules.size})</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <ul>
-            {Array.from(relevantModules).map((module) => {
-              return <li key={module}>{module}</li>
-            })}
-          </ul>
+          <Typography variant="subtitle1">Total Size Change Build 1 vs Build 2 ({tableData.reduce((acc, curr) => {
+            return acc + curr.differenceInTotalSize
+          }, 0)})</Typography>
+          <div style={{ height: 400, width: '100%' }}>
+            <DataGrid
+              rows={tableData}
+              columns={tableColumns}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: 10 },
+                },
+              }}
+              pageSizeOptions={[10, 25, 50]}
+              checkboxSelection
+            />
+          </div>
         </AccordionDetails>
       </Accordion>
     </div>
