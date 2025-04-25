@@ -196,7 +196,7 @@ function RelevantModules(props: {
   const { data } = props
   const { relevantModules, file1ModulesByWebpackId, file2ModulesByWebpackId } = data
   const tableColumns: Array<GridColDef> = [
-    { field: 'name', headerName: 'Name', width: 200},
+    { field: 'name', headerName: 'Name', width: 300},
     { field: 'moduleSizeFile1', headerName: 'Module Size (File 1)', width: 150},
     { field: 'moduleSizeFile2', headerName: 'Module Size (File 2)', width: 150},
     { field: 'differenceInModuleSize', headerName: 'Diff', width: 150},
@@ -253,22 +253,22 @@ function RelevantModules(props: {
     <div id="RelevantModules">
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Relevant modules ({relevantModules.size})</Typography>
+          <Typography variant="h6">Relevant modules that changed total size ({relevantModules.size})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography variant="subtitle1">Total Size Change Build 1 vs Build 2 ({tableData.reduce((acc, curr) => {
             return acc + curr.differenceInTotalSize
           }, 0)})</Typography>
-          <div style={{ height: 400, width: '100%' }}>
+          <div style={{ height: 1000, width: '100%' }}>
             <DataGrid
-              rows={tableData}
+              rows={tableData.filter((row) => row.differenceInTotalSize !== 0)}
               columns={tableColumns}
               initialState={{
                 pagination: {
-                  paginationModel: { page: 0, pageSize: 10 },
+                  paginationModel: { page: 0, pageSize: 20 },
                 },
               }}
-              pageSizeOptions={[10, 25, 50]}
+              pageSizeOptions={[10, 20, 50]}
               checkboxSelection
             />
           </div>
