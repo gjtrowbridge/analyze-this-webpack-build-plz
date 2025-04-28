@@ -49,6 +49,7 @@ export function AssetInspector() {
       return a.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
     })
     .sort(sortFn)
+    .slice(0, 100)
     .map((asset) => {
       return <AssetRow
         key={asset.assetDatabaseId}
