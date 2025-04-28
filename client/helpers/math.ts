@@ -28,5 +28,5 @@ export function getPercentage(args: {
 
 export function inKB(num: number) {
   const kb = num / 1024
-  return Math.round(kb * 10) / 10
+  return Math.round(kb * 100) / 100
 }

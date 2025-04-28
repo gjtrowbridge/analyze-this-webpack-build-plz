@@ -40,6 +40,7 @@ export function AssetInspector() {
   }
 
   const assets = Array.from(stateOrNull.assetsByDatabaseId.get().values())
+  const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const filteredAssets = assets
     .filter((a) => {
       if (filterName === "") {
@@ -48,7 +49,6 @@ export function AssetInspector() {
       return a.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
     })
     .sort(sortFn)
-    .slice(0, 100)
     .map((asset) => {
       return <AssetRow
         key={asset.assetDatabaseId}
@@ -58,6 +58,7 @@ export function AssetInspector() {
           setShowMoreId(assetDatabaseId)
         }}
         showRawInfo={showMoreId === asset.assetDatabaseId}
+        chunksByDatabaseId={chunksByDatabaseId}
       />
     })
 
