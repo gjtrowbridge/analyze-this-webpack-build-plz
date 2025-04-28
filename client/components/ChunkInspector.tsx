@@ -22,7 +22,7 @@ import {
 export function ChunkInspector() {
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
   const [filterById, setFilterById] = useState<string>("")
-  const [sortBy, setSortBy] = useState<ChunkSortBy>("Size")
+  const [sortBy, setSortBy] = useState<ChunkSortBy>("Javascript Size")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [showMoreId, setShowMoreId] = useState<ChunkIdentifier>("")
   const [filterName, setFilterName] = useState<string>("")
@@ -31,8 +31,8 @@ export function ChunkInspector() {
 
   const sortFn = useCallback((a: ProcessedChunkInfo, b: ProcessedChunkInfo) => {
     const sortOrder = sortAscending ? 1 : -1
-    if (sortBy === 'Size') {
-      return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
+    if (sortBy === 'Javascript Size') {
+      return ((a.rawFromWebpack.sizes.javascript ?? 0) - (b.rawFromWebpack.sizes.javascript ?? 0)) * sortOrder
     } else if (sortBy === 'Name') {
       const aName = a.rawFromWebpack.names?.join("|") || ""
       const bName = b.rawFromWebpack.names?.join("|") || ""
@@ -137,7 +137,7 @@ export function ChunkInspector() {
               <Typography variant="h6" gutterBottom>Sort by:</Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <SortControl<ChunkSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-                <SortControl<ChunkSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ChunkSortBy> controlFor={"Javascript Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ChunkSortBy> controlFor={"# JS Assets"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ChunkSortBy> controlFor={"Depth From Entry"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
               </Box>

@@ -53,12 +53,18 @@ export function ChunkRow(props: {
   const [chunkSiblingsExpanded, setChunkSiblingsExpanded] = useState(false)
   const [moduleChildrenExpanded, setModuleChildrenExpanded] = useState(false)
 
-  const sizeFromModules = Array.from(chunk.childModuleDatabaseIds)
-    .map((moduleDatabaseId) => {
-      const module = modulesByDatabaseId.get(moduleDatabaseId)
-      return module?.rawFromWebpack.size ?? 0
-    })
-    .reduce((acc, curr) => acc + curr, 0)
+  const selfReportedJavascriptSize = chunk.rawFromWebpack.sizes.javascript ?? 0
+
+  /**
+   * Based on my testing, the below code indicates that the sizes always match up.
+   */
+  // const javascriptSizeFromModules = Array.from(chunk.childModuleDatabaseIds)
+  //   .map((moduleDatabaseId) => {
+  //     const module = modulesByDatabaseId.get(moduleDatabaseId)
+  //     return module?.rawFromWebpack.sizes.javascript ?? 0
+  //   })
+  //   .reduce((acc, curr) => acc + curr, 0)
+  // const differenceInSize = selfReportedJavascriptSize - javascriptSizeFromModules
 
   const childModules = Array.from(chunk.childModuleDatabaseIds)
     .map((moduleDatabaseId) => {
@@ -150,9 +156,12 @@ export function ChunkRow(props: {
           <Typography variant="body2" color="text.secondary">
             JS Size: {inKB(chunk.rawFromWebpack.sizes.javascript ?? 0)} ({chunk.rawFromWebpack.sizes.javascript ?? 0} bytes)
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Size based on modules: {inKB(sizeFromModules)} ({sizeFromModules} bytes)
+          {/* <Typography variant="body2" color="text.secondary">
+            Size based on modules: {inKB(javascriptSizeFromModules)} ({javascriptSizeFromModules} bytes)
           </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Difference: {inKB(differenceInSize)} ({differenceInSize} bytes)
+          </Typography> */}
           <Typography variant="body2" color={"text.secondary"}>
             Depth From Entry: {chunk.pathFromEntry.length}
           </Typography>
