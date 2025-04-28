@@ -30,6 +30,7 @@ export interface ProcessedNamedChunkGroupInfo {
 export interface ProcessedAssetInfo {
   assetDatabaseId: number,
   rawFromWebpack: ImmutableObject<StatsAsset>
+  chunkDatabaseIds: Set<number>
 }
 
 export interface ProcessedChunkInfo {
@@ -189,13 +190,6 @@ export function processState(args: {
     })
     namedChunkGroupsByDatabaseId.set(processedNamedChunkGroup.namedChunkGroupDatabaseId, processedNamedChunkGroup)
   })
-  assetRows.forEach((assetRow) => {
-    const processedAsset: ProcessedAssetInfo = {
-      assetDatabaseId: assetRow.databaseId,
-      rawFromWebpack: assetRow.rawFromWebpack,
-    }
-    assetsByDatabaseId.set(assetRow.databaseId, processedAsset)
-  })
 
   /**
    * Iterate over modules and populate child/parent/entry data as we go
@@ -279,6 +273,23 @@ export function processState(args: {
    * Updates .pathToEntry for any chunks connected to the chunk entry point(s)
    */
   bfsUpdatePathToEntryChunks(chunksByDatabaseId)
+
+  assetRows.forEach((assetRow) => {
+    const chunksFromWebpack = assetRow.rawFromWebpack.chunks ?? []
+    
+    const chunkDatabaseIds = chunksFromWebpack.map((chunkWebpackId: number) => {
+      return chunksByWebpackId.get(getSanitizedChunkId(chunkWebpackId))?.chunkDatabaseId
+    }).filter((chunkDatabaseId) => {
+      return chunkDatabaseId !== undefined
+    })
+
+    const processedAsset: ProcessedAssetInfo = {
+      assetDatabaseId: assetRow.databaseId,
+      rawFromWebpack: assetRow.rawFromWebpack,
+      chunkDatabaseIds: new Set(chunkDatabaseIds),
+    }
+    assetsByDatabaseId.set(assetRow.databaseId, processedAsset)
+  })
 
   return {
     status: 'LOADED',
