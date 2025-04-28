@@ -24,6 +24,8 @@ import { NamedChunkGroupLink } from './NamedChunkGroupLink'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
 import { inKB } from '../helpers/math'
+
+
 export function ChunkRow(props: {
   chunk: ImmutableObject<ProcessedChunkInfo>
   showRawInfo: boolean,
@@ -50,6 +52,13 @@ export function ChunkRow(props: {
   const [chunkParentsExpanded, setChunkParentsExpanded] = useState(false)
   const [chunkSiblingsExpanded, setChunkSiblingsExpanded] = useState(false)
   const [moduleChildrenExpanded, setModuleChildrenExpanded] = useState(false)
+
+  const sizeFromModules = Array.from(chunk.childModuleDatabaseIds)
+    .map((moduleDatabaseId) => {
+      const module = modulesByDatabaseId.get(moduleDatabaseId)
+      return module?.rawFromWebpack.size ?? 0
+    })
+    .reduce((acc, curr) => acc + curr, 0)
 
   const childModules = Array.from(chunk.childModuleDatabaseIds)
     .map((moduleDatabaseId) => {
@@ -139,7 +148,10 @@ export function ChunkRow(props: {
             Webpack Id: {chunk.rawFromWebpack.id}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Size: {inKB(chunk.rawFromWebpack.size)} ({chunk.rawFromWebpack.size} bytes)
+            JS Size: {inKB(chunk.rawFromWebpack.sizes.javascript ?? 0)} ({chunk.rawFromWebpack.sizes.javascript ?? 0} bytes)
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Size based on modules: {inKB(sizeFromModules)} ({sizeFromModules} bytes)
           </Typography>
           <Typography variant="body2" color={"text.secondary"}>
             Depth From Entry: {chunk.pathFromEntry.length}

@@ -249,12 +249,13 @@ function RelevantModules(props: {
       differenceInTotalSize,
     }
   })
+  const filteredTableData = tableData.filter((row) => row.differenceInTotalSize !== 0)
 
   return (
     <div id="RelevantModules">
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Relevant modules that changed total size ({relevantModules.size})</Typography>
+          <Typography variant="h6">Relevant modules that changed total size ({filteredTableData.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography variant="subtitle1">Total Size Change Build 1 vs Build 2 ({tableData.reduce((acc, curr) => {
@@ -262,7 +263,7 @@ function RelevantModules(props: {
           }, 0)})</Typography>
           <div style={{ height: 1000, width: '100%' }}>
             <DataGrid
-              rows={tableData.filter((row) => row.differenceInTotalSize !== 0)}
+              rows={filteredTableData}
               columns={tableColumns}
               initialState={{
                 pagination: {

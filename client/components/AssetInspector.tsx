@@ -50,23 +50,23 @@ export function AssetInspector() {
     })
     .sort(sortFn)
     .slice(0, 100)
-    .map((asset) => {
-      return <AssetRow
-        key={asset.assetDatabaseId}
-        file={'file1'}
-        asset={asset}
-        setShowRawInfo={(assetDatabaseId) => {
-          setShowMoreId(assetDatabaseId)
-        }}
-        showRawInfo={showMoreId === asset.assetDatabaseId}
-        chunksByDatabaseId={chunksByDatabaseId}
-      />
-    })
+  const assetRows = filteredAssets.map((asset) => {
+    return <AssetRow
+      key={asset.assetDatabaseId}
+      file={'file1'}
+      asset={asset}
+      setShowRawInfo={(assetDatabaseId) => {
+        setShowMoreId(assetDatabaseId)
+      }}
+      showRawInfo={showMoreId === asset.assetDatabaseId}
+      chunksByDatabaseId={chunksByDatabaseId}
+    />
+  })
 
   const {
     mean,
     standardDeviation,
-  } = getStatistics(assets.map((a) => { return a.rawFromWebpack.size }))
+  } = getStatistics(filteredAssets.map((a) => { return a.rawFromWebpack.size }))
 
   const noAssetWarning = assets.length > 0 ? null : (
     <Alert severity="warning" sx={{ mb: 2 }}>
@@ -100,14 +100,14 @@ export function AssetInspector() {
       </Card>
 
       <Typography variant="h5" gutterBottom>
-        There are {assets.length} total assets, and {filteredAssets.length} assets that passed your filters
+        There are {assets.length} total assets, and {filteredAssets.length} visible assets
       </Typography>
       {noAssetWarning}
       <Typography variant="subtitle1" gutterBottom>
-        For the ones passing filters, the mean asset size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
+        For the visible assets, the mean asset size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
-        {filteredAssets}
+        {assetRows}
       </Box>
     </Box>
   )
