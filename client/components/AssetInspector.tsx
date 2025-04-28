@@ -1,9 +1,112 @@
-import React from 'react';
+import { useCallback, useState } from 'react'
+import { AssetRow } from './AssetRow'
+import { SortControl } from './SortControl'
+import { getStatistics } from '../helpers/math'
+import { useHookstate } from '@hookstate/core'
+import { file1ProcessedGlobalState } from '../globalState'
+import { ProcessedAssetInfo } from '../helpers/processModulesAndChunks'
+import { 
+  Box, 
+  Card, 
+  CardContent, 
+  Grid, 
+  TextField, 
+  Typography,
+  Alert
+} from '@mui/material'
 
-export const AssetInspector: React.FC = () => {
+export type AssetSortBy = 'Name' | 'Size'
+
+export function AssetInspector() {
+  const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
+  const [sortBy, setSortBy] = useState<AssetSortBy>("Name")
+  const [sortAscending, setSortAscending] = useState<boolean>(false)
+  const [filterName, setFilterName] = useState<string>("")
+  const [showMoreId, setShowMoreId] = useState<number>(-1)
+
+  const sortFn = useCallback((a: ProcessedAssetInfo, b: ProcessedAssetInfo) => {
+    const sortOrder = sortAscending ? 1 : -1
+    if (sortBy === "Size") {
+      return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
+    } else if (sortBy === "Name") {
+      return (a.rawFromWebpack.name.localeCompare(b.rawFromWebpack.name)) * sortOrder
+    }
+    return 0
+  }, [sortAscending, sortBy])
+
+  const stateOrNull = file1ProcessedState.ornull
+  if (stateOrNull === null) {
+    return <Typography>Loading and processing data, asset data will be visible soon...</Typography>
+  }
+
+  const assets = Array.from(stateOrNull.assetsByDatabaseId.get().values())
+  const filteredAssets = assets
+    .filter((a) => {
+      if (filterName === "") {
+        return true
+      }
+      return a.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
+    })
+    .sort(sortFn)
+    .slice(0, 100)
+    .map((asset) => {
+      return <AssetRow
+        key={asset.assetDatabaseId}
+        file={'file1'}
+        asset={asset}
+        setShowRawInfo={(assetDatabaseId) => {
+          setShowMoreId(assetDatabaseId)
+        }}
+        showRawInfo={showMoreId === asset.assetDatabaseId}
+      />
+    })
+
+  const {
+    mean,
+    standardDeviation,
+  } = getStatistics(assets.map((a) => { return a.rawFromWebpack.size }))
+
+  const noAssetWarning = assets.length > 0 ? null : (
+    <Alert severity="warning" sx={{ mb: 2 }}>
+      No assets found -- Make sure you generate your stats.json with asset output enabled!
+    </Alert>
+  )
+
   return (
-    <div>
-      <h1>Asset Inspector</h1>
-    </div>
-  );
-}; 
+    <Box sx={{ p: 2 }}>
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>Sort by:</Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <SortControl<AssetSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<AssetSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Name"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+                size="small"
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      <Typography variant="h5" gutterBottom>
+        There are {assets.length} total assets, and {filteredAssets.length} assets that passed your filters
+      </Typography>
+      {noAssetWarning}
+      <Typography variant="subtitle1" gutterBottom>
+        For the ones passing filters, the mean asset size is {Math.round(mean / 1024)} kb, the std deviation is {Math.round(standardDeviation / 1024)} kb
+      </Typography>
+      <Box sx={{ mt: 2 }}>
+        {filteredAssets}
+      </Box>
+    </Box>
+  )
+} 
