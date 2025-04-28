@@ -8,6 +8,7 @@ import { Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { GridColDef, DataGrid } from '@mui/x-data-grid'
+import { getModuleIdentifierKey } from '../helpers/modules'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -223,7 +224,7 @@ function RelevantModules(props: {
     const module1 = file1ModulesByWebpackId.get(moduleId)
     const module2 = file2ModulesByWebpackId.get(moduleId)
 
-    const name = module1 ? module1.rawFromWebpack.name : module2?.rawFromWebpack.name
+    const name = module1 ? getModuleIdentifierKey(module1.rawFromWebpack.name) : getModuleIdentifierKey(module2?.rawFromWebpack.name)
     const moduleSizeFile1 = module1?.rawFromWebpack.size ?? 0
     const moduleSizeFile2 = module2?.rawFromWebpack.size ?? 0
     const differenceInModuleSize = moduleSizeFile1 - moduleSizeFile2 

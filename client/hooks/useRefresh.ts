@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
+import { AssetRow, ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
 import axios from 'axios'
 import { useHookstate } from '@hookstate/core'
 import {
@@ -203,6 +203,48 @@ export function useStateRefreshFunctions() {
     return namedChunkGroups
   }, [runIds])
 
+  const queryAssets = useCallback(async (args: {
+    file: 'file1' | 'file2'
+    fileId: number
+    currentRunId: number
+  }) =>  {
+    const {
+      file,
+      fileId,
+      currentRunId,
+    } = args
+    if (!fileId) {
+      return []
+    }
+    const limit = 50
+    let minIdNonInclusive = -1
+    const assets: Array<AssetRow> = []
+    while (true) {
+      try {
+        const res = await axios.get<{
+          assetRows: Array<AssetRow>
+          lastId: number | null
+        }>(`/api/assets/${fileId}?minIdNonInclusive=${minIdNonInclusive}&limit=${limit}`)
+        if (currentRunId !== runIds.current[file]) {
+          console.log(`exiting assets query early for file ${file}, (${currentRunId} !== ${runIds.current[file]})`)
+          return null
+        }
+        const { assetRows, lastId } = res.data
+        assetRows.forEach((ar) => {
+          assets.push(ar)
+        })
+        if (lastId === null) {
+          break
+        }
+        minIdNonInclusive = lastId
+      } catch(e) {
+        errors.merge(["[ASSETS]: Something went wrong fetching the list of available assets"])
+        return
+      }
+    }
+    return assets
+  }, [runIds])
+
   const clearFileData = useCallback((file: 'file1' | 'file2') => {
     console.log('xcxc clearing data', file)
     runIds.current[file] = undefined
@@ -247,6 +289,11 @@ export function useStateRefreshFunctions() {
       fileId,
       currentRunId,
     })
+    const assetRows = await queryAssets({
+      file,
+      fileId,
+      currentRunId,
+    })
     if (currentRunId !== runIds.current[file]) {
       console.log(`xcxc canceled processing for file ${file}`)
       return
@@ -255,6 +302,7 @@ export function useStateRefreshFunctions() {
       moduleRows,
       chunkRows,
       namedChunkGroupRows,
+      assetRows,
     })
     if (file === 'file1') {
       file1State.set(processedState)

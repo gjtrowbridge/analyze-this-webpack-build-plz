@@ -1,5 +1,5 @@
-import { StatsChunk, StatsModule, type StatsModuleReason, StatsChunkGroup } from 'webpack'
-import { ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
+import { StatsChunk, StatsModule, type StatsModuleReason, StatsChunkGroup, StatsAsset } from 'webpack'
+import { AssetRow, ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
 import { ImmutableArray, ImmutableObject } from '@hookstate/core'
 import { getModuleIdentifierKey } from './modules'
 import { getSanitizedChunkId } from './chunks'
@@ -25,6 +25,11 @@ export interface ProcessedNamedChunkGroupInfo {
   name: string
   rawFromWebpack: ImmutableObject<StatsChunkGroup>
   chunkDatabaseIds: Set<number>
+}
+
+export interface ProcessedAssetInfo {
+  assetDatabaseId: number,
+  rawFromWebpack: ImmutableObject<StatsAsset>
 }
 
 export interface ProcessedChunkInfo {
@@ -53,6 +58,7 @@ export type ProcessedState = {
   chunksByWebpackId: Map<string, ProcessedChunkInfo>
   moduleInclusionReasons: Set<string>
   namedChunkGroupsByDatabaseId: Map<number, ProcessedNamedChunkGroupInfo>
+  assetsByDatabaseId: Map<number, ProcessedAssetInfo>
 }
 
 export interface ProcessedModuleInfo {
@@ -116,15 +122,18 @@ export function processState(args: {
   moduleRows: ImmutableArray<ModuleRow>
   chunkRows: ImmutableArray<ChunkRow>
   namedChunkGroupRows: ImmutableArray<NamedChunkGroupRow>
+  assetRows: ImmutableArray<AssetRow>
 }): ProcessedState {
   const {
     moduleRows,
     chunkRows,
     namedChunkGroupRows,
+    assetRows,
   } = args
   const chunksByDatabaseId = new Map<number, ProcessedChunkInfo>
   const modulesByDatabaseId = new Map<number, ProcessedModuleInfo>
   const namedChunkGroupsByDatabaseId = new Map<number, ProcessedNamedChunkGroupInfo>
+  const assetsByDatabaseId = new Map<number, ProcessedAssetInfo>
 
   const chunksByWebpackId = new Map<string, ProcessedChunkInfo>()
   const modulesByWebpackIdentifier = new Map<string, ProcessedModuleInfo>()
@@ -179,6 +188,13 @@ export function processState(args: {
       }
     })
     namedChunkGroupsByDatabaseId.set(processedNamedChunkGroup.namedChunkGroupDatabaseId, processedNamedChunkGroup)
+  })
+  assetRows.forEach((assetRow) => {
+    const processedAsset: ProcessedAssetInfo = {
+      assetDatabaseId: assetRow.databaseId,
+      rawFromWebpack: assetRow.rawFromWebpack,
+    }
+    assetsByDatabaseId.set(assetRow.databaseId, processedAsset)
   })
 
   /**
@@ -276,6 +292,7 @@ export function processState(args: {
     modulesByWebpackIdentifier,
     moduleInclusionReasons,
     namedChunkGroupsByDatabaseId,
+    assetsByDatabaseId,
   }
 }
 
