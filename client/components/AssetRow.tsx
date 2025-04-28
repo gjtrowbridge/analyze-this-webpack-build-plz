@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { AssetLink } from './AssetLink'
 import { ChunkLink } from './ChunkLink'
 
 export function AssetRow(props: {
@@ -52,11 +52,7 @@ export function AssetRow(props: {
     <Card sx={{ mb: 2 }}>
       <CardContent>
         <Box>
-          <Typography variant="h5" gutterBottom>
-            <Link to={`/assets/${file}/${asset.assetDatabaseId}`}>
-              {asset.rawFromWebpack.name}
-            </Link>
-          </Typography>
+          <AssetLink asset={asset} file={file} />
           <Typography variant="body1" gutterBottom>Size: ~{inKB(asset.rawFromWebpack.size)} kb</Typography>
           
           <Accordion expanded={chunksExpanded} onChange={() => setChunksExpanded(!chunksExpanded)}>

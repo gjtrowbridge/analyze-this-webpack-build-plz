@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { AssetRow } from './AssetRow'
 import { SortControl } from './SortControl'
-import { getStatistics } from '../helpers/math'
+import { getStatistics, inKB } from '../helpers/math'
 import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState } from '../globalState'
 import { ProcessedAssetInfo } from '../helpers/processModulesAndChunks'
@@ -104,7 +104,7 @@ export function AssetInspector() {
       </Typography>
       {noAssetWarning}
       <Typography variant="subtitle1" gutterBottom>
-        For the ones passing filters, the mean asset size is {Math.round(mean / 1024)} kb, the std deviation is {Math.round(standardDeviation / 1024)} kb
+        For the ones passing filters, the mean asset size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {filteredAssets}

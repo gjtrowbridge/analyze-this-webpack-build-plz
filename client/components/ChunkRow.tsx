@@ -23,7 +23,7 @@ import {
 import { NamedChunkGroupLink } from './NamedChunkGroupLink'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
-
+import { inKB } from '../helpers/math'
 export function ChunkRow(props: {
   chunk: ImmutableObject<ProcessedChunkInfo>
   showRawInfo: boolean,
@@ -139,7 +139,7 @@ export function ChunkRow(props: {
             Webpack Id: {chunk.rawFromWebpack.id}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Size: {Math.round(chunk.rawFromWebpack.size / 1024)} kb ({chunk.rawFromWebpack.size} bytes)
+            Size: {inKB(chunk.rawFromWebpack.size)} ({chunk.rawFromWebpack.size} bytes)
           </Typography>
           <Typography variant="body2" color={"text.secondary"}>
             Depth From Entry: {chunk.pathFromEntry.length}

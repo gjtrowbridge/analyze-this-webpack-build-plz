@@ -2,7 +2,7 @@ import { ChunkRow } from './ChunkRow'
 import { useCallback, useState } from 'react'
 import { ChunkIdentifier } from '../helpers/chunks'
 import { SortControl } from './SortControl'
-import { getStatistics } from '../helpers/math'
+import { getStatistics, inKB } from '../helpers/math'
 import { useHookstate } from '@hookstate/core'
 import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
 import { file1ProcessedGlobalState } from '../globalState'
@@ -187,7 +187,7 @@ export function ChunkInspector() {
       </Typography>
       {noChunkWarning}
       <Typography variant="subtitle1" gutterBottom>
-        The mean chunk size is {Math.round(mean / 1024)} kb, the std deviation is {Math.round(standardDeviation / 1024)} kb
+        The mean chunk size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {chunkRows}
