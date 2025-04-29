@@ -9,6 +9,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { GridColDef, DataGrid } from '@mui/x-data-grid'
 import { getModuleIdentifierKey } from '../helpers/modules'
+import { formatNumber, inKB } from '../helpers/math'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -251,6 +252,10 @@ function RelevantModules(props: {
   })
   const filteredTableData = tableData.filter((row) => row.differenceInTotalSize !== 0)
 
+  const totalSizeChange = tableData.reduce((acc, curr) => {
+    return acc + curr.differenceInTotalSize
+  }, 0)
+
   return (
     <div id="RelevantModules">
       <Accordion>
@@ -258,10 +263,8 @@ function RelevantModules(props: {
           <Typography variant="h6">Relevant modules that changed total size ({filteredTableData.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="subtitle1">Total Size Change Build 1 vs Build 2 ({tableData.reduce((acc, curr) => {
-            return acc + curr.differenceInTotalSize
-          }, 0)})</Typography>
-          <div style={{ height: 1000, width: '100%' }}>
+          <Typography variant="subtitle1">{totalSizeChange > 0 ? `Build 1 is larger than Build 2 by ${inKB(totalSizeChange)} kb` : `Build 1 is smaller than Build 2 by ${inKB(-1 * totalSizeChange)} kb`} (across all chunks, so pre-gzipped)</Typography>
+          <div style={{ height: 600, width: '100%' }}>
             <DataGrid
               rows={filteredTableData}
               columns={tableColumns}
@@ -272,6 +275,36 @@ function RelevantModules(props: {
               }}
               pageSizeOptions={[10, 20, 50]}
               checkboxSelection
+              slots={{
+                footer: () => {
+                  const totals = {
+                    moduleSizeFile1: filteredTableData.reduce((sum, row) => sum + row.moduleSizeFile1, 0),
+                    moduleSizeFile2: filteredTableData.reduce((sum, row) => sum + row.moduleSizeFile2, 0),
+                    differenceInModuleSize: filteredTableData.reduce((sum, row) => sum + row.differenceInModuleSize, 0),
+                    numChunksFile1: filteredTableData.reduce((sum, row) => sum + row.numChunksFile1, 0),
+                    numChunksFile2: filteredTableData.reduce((sum, row) => sum + row.numChunksFile2, 0),
+                    differenceInNumChunks: filteredTableData.reduce((sum, row) => sum + row.differenceInNumChunks, 0),
+                    totalSizeFile1: filteredTableData.reduce((sum, row) => sum + row.totalSizeFile1, 0),
+                    totalSizeFile2: filteredTableData.reduce((sum, row) => sum + row.totalSizeFile2, 0),
+                    differenceInTotalSize: filteredTableData.reduce((sum, row) => sum + row.differenceInTotalSize, 0),
+                  };
+
+                  return (
+                    <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+                      <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.moduleSizeFile1)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.moduleSizeFile2)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInModuleSize)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.numChunksFile1)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.numChunksFile2)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInNumChunks)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.totalSizeFile1)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.totalSizeFile2)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInTotalSize)}</div>
+                    </div>
+                  );
+                },
+              }}
             />
           </div>
         </AccordionDetails>
