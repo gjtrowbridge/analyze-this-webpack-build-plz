@@ -49,8 +49,7 @@ export function AssetInspector() {
       return a.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
     })
     .sort(sortFn)
-    .slice(0, 100)
-  const assetRows = filteredAssets.map((asset) => {
+  const assetRows = filteredAssets.slice(0, 100).map((asset) => {
     return <AssetRow
       key={asset.assetDatabaseId}
       file={'file1'}
@@ -100,11 +99,11 @@ export function AssetInspector() {
       </Card>
 
       <Typography variant="h5" gutterBottom>
-        There are {assets.length} total assets, and {filteredAssets.length} visible assets
+        There are {assets.length} total assets, and {filteredAssets.length} assets that match your filters
       </Typography>
       {noAssetWarning}
       <Typography variant="subtitle1" gutterBottom>
-        For the visible assets, the mean asset size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
+        For the filtered assets, the mean asset size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {assetRows}
