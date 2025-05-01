@@ -49,7 +49,7 @@ export function AssetInspector() {
       return a.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
     })
     .sort(sortFn)
-  const assetRows = filteredAssets.slice(0, 100).map((asset) => {
+  const assetRows = filteredAssets.slice(0, 50).map((asset) => {
     return <AssetRow
       key={asset.assetDatabaseId}
       file={'file1'}

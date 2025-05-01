@@ -5,6 +5,42 @@ export function getModuleIdentifier(module: ImmutableObject<ProcessedModuleInfo>
   return getModuleIdentifierKey(module?.rawFromWebpack.identifier || null)
 }
 
+export function getModuleSize(args: {
+  module: ImmutableObject<ProcessedModuleInfo>,
+  // If true, uses the total of this module AND its submodules
+  includeSubModules?: boolean
+}) {
+  const { module, includeSubModules } = args
+  /**
+   * If including submodules, or if this doesn't have concatenated submodules, we can use the default
+   * top-level size.
+   */
+  if (Boolean(includeSubModules) || module.innerConcatenatedModuleDatabaseIds.size === 0) {
+    return module.rawFromWebpack.size
+  }
+
+  /**
+   * If we do NOT want to include submodules, we should just use the individual size of this module
+   * prior to it getting more modules concatenated onto it
+   */
+  const individualModule = getIndividualModuleData(module)
+
+  return individualModule.size
+}
+
+/**
+ * Gets the raw webpack module data, and notably gets the individual raw data from the submodules, if any
+ * This helper method mostly helps us do size calcs, etc for concatenated modules
+ * See #ConcatenatedModules for more info
+ */
+function getIndividualModuleData(module: ImmutableObject<ProcessedModuleInfo>) {
+  const superModuleWebpackId = getModuleIdentifier(module)
+  return module.rawFromWebpack.modules.find((m) => {
+    const submoduleWebpackId = getModuleIdentifierKey(m.identifier)
+    return submoduleWebpackId === superModuleWebpackId
+  }) ?? module.rawFromWebpack
+}
+
 /**
  * Strip out some parts of the stats.json moduleIdentifier to make it
  * internally consistent.
@@ -23,10 +59,6 @@ export function getModuleIdentifierKey(moduleIdentifier: string | null) {
   return moduleIdentifier.replace(regexToReplace, '')
 }
 
-export function getModuleSize(m: ImmutableObject<ProcessedModuleInfo>): number {
-  return m.rawFromWebpack.size
-}
-
 /**
  * Returns the number of chunks that have this module in it
  */
@@ -38,9 +70,14 @@ export function getModuleNumberOfChunks(m: ImmutableObject<ProcessedModuleInfo>)
  * Calculates the amount of extra code in our bundle that is a direct result of this module
  * being duplicated across many chunks
  */
-export function getModuleExtraSizeDueToDuplication(m: ImmutableObject<ProcessedModuleInfo>): number {
-  const numChunks = getModuleNumberOfChunks(m)
-  const size = getModuleSize(m)
+export function getModuleExtraSizeDueToDuplication(args: {
+  module: ImmutableObject<ProcessedModuleInfo>,
+  // If true, uses the total of this module AND its submodules
+  includeSubModules?: boolean
+}): number {
+  const { module } = args
+  const numChunks = getModuleNumberOfChunks(module)
+  const size = getModuleSize(args)
   if (numChunks === 0) {
     return 0
   }

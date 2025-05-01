@@ -8,7 +8,7 @@ import { file1ProcessedGlobalState } from '../globalState'
 import { ModuleSortBy } from '../types'
 import { unreachable } from '../../shared/helpers'
 import { convertToInteger } from '../../server/helpers/misc'
-import { getModuleExtraSizeDueToDuplication, getModuleNumberOfChunks } from '../helpers/modules'
+import { getModuleExtraSizeDueToDuplication, getModuleNumberOfChunks, getModuleSize } from '../helpers/modules'
 import { 
   Box, 
   Card, 
@@ -38,12 +38,32 @@ export function ModuleInspector() {
   const [showMoreId, setShowMoreId] = useState<number>(-1)
   const [inclusionReasonFilter, setInclusionReasonFilter] = useState<string>(anyInclusionReasonText)
 
+  const includeSubModulesInSizeCalcs = false
+
   const sortFn = useCallback((a: ProcessedModuleInfo, b: ProcessedModuleInfo) => {
     const sortOrder = sortAscending ? 1 : -1
     const depthA = a.pathFromEntry.length
     const depthB = b.pathFromEntry.length
-    if (sortBy === "Size") {
-      return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
+    if (sortBy === "Size (Total)") {
+      const sizeA = getModuleSize({
+        module: a,
+        includeSubModules: true
+      })
+      const sizeB = getModuleSize({
+        module: b,
+        includeSubModules: true
+      })
+      return (sizeA - sizeB) * sortOrder
+    } else if (sortBy === "Size (Individual)") {
+      const sizeA = getModuleSize({
+        module: a,
+        includeSubModules: false
+      })
+      const sizeB = getModuleSize({
+        module: b,
+        includeSubModules: false
+      })
+      return (sizeA - sizeB) * sortOrder
     } else if (sortBy === "Depth") {
       return (depthA - depthB) * sortOrder
     } else if (sortBy === "# Optimization Bailouts") {
@@ -57,8 +77,14 @@ export function ModuleInspector() {
       const bNumChunks = getModuleNumberOfChunks(b)
       return (aNumChunks - bNumChunks) * sortOrder
     } else if (sortBy === 'Extra Duplication Size') {
-      const aExtra = getModuleExtraSizeDueToDuplication(a)
-      const bExtra = getModuleExtraSizeDueToDuplication(b)
+      const aExtra = getModuleExtraSizeDueToDuplication({
+        module: a,
+        includeSubModules: includeSubModulesInSizeCalcs,
+      })
+      const bExtra = getModuleExtraSizeDueToDuplication({
+        module: b,
+        includeSubModules: includeSubModulesInSizeCalcs,
+      })
       return (aExtra - bExtra) * sortOrder
     } else {
       unreachable(sortBy)
@@ -130,7 +156,7 @@ export function ModuleInspector() {
     })
     .sort(sortFn)
   const moduleRows = filteredModules
-    .slice(0, 100)
+    .slice(0, 50)
     .map((m) => {
       return <ModuleRow
         key={m.moduleDatabaseId}
@@ -172,7 +198,8 @@ export function ModuleInspector() {
               <Typography variant="h6" gutterBottom>Sort by:</Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <SortControl<ModuleSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
-                <SortControl<ModuleSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"Size (Total)"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<ModuleSortBy> controlFor={"Size (Individual)"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ModuleSortBy> controlFor={"Depth"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ModuleSortBy> controlFor={"# Optimization Bailouts"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<ModuleSortBy> controlFor={"# Chunks"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />

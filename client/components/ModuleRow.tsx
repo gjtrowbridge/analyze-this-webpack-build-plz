@@ -4,7 +4,7 @@ import { ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModul
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
-import { getModuleExtraSizeDueToDuplication } from '../helpers/modules'
+import { getModuleExtraSizeDueToDuplication, getModuleSize } from '../helpers/modules'
 import { inKB } from '../helpers/math'
 import { 
   Box, 
@@ -18,7 +18,7 @@ import {
   AccordionDetails
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 
 export function ModuleRow(props: {
   file: 'file1' | 'file2'
@@ -63,7 +63,19 @@ export function ModuleRow(props: {
       </ListItem>
     )
   })
+  const parentChunkFromSuperModuleElements = module.isSubModule ? module.parentChunkDatabaseIdsFromSuperModule.map((chunkDatabaseId) => {
+    const chunk = chunksByDatabaseId.get(chunkDatabaseId)
+    chunk.rawFromWebpack.files?.forEach((file) => {
+      associatedAssets.push(file)
+    })
+    return (
+      <ListItem key={chunkDatabaseId}>
+        <ChunkLink chunk={chunk} file={'file1'} includeAssociatedAssets={true} />
+      </ListItem>
+    )
+  }) : null
 
+  const includeSubModulesInSizeCalcs = false
 
   const maxChildrenToShow = noLimitsOnLists ? 100000 : 10
   const maxParentsToShow = noLimitsOnLists ? 100000 : 10
@@ -85,6 +97,46 @@ export function ModuleRow(props: {
       </ListItem>
     )
   })
+  const moduleHasConcatenatedSubModules = module.innerConcatenatedModuleDatabaseIds.size > 0
+  const concatenatedSubModuleElements = Array.from(module.innerConcatenatedModuleDatabaseIds.values()).slice(0, maxChildrenToShow).map((subModuleDatabaseId) => {
+    const subModule = modulesByDatabaseId.get(subModuleDatabaseId)
+    return (
+      <ListItem key={subModuleDatabaseId}>
+        <ModuleLink module={subModule} file={"file1"} />
+      </ListItem>
+    )
+  })
+  const subModuleSection = moduleHasConcatenatedSubModules ? (
+    <Accordion>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography>Concatenated Sub-modules ({module.innerConcatenatedModuleDatabaseIds.size} total -- will only show up to {maxChildrenToShow})</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <List>
+          {concatenatedSubModuleElements}
+        </List>
+      </AccordionDetails>
+    </Accordion>
+  ) : null
+
+  const sizeElements = moduleHasConcatenatedSubModules ?
+    (
+      <Fragment>
+        <Typography variant="body1" gutterBottom>Size (With Concatenated Submodules): ~{inKB(getModuleSize({
+          module,
+          includeSubModules: true,
+        }))} kb</Typography>
+        <Typography variant="body1" gutterBottom>Size (JUST this module): ~{inKB(getModuleSize({
+          module,
+          includeSubModules: false,
+        }))} kb</Typography>
+      </Fragment>
+    ) : (
+      <Typography variant="body1" gutterBottom>Size (This module has no concatenated submodules): ~{inKB(getModuleSize({
+        module,
+        includeSubModules: false,
+      }))} kb</Typography>
+    )
 
   return (
     <Card sx={{ mb: 2 }}>
@@ -95,14 +147,23 @@ export function ModuleRow(props: {
           </Typography>
           <Typography variant="body1" gutterBottom>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</Typography>
           <Typography variant="body1" gutterBottom># Associated Files: { associatedAssets.length } (See Chunk Parents for more info)</Typography>
-          <Typography variant="body1" gutterBottom>Size: ~{inKB(module.rawFromWebpack.size)} kb</Typography>
-          <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: ~{inKB(getModuleExtraSizeDueToDuplication(module))} kb</Typography>
+          {sizeElements}
+          <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: ~{inKB(getModuleExtraSizeDueToDuplication({
+            module,
+            includeSubModules: includeSubModulesInSizeCalcs
+          }))} kb</Typography>
           <Typography variant="body1" gutterBottom># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</Typography>
-          <Typography variant="body1" gutterBottom>Module Was Concatenated?: { numTotalModules > 1 ? `Yes, to ${numTotalModules -1} other modules` : 'No' }</Typography>
+          <Typography variant="body1" gutterBottom>Module Concatenation Status: {
+            module.isSuperModule ?
+              'Super-module (has concatenated sub-modules)' :
+              module.isSubModule ?
+                'Sub-module (is concatenated onto a super-module)' :
+                'Normal (has not been concatenated with any other modules)'
+          }</Typography>
           
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Chunk Parents ({module.parentChunkDatabaseIds.length})</Typography>
+              <Typography>Direct Chunk Parents ({module.parentChunkDatabaseIds.length})</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <List>
@@ -110,6 +171,20 @@ export function ModuleRow(props: {
               </List>
             </AccordionDetails>
           </Accordion>
+
+          {module.isSubModule ?
+            (
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography>Implicit Chunk Parents From Concatenated Super-module(s) ({module.parentChunkDatabaseIdsFromSuperModule.length})</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <List>
+                    {parentChunkFromSuperModuleElements}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            ) : null}
 
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -143,6 +218,8 @@ export function ModuleRow(props: {
               </List>
             </AccordionDetails>
           </Accordion>
+
+          {subModuleSection}
 
           <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>

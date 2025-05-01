@@ -81,6 +81,8 @@ export interface ProcessedModuleInfo {
   parentModules: Map<number, ModuleRelationshipInfo>
   childModules: Map<number, ModuleRelationshipInfo>
 
+  parentChunkDatabaseIds: Array<number>
+
   /**
    * #ConcatenatedModules
    * This will only be non-empty for modules that have been concatenated via ModuleConcatenationPlugin.
@@ -107,8 +109,9 @@ export interface ProcessedModuleInfo {
    * searchable, etc exactly the same way as any other top-level module
    */
   innerConcatenatedModuleDatabaseIds: Set<number>
-
-  parentChunkDatabaseIds: Array<number>
+  parentChunkDatabaseIdsFromSuperModule: Array<number>
+  isSuperModule: boolean
+  isSubModule: boolean
 }
 
 const moduleReasonTypeHandlers: {
@@ -197,45 +200,19 @@ export function processState(args: {
       pathFromEntry: [],
       parentModules: new Map<number, ModuleRelationshipInfo>,
       childModules: new Map<number, ModuleRelationshipInfo>,
-      innerConcatenatedModuleDatabaseIds: new Set<number>,
       parentChunkDatabaseIds: [],
+      /**
+       * These get updated in the next step
+       */
+      innerConcatenatedModuleDatabaseIds: new Set<number>,
+      parentChunkDatabaseIdsFromSuperModule: [],
+      isSuperModule: false,
+      isSubModule: false,
     }
     modulesByDatabaseId.set(moduleRow.databaseId, processedModule)
     const moduleIdentifier = getModuleIdentifier(processedModule)
     modulesByWebpackIdentifier.set(moduleIdentifier, processedModule)
   })
-
-  /**
-   * Optionally account for modules that have been [concatenated](https://webpack.js.org/plugins/module-concatenation-plugin/)
-   * Basically, this will pull apart the stats.json such that even modules concatenated within other modules are
-   * attributable to their eventual chunk, and total sizes shown in the tool reflect just the size of that module.
-   *
-   * See #ConcatenatedModules for more deets
-   */
-  for (const module of modulesByDatabaseId.values()) {
-    const superModuleWebpackId = getModuleIdentifier(module)
-    const subModules = module.rawFromWebpack.modules ?? []
-
-    // If subModules is non-empty, module is a "super module" with concatenated submodules
-    subModules.forEach((subModule) => {
-      const subModuleWebpackId = getModuleIdentifierKey(subModule.identifier)
-      const subModuleTopLevelListing = modulesByWebpackIdentifier.get(subModuleWebpackId)
-      if (!subModuleTopLevelListing) {
-        throw `could not find sub module in top level!! ${subModuleWebpackId}`
-      }
-
-      /**
-       * Every super-module lists itself as the first concatenated module. The submodule listing is a bit different,
-       * though, since it includes the size of just that module.
-       */
-      if (superModuleWebpackId === subModuleWebpackId) {
-
-      } else {
-        // Make it so the supermodule has a pointer to the top-level list of its submodules
-        module.innerConcatenatedModuleDatabaseIds.add(subModuleTopLevelListing.moduleDatabaseId)
-      }
-    })
-  }
 
   /**
    * Do initial processing for named chunk groups
@@ -341,6 +318,50 @@ export function processState(args: {
    * Updates .pathToEntry for any chunks connected to the chunk entry point(s)
    */
   bfsUpdatePathToEntryChunks(chunksByDatabaseId)
+
+  /**
+   * Optionally account for modules that have been [concatenated](https://webpack.js.org/plugins/module-concatenation-plugin/)
+   * Basically, this will pull apart the stats.json such that even modules concatenated within other modules are
+   * attributable to their eventual chunk, and total sizes shown in the tool reflect just the size of that module.
+   *
+   * See #ConcatenatedModules for more deets
+   */
+  for (const module of modulesByDatabaseId.values()) {
+    const superModuleWebpackId = getModuleIdentifier(module)
+    const subModules = module.rawFromWebpack.modules ?? []
+
+    if (subModules.length > 0) {
+      module.isSuperModule = true
+    }
+
+    // If subModules is non-empty, module is a "super module" with concatenated submodules
+    subModules.forEach((subModule) => {
+      const subModuleWebpackId = getModuleIdentifierKey(subModule.identifier)
+      const subModuleTopLevelListing = modulesByWebpackIdentifier.get(subModuleWebpackId)
+      if (!subModuleTopLevelListing) {
+        throw `could not find sub module in top level!! ${subModuleWebpackId}`
+      }
+
+      /**
+       * Every super-module lists itself as the first concatenated module. The submodule listing is a bit different,
+       * though, since it includes the size of just that module.
+       *
+       * For this part, we don't want to list the module as its own submodule.
+       */
+      if (superModuleWebpackId !== subModuleWebpackId) {
+        subModuleTopLevelListing.isSubModule = true
+
+        // Make it so the supermodule has a pointer to the top-level list of its submodules
+        module.innerConcatenatedModuleDatabaseIds.add(subModuleTopLevelListing.moduleDatabaseId)
+
+        // By default, stats.json won't associate submodules with their chunks. This helps us keep track of which
+        // submodules live in which chunks (because the supermodule is in the chunk).
+        // I know these comments aren't the MOST clear, maybe I'll go back and reword this sometime in future to make
+        // this more understandable.
+        subModuleTopLevelListing.parentChunkDatabaseIdsFromSuperModule = subModuleTopLevelListing.parentChunkDatabaseIdsFromSuperModule.concat(module.parentChunkDatabaseIds)
+      }
+    })
+  }
 
   /**
    * Process the assets info

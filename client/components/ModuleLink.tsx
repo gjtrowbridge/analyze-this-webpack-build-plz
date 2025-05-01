@@ -22,7 +22,10 @@ export function ModuleLink(props: {
     linkText = linkText.concat(` (${file})`)
   }
   if (includeDuplicationAmount) {
-    linkText = linkText.concat(` (Extra Size Due To Duplication: ${inKB(getModuleExtraSizeDueToDuplication(module))})`)
+    linkText = linkText.concat(` (Extra Size Due To Duplication: ${inKB(getModuleExtraSizeDueToDuplication({
+      module,
+      includeSubModules: false,
+    }))})`)
   }
   return (
     <Link to={`/modules/${file}/${module.moduleDatabaseId}`}>

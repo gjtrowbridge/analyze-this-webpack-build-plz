@@ -101,7 +101,7 @@ export function ChunkInspector() {
       })
     })
     .sort(sortFn)
-    .slice(0, 100)
+    .slice(0, 50)
     .map((chunk) => {
       return <ChunkRow
         file={'file1'}
