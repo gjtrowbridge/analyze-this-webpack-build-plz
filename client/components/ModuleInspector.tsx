@@ -162,10 +162,6 @@ export function ModuleInspector() {
         key={m.moduleDatabaseId}
         file={'file1'}
         module={m}
-        setShowRawInfo={(moduleDatabaseId: number) => {
-          setShowMoreId(moduleDatabaseId)
-        }}
-        showRawInfo={showMoreId === m.moduleDatabaseId}
         modulesByDatabaseId={modulesByDatabaseId}
         chunksByDatabaseId={chunksByDatabaseId}
       />

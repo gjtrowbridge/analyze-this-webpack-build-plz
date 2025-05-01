@@ -228,8 +228,8 @@ function RelevantModules(props: {
     const moduleSizeFile1 = module1?.rawFromWebpack.size ?? 0
     const moduleSizeFile2 = module2?.rawFromWebpack.size ?? 0
     const differenceInModuleSize = moduleSizeFile1 - moduleSizeFile2 
-    const numChunksFile1 = module1?.parentChunkDatabaseIds.length ?? 0
-    const numChunksFile2 = module2?.parentChunkDatabaseIds.length ?? 0
+    const numChunksFile1 = module1?.parentChunkDatabaseIds.size ?? 0
+    const numChunksFile2 = module2?.parentChunkDatabaseIds.size ?? 0
     const differenceInNumChunks = numChunksFile1 - numChunksFile2
     const totalSizeFile1 = numChunksFile1 * moduleSizeFile1
     const totalSizeFile2 = numChunksFile2 * moduleSizeFile2

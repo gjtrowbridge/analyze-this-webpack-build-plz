@@ -23,8 +23,6 @@ import { Fragment, useState } from 'react'
 export function ModuleRow(props: {
   file: 'file1' | 'file2'
   module: ImmutableObject<ProcessedModuleInfo>
-  showRawInfo: boolean,
-  setShowRawInfo: (moduleDatabaseId: number) => void
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
   noLimitsOnLists?: boolean
@@ -32,8 +30,6 @@ export function ModuleRow(props: {
   const {
     file,
     module,
-    showRawInfo,
-    setShowRawInfo,
     modulesByDatabaseId,
     chunksByDatabaseId,
     noLimitsOnLists,
@@ -41,7 +37,6 @@ export function ModuleRow(props: {
 
   const [expanded, setExpanded] = useState(false)
 
-  const numTotalModules = module.rawFromWebpack.modules?.length || 1
   const depth = module.pathFromEntry.length
   const shortestPath = module.pathFromEntry.map((moduleDatabaseId) => {
     const m = modulesByDatabaseId.get(moduleDatabaseId)
@@ -52,7 +47,7 @@ export function ModuleRow(props: {
     )
   })
   const associatedAssets = []
-  const chunkParents = module.parentChunkDatabaseIds.map((chunkDatabaseId) => {
+  const chunkParents = Array.from(module.parentChunkDatabaseIds).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     chunk.rawFromWebpack.files?.forEach((file) => {
       associatedAssets.push(file)
@@ -63,7 +58,7 @@ export function ModuleRow(props: {
       </ListItem>
     )
   })
-  const parentChunkFromSuperModuleElements = module.isSubModule ? module.parentChunkDatabaseIdsFromSuperModule.map((chunkDatabaseId) => {
+  const parentChunkFromSuperModuleElements = module.isSubModule ? Array.from(module.parentChunkDatabaseIdsFromSuperModule).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
     chunk.rawFromWebpack.files?.forEach((file) => {
       associatedAssets.push(file)
@@ -163,7 +158,7 @@ export function ModuleRow(props: {
           
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Direct Chunk Parents ({module.parentChunkDatabaseIds.length})</Typography>
+              <Typography>Direct Chunk Parents ({module.parentChunkDatabaseIds.size})</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <List>
@@ -176,7 +171,7 @@ export function ModuleRow(props: {
             (
               <Accordion>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography>Implicit Chunk Parents From Concatenated Super-module(s) ({module.parentChunkDatabaseIdsFromSuperModule.length})</Typography>
+                  <Typography>Implicit Chunk Parents From Concatenated Super-module(s) ({module.parentChunkDatabaseIdsFromSuperModule.size})</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <List>

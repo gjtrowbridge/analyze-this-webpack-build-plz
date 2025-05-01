@@ -33,8 +33,6 @@ export function ModuleRowPage(props: { file: FileNumber }) {
     <ModuleRow
       file={file}
       module={module}
-      showRawInfo={showRawInfo}
-      setShowRawInfo={setShowFinal}
       modulesByDatabaseId={modulesByDatabaseId}
       chunksByDatabaseId={chunksByDatabaseId}
     />

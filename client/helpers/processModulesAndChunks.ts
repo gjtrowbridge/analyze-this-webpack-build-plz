@@ -43,6 +43,8 @@ export interface ProcessedChunkInfo {
   namedChunkGroupDatabaseIds: Set<number>
 
   childModuleDatabaseIds: Set<number>
+  // See #ConcatenatedModules
+  childSubmoduleDatabaseIds: Set<number>
   pathFromEntry: Array<number>
   // originModuleDatabaseIds: Array<number>
 }
@@ -81,7 +83,7 @@ export interface ProcessedModuleInfo {
   parentModules: Map<number, ModuleRelationshipInfo>
   childModules: Map<number, ModuleRelationshipInfo>
 
-  parentChunkDatabaseIds: Array<number>
+  parentChunkDatabaseIds: Set<number>
 
   /**
    * #ConcatenatedModules
@@ -109,7 +111,7 @@ export interface ProcessedModuleInfo {
    * searchable, etc exactly the same way as any other top-level module
    */
   innerConcatenatedModuleDatabaseIds: Set<number>
-  parentChunkDatabaseIdsFromSuperModule: Array<number>
+  parentChunkDatabaseIdsFromSuperModule: Set<number>
   isSuperModule: boolean
   isSubModule: boolean
 }
@@ -182,6 +184,7 @@ export function processState(args: {
       siblingChunkDatabaseIds: new Set<number>(),
       childChunkDatabaseIds: new Set<number>(),
       childModuleDatabaseIds: new Set<number>(),
+      childSubmoduleDatabaseIds: new Set<number>(),
       namedChunkGroupDatabaseIds: new Set<number>(),
       pathFromEntry: [],
     }
@@ -200,12 +203,12 @@ export function processState(args: {
       pathFromEntry: [],
       parentModules: new Map<number, ModuleRelationshipInfo>,
       childModules: new Map<number, ModuleRelationshipInfo>,
-      parentChunkDatabaseIds: [],
+      parentChunkDatabaseIds: new Set<number>,
       /**
        * These get updated in the next step
        */
       innerConcatenatedModuleDatabaseIds: new Set<number>,
-      parentChunkDatabaseIdsFromSuperModule: [],
+      parentChunkDatabaseIdsFromSuperModule: new Set<number>,
       isSuperModule: false,
       isSubModule: false,
     }
@@ -247,7 +250,7 @@ export function processState(args: {
       const chunk = chunksByWebpackId.get(getSanitizedChunkId(webpackChunkId))
       if (chunk) {
         chunk.childModuleDatabaseIds.add(module.moduleDatabaseId)
-        module.parentChunkDatabaseIds.push(chunk.chunkDatabaseId)
+        module.parentChunkDatabaseIds.add(chunk.chunkDatabaseId)
       }
     }
 
@@ -358,7 +361,12 @@ export function processState(args: {
         // submodules live in which chunks (because the supermodule is in the chunk).
         // I know these comments aren't the MOST clear, maybe I'll go back and reword this sometime in future to make
         // this more understandable.
-        subModuleTopLevelListing.parentChunkDatabaseIdsFromSuperModule = subModuleTopLevelListing.parentChunkDatabaseIdsFromSuperModule.concat(module.parentChunkDatabaseIds)
+        module.parentChunkDatabaseIds.forEach((parentChunkDatabaseId) => {
+          subModuleTopLevelListing.parentChunkDatabaseIdsFromSuperModule.add(parentChunkDatabaseId)
+
+          const chunk = chunksByDatabaseId.get(parentChunkDatabaseId)
+          chunk.childSubmoduleDatabaseIds.add(subModuleTopLevelListing.moduleDatabaseId)
+        })
       }
     })
   }
