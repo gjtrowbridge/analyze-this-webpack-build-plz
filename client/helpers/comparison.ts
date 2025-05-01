@@ -1,6 +1,6 @@
 import { ProcessedChunkInfo, ProcessedModuleInfo } from './processModulesAndChunks'
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
-import { getModuleIdentifierKey } from './modules'
+import { getModuleIdentifier } from './modules'
 
 function moduleHasChanged(args: {
   m1: ImmutableObject<ProcessedModuleInfo>
@@ -76,7 +76,7 @@ export function compareFiles(args: {
   const modulesOnlyInFile1: Array<ImmutableObject<ProcessedModuleInfo>> = []
   const modulesOnlyInFile2: Array<ImmutableObject<ProcessedModuleInfo>> = []
   const relevantModules = new Set<string>()
-  const nullWebpackId = getModuleIdentifierKey(null)
+  const nullWebpackId = getModuleIdentifier(null)
 
   /**
    * Get modules that exist in both files but have changed from one to the other.
@@ -103,12 +103,12 @@ export function compareFiles(args: {
           file1Module,
           file2Module,
         })
-        relevantModules.add(getModuleIdentifierKey(file1Module.rawFromWebpack.identifier))
-        relevantModules.add(getModuleIdentifierKey(file2Module.rawFromWebpack.identifier))
+        relevantModules.add(getModuleIdentifier(file1Module))
+        relevantModules.add(getModuleIdentifier(file2Module))
       }
     } else {
       modulesOnlyInFile1.push(file1Module)
-      relevantModules.add(getModuleIdentifierKey(file1Module.rawFromWebpack.identifier))
+      relevantModules.add(getModuleIdentifier(file1Module))
     }
   }
 
@@ -210,7 +210,7 @@ function addChunkModulesToRelevantSet(args: {
   for (const moduleDatabaseId of chunk.childModuleDatabaseIds) {
     const module = modulesByDatabaseId.get(moduleDatabaseId)
     if (module) {
-      relevantModules.add(getModuleIdentifierKey(module.rawFromWebpack.identifier))
+      relevantModules.add(getModuleIdentifier(module))
     }
   }
 }

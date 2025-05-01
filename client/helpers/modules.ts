@@ -1,6 +1,10 @@
 import { ProcessedModuleInfo } from './processModulesAndChunks'
 import { ImmutableObject } from '@hookstate/core'
 
+export function getModuleIdentifier(module: ImmutableObject<ProcessedModuleInfo> | null) {
+  return getModuleIdentifierKey(module?.rawFromWebpack.identifier || null)
+}
+
 /**
  * Strip out some parts of the stats.json moduleIdentifier to make it
  * internally consistent.

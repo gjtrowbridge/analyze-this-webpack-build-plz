@@ -1,8 +1,8 @@
 import { StatsChunk, StatsModule, type StatsModuleReason, StatsChunkGroup, StatsAsset } from 'webpack'
 import { AssetRow, ChunkRow, ModuleRow, NamedChunkGroupRow } from '../../shared/types'
 import { ImmutableArray, ImmutableObject } from '@hookstate/core'
-import { getModuleIdentifierKey } from './modules'
 import { getSanitizedChunkId } from './chunks'
+import { getModuleIdentifier, getModuleIdentifierKey } from './modules'
 
 /**
  * Including both the parent and child in this is maybe a bit more confusing than having a parent
@@ -81,6 +81,33 @@ export interface ProcessedModuleInfo {
   parentModules: Map<number, ModuleRelationshipInfo>
   childModules: Map<number, ModuleRelationshipInfo>
 
+  /**
+   * #ConcatenatedModules
+   * This will only be non-empty for modules that have been concatenated via ModuleConcatenationPlugin.
+   * Basically, this means that this module has been concatenated with other modules, and so the stats.json
+   * will show slightly different data for this module and its inner concatenated "sub-modules" (not the same as child
+   * module, though there will be overlap between the 2).
+   * - "Child Module" in this tool means "a module that was imported to the code as a result of code in the parent module"
+   * - "Sub Module" in this tool means "a module that was concatenated inside of this module by webpack"
+   * - "Super Module" in this tool means "a module that has submodules concatenated onto it by webpack"
+   *
+   * In cases where we have sub-modules, stats.json appears to show the following (non-exhaustive) list of differences:
+   *  - The submodule will have a blank "chunks" field, even though the submodule will of course be in the same chunk as
+   *    its supermodule.
+   *    - (The submodule will be listed inside of supermodule.modules, but also as a top level module)
+   *  - The supermodule will have an accurate, filled-in chunks field.
+   *  - The supermodule will have a "size" field that reflects the total of all its submodules, rather than just the size
+   *    of the original individual module. (eg. so if module 1 has modules 2 and 3 concatenated onto it, and the sizes of
+   *    each of those modules individually is 100, 110, 120, respectively, then module 1 in stats.json will show "330" as its
+   *    size, which is the total of itself AND its concatenated submodules
+   *  - The first item in supermodule.modules will be the original supermodule (so, if module 1 has modules 2 and 3 concatenated
+   *    onto it, module1.modules in stats.json will have length 3, [module1, module2, module3]
+   *
+   * When enabled, sub-module handling in this tool will make it so the submodules get the extra data they're missing, and are
+   * searchable, etc exactly the same way as any other top-level module
+   */
+  innerConcatenatedModuleDatabaseIds: Set<number>
+
   parentChunkDatabaseIds: Array<number>
 }
 
@@ -141,7 +168,7 @@ export function processState(args: {
   const moduleInclusionReasons = new Set<string>()
 
   /**
-   * Initialize the lookups
+   * Do initial processing for chunks
    */
   chunkRows.forEach((chunkRow) => {
     // This will be updated with actual data later
@@ -158,6 +185,10 @@ export function processState(args: {
     chunksByDatabaseId.set(chunkRow.databaseId, processedChunk)
     chunksByWebpackId.set(getSanitizedChunkId(processedChunk.rawFromWebpack.id), processedChunk)
   })
+
+  /**
+   * Do initial processing for modules
+   */
   moduleRows.forEach((moduleRow) => {
     const processedModule: ProcessedModuleInfo = {
       isEntry: false,
@@ -166,12 +197,49 @@ export function processState(args: {
       pathFromEntry: [],
       parentModules: new Map<number, ModuleRelationshipInfo>,
       childModules: new Map<number, ModuleRelationshipInfo>,
+      innerConcatenatedModuleDatabaseIds: new Set<number>,
       parentChunkDatabaseIds: [],
     }
     modulesByDatabaseId.set(moduleRow.databaseId, processedModule)
-    const moduleIdentifier = getModuleIdentifierKey(processedModule.rawFromWebpack.identifier)
+    const moduleIdentifier = getModuleIdentifier(processedModule)
     modulesByWebpackIdentifier.set(moduleIdentifier, processedModule)
   })
+
+  /**
+   * Optionally account for modules that have been [concatenated](https://webpack.js.org/plugins/module-concatenation-plugin/)
+   * Basically, this will pull apart the stats.json such that even modules concatenated within other modules are
+   * attributable to their eventual chunk, and total sizes shown in the tool reflect just the size of that module.
+   *
+   * See #ConcatenatedModules for more deets
+   */
+  for (const module of modulesByDatabaseId.values()) {
+    const superModuleWebpackId = getModuleIdentifier(module)
+    const subModules = module.rawFromWebpack.modules ?? []
+
+    // If subModules is non-empty, module is a "super module" with concatenated submodules
+    subModules.forEach((subModule) => {
+      const subModuleWebpackId = getModuleIdentifierKey(subModule.identifier)
+      const subModuleTopLevelListing = modulesByWebpackIdentifier.get(subModuleWebpackId)
+      if (!subModuleTopLevelListing) {
+        throw `could not find sub module in top level!! ${subModuleWebpackId}`
+      }
+
+      /**
+       * Every super-module lists itself as the first concatenated module. The submodule listing is a bit different,
+       * though, since it includes the size of just that module.
+       */
+      if (superModuleWebpackId === subModuleWebpackId) {
+
+      } else {
+        // Make it so the supermodule has a pointer to the top-level list of its submodules
+        module.innerConcatenatedModuleDatabaseIds.add(subModuleTopLevelListing.moduleDatabaseId)
+      }
+    })
+  }
+
+  /**
+   * Do initial processing for named chunk groups
+   */
   namedChunkGroupRows.forEach((namedChunkGroupRow) => {
     const processedNamedChunkGroup: ProcessedNamedChunkGroupInfo = {
       rawFromWebpack: namedChunkGroupRow.rawFromWebpack,
@@ -274,6 +342,9 @@ export function processState(args: {
    */
   bfsUpdatePathToEntryChunks(chunksByDatabaseId)
 
+  /**
+   * Process the assets info
+   */
   assetRows.forEach((assetRow) => {
     const chunksFromWebpack = assetRow.rawFromWebpack.chunks ?? []
     
