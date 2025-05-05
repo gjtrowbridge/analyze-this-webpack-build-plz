@@ -1,6 +1,7 @@
-import { ProcessedChunkInfo, ProcessedModuleInfo } from './processModulesAndChunks'
+import { ProcessedAssetInfo, ProcessedChunkInfo, ProcessedModuleInfo } from './processModulesAndChunks'
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { getModuleIdentifier } from './modules'
+import { assetHasChanged, getAssetName } from './assets'
 
 function moduleHasChanged(args: {
   m1: ImmutableObject<ProcessedModuleInfo>
@@ -49,6 +50,15 @@ export type ChunkComparisonData = {
   onlyInFile2: Array<ImmutableObject<ProcessedChunkInfo>>,
 }
 
+export type AssetComparisonData = {
+  changed: Array<{
+    file1Asset: ImmutableObject<ProcessedAssetInfo>,
+    file2Asset: ImmutableObject<ProcessedAssetInfo>,
+  }>,
+  onlyInFile1: Array<ImmutableObject<ProcessedAssetInfo>>,
+  onlyInFile2: Array<ImmutableObject<ProcessedAssetInfo>>
+}
+
 export function compareFiles(args: {
   file1ModulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
   file2ModulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
@@ -56,9 +66,12 @@ export function compareFiles(args: {
   file2ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>
   file1ChunksByWebpackId: ImmutableMap<string, ProcessedChunkInfo>
   file2ChunksByWebpackId: ImmutableMap<string, ProcessedChunkInfo>
+  file1AssetsByDatabaseId: ImmutableMap<number, ProcessedAssetInfo>
+  file2AssetsByDatabaseId: ImmutableMap<number, ProcessedAssetInfo>
 }): {
   modules: ModuleComparisonData
   chunks: ChunkComparisonData
+  assets: AssetComparisonData
 } {
   const {
     file1ModulesByDatabaseId,
@@ -67,7 +80,12 @@ export function compareFiles(args: {
     file2ModulesByWebpackId,
     file1ChunksByWebpackId,
     file2ChunksByWebpackId,
+    file1AssetsByDatabaseId,
+    file2AssetsByDatabaseId,
   } = args
+
+  const rando = Math.random()
+  console.log('xcxc comparing', rando)
 
   const modulesChanged: Array<{
     file1Module: ImmutableObject<ProcessedModuleInfo>,
@@ -186,6 +204,51 @@ export function compareFiles(args: {
     }
   }
 
+  const assetsChanged: Array<{
+    file1Asset: ImmutableObject<ProcessedAssetInfo>,
+    file2Asset: ImmutableObject<ProcessedAssetInfo>,
+  }> = []
+  const assetsOnlyInFile1: Array<ImmutableObject<ProcessedAssetInfo>> = []
+  const assetsOnlyInFile2: Array<ImmutableObject<ProcessedAssetInfo>> = []
+  const assetsByNameFile1 = new Map<string, ImmutableObject<ProcessedAssetInfo>>()
+  const assetsByNameFile2 = new Map<string, ImmutableObject<ProcessedAssetInfo>>()
+
+  // file1AssetsByDatabaseId.forEach((file1Asset) => {
+  //   const name = getAssetName(file1Asset)
+  //   if (assetsByNameFile1.has(name)) {
+  //     console.log(`new one ${rando}, ${name}`, file1Asset)
+  //     console.log(`existing one ${rando}, ${name}`, assetsByNameFile1.get(name))
+  //     throw `Woops! There are two assets with the same name! Handle this case now that we know it can happen! ${rando}`
+  //   }
+  //   assetsByNameFile1.set(name, file1Asset)
+  // })
+  //
+  // file2AssetsByDatabaseId.forEach((file2Asset) => {
+  //   const name = getAssetName(file2Asset)
+  //   assetsByNameFile2.set(name, file2Asset)
+  //
+  //   const file1Asset = assetsByNameFile1.get(name)
+  //   if (file1Asset === undefined) {
+  //     assetsOnlyInFile2.push(file2Asset)
+  //   } else {
+  //     if (assetHasChanged({
+  //       asset1: file1Asset,
+  //       asset2: file2Asset,
+  //     })) {
+  //       assetsChanged.push({
+  //         file1Asset,
+  //         file2Asset,
+  //       })
+  //     }
+  //   }
+  // })
+  //
+  // assetsByNameFile1.forEach((file1Asset, name) => {
+  //   if (!assetsByNameFile2.has(name)) {
+  //     assetsOnlyInFile1.push(file1Asset)
+  //   }
+  // })
+
   return {
     modules: {
       changed: modulesChanged,
@@ -197,6 +260,11 @@ export function compareFiles(args: {
       changed: chunksChanged,
       onlyInFile1: chunksOnlyInFile1,
       onlyInFile2: chunksOnlyInFile2,
+    },
+    assets: {
+      changed: assetsChanged,
+      onlyInFile1: assetsOnlyInFile1,
+      onlyInFile2: assetsOnlyInFile2,
     }
   }
 }
@@ -208,6 +276,12 @@ function addChunkModulesToRelevantSet(args: {
 }) {
   const { chunk, modulesByDatabaseId, relevantModules } = args
   for (const moduleDatabaseId of chunk.childModuleDatabaseIds) {
+    const module = modulesByDatabaseId.get(moduleDatabaseId)
+    if (module) {
+      relevantModules.add(getModuleIdentifier(module))
+    }
+  }
+  for (const moduleDatabaseId of chunk.childSubmoduleDatabaseIds) {
     const module = modulesByDatabaseId.get(moduleDatabaseId)
     if (module) {
       relevantModules.add(getModuleIdentifier(module))

@@ -6,11 +6,16 @@ export function getModuleIdentifier(module: ImmutableObject<ProcessedModuleInfo>
 }
 
 export function getModuleSize(args: {
-  module: ImmutableObject<ProcessedModuleInfo>,
+  module: ImmutableObject<ProcessedModuleInfo> | undefined,
   // If true, uses the total of this module AND its submodules
   includeSubModules?: boolean
 }) {
   const { module, includeSubModules } = args
+
+  if (!module) {
+    return 0
+  }
+
   /**
    * If including submodules, or if this doesn't have concatenated submodules, we can use the default
    * top-level size.
@@ -62,8 +67,19 @@ export function getModuleIdentifierKey(moduleIdentifier: string | null) {
 /**
  * Returns the number of chunks that have this module in it
  */
-export function getModuleNumberOfChunks(m: ImmutableObject<ProcessedModuleInfo>): number {
-  return m.rawFromWebpack.chunks?.length ?? 0
+export function getModuleNumberOfChunks(args: {
+  module: ImmutableObject<ProcessedModuleInfo> | undefined,
+  // See #ConcatenatedModules
+  // If true, also counts the chunks the module is in as a result of the location of the module's supermodule
+  includeChunksFromSuperModules?: boolean
+}): number {
+  const { module, includeChunksFromSuperModules } = args
+  const directChunks = module?.parentChunkDatabaseIds.size ?? 0
+  const chunksFromSuperModulesIfAny = module?.parentChunkDatabaseIdsFromSuperModule.size ?? 0
+  if (!includeChunksFromSuperModules) {
+    return directChunks
+  }
+  return directChunks + chunksFromSuperModulesIfAny
 }
 
 /**
@@ -72,14 +88,39 @@ export function getModuleNumberOfChunks(m: ImmutableObject<ProcessedModuleInfo>)
  */
 export function getModuleExtraSizeDueToDuplication(args: {
   module: ImmutableObject<ProcessedModuleInfo>,
-  // If true, uses the total of this module AND its submodules
-  includeSubModules?: boolean
+  // If true, shows the duplication size JUST for a single code file, ignoring the effects of ModuleConcatenationPlugin
+  // If false, shows the duplication size for an entire concatenated module (which is harder to reason about IMO)
+  basedOnIndividualModules: boolean
 }): number {
-  const { module } = args
-  const numChunks = getModuleNumberOfChunks(module)
-  const size = getModuleSize(args)
+  const { module, basedOnIndividualModules } = args
+  const numChunks = getModuleNumberOfChunks({
+    module,
+    includeChunksFromSuperModules: basedOnIndividualModules,
+  })
+  const size = getModuleSize({ module, includeSubModules: !basedOnIndividualModules })
   if (numChunks === 0) {
     return 0
   }
   return size * (numChunks - 1)
+}
+
+export function getModuleName(args: {
+  module: ImmutableObject<ProcessedModuleInfo>,
+  // If true, will return the name of just the individual module, instead of the extra " + X modules"
+  // that gets added when ModuleConcatenationPlugin is in play
+  useIndividualModuleName: boolean
+}) {
+  const { module, useIndividualModuleName } = args
+  if (!useIndividualModuleName || !module.isSuperModule) {
+    return module.rawFromWebpack.name
+  }
+  // All super-module entries have the original individual module inside their nested modules property AFAICT
+  const subModuleOfSameName = module.rawFromWebpack.modules.find((subModule) => {
+    return getModuleIdentifierKey(subModule.identifier) === getModuleIdentifier(module)
+  })
+  if (subModuleOfSameName) {
+    return subModuleOfSameName.name
+  } else {
+    return module.rawFromWebpack.name
+  }
 }

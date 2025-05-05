@@ -145,7 +145,7 @@ export function ModuleRow(props: {
           {sizeElements}
           <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: ~{inKB(getModuleExtraSizeDueToDuplication({
             module,
-            includeSubModules: includeSubModulesInSizeCalcs
+            basedOnIndividualModules: true,
           }))} kb</Typography>
           <Typography variant="body1" gutterBottom># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</Typography>
           <Typography variant="body1" gutterBottom>Module Concatenation Status: {

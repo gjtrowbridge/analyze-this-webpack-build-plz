@@ -9,7 +9,7 @@ export function ModuleLink(props: {
   module: ImmutableObject<ProcessedModuleInfo>
   file: FileNumber
   includeFileInfo?: boolean
-  includeDuplicationAmount?: boolean  
+  includeDuplicationAmount?: boolean
 }) {
   const {
     module,
@@ -24,7 +24,7 @@ export function ModuleLink(props: {
   if (includeDuplicationAmount) {
     linkText = linkText.concat(` (Extra Size Due To Duplication: ${inKB(getModuleExtraSizeDueToDuplication({
       module,
-      includeSubModules: false,
+      basedOnIndividualModules: true,
     }))})`)
   }
   return (

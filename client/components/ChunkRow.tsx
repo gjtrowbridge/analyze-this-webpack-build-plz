@@ -177,17 +177,28 @@ export function ChunkRow(props: {
           <AccordionDetails>
             {namedChunkGroupsExpanded && (
               <List>
-                {Array.from(chunk.namedChunkGroupDatabaseIds).map((ncgId) => {
-                  const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
-                  if (!ncg) {
-                    return null
-                  }
-                  return (
-                    <ListItem key={ncgId}>
-                      <NamedChunkGroupLink namedChunkGroup={ncg} file={'file1'} />
-                    </ListItem>
-                  )
-                })}
+                {Array.from(chunk.namedChunkGroupDatabaseIds)
+                  .map((ncgId) => {
+                    const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+                    if (!ncg) {
+                      return null
+                    }
+                    return ncg
+                  })
+                  .filter((ncg) => {
+                    return ncg !== null
+                  })
+                  .sort((a, b) => {
+                    return a.name.localeCompare(b.name)
+                  })
+                  .map((ncg) => {
+                    return (
+                      <ListItem key={ncg.namedChunkGroupDatabaseId}>
+                        <NamedChunkGroupLink namedChunkGroup={ncg} file={'file1'} />
+                      </ListItem>
+                    )
+                  })
+                }
               </List>
             )}
           </AccordionDetails>

@@ -9,6 +9,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { GridColDef, DataGrid } from '@mui/x-data-grid'
 import { formatNumber, inKB } from '../helpers/math'
+import { getModuleName, getModuleNumberOfChunks, getModuleSize } from '../helpers/modules'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -33,16 +34,21 @@ export function ComparisonView() {
   const file2ChunksByWebpackId = file2ProcessedState.chunksByWebpackId.get()
   const file1ModulesByDatabaseId = file1ProcessedState.modulesByDatabaseId.get()
   const file2ModulesByDatabaseId = file2ProcessedState.modulesByDatabaseId.get()
+  const file1AssetsByDatabaseId = file1ProcessedState.assetsByDatabaseId.get()
+  const file2AssetsByDatabaseId = file2ProcessedState.assetsByDatabaseId.get()
 
-  const { modules, chunks } = compareFiles({
+  const { modules, chunks, assets } = compareFiles({
     file1ModulesByDatabaseId,
     file2ModulesByDatabaseId,
     file1ModulesByWebpackId,
     file2ModulesByWebpackId,
     file1ChunksByWebpackId,
     file2ChunksByWebpackId,
-
+    file1AssetsByDatabaseId,
+    file2AssetsByDatabaseId,
   })
+
+  console.log('xcxc assets', assets)
 
   return (
     <div id="ComparisonView">
@@ -224,16 +230,36 @@ function RelevantModules(props: {
     const module1 = file1ModulesByWebpackId.get(moduleId)
     const module2 = file2ModulesByWebpackId.get(moduleId)
 
-    const name = module1 ? module1.rawFromWebpack.name : module2?.rawFromWebpack.name
-    const moduleSizeFile1 = module1?.rawFromWebpack.size ?? 0
-    const moduleSizeFile2 = module2?.rawFromWebpack.size ?? 0
-    const differenceInModuleSize = moduleSizeFile1 - moduleSizeFile2 
-    const numChunksFile1 = module1?.parentChunkDatabaseIds.size ?? 0
-    const numChunksFile2 = module2?.parentChunkDatabaseIds.size ?? 0
-    const differenceInNumChunks = numChunksFile1 - numChunksFile2
+    const name = module1 ?
+      getModuleName({
+        module: module1,
+        useIndividualModuleName: true,
+      }) :
+      getModuleName({
+        module: module2,
+        useIndividualModuleName: true,
+      })
+    const moduleSizeFile1 = getModuleSize({
+      module: module1,
+      includeSubModules: false,
+    })
+    const moduleSizeFile2 =  getModuleSize({
+      module: module2,
+      includeSubModules: false,
+    })
+    const differenceInModuleSize = moduleSizeFile2 - moduleSizeFile1
+    const numChunksFile1 = getModuleNumberOfChunks({
+      module: module1,
+      includeChunksFromSuperModules: true,
+    })
+    const numChunksFile2 = getModuleNumberOfChunks({
+      module: module2,
+      includeChunksFromSuperModules: true,
+    })
+    const differenceInNumChunks = numChunksFile2 - numChunksFile1
     const totalSizeFile1 = numChunksFile1 * moduleSizeFile1
     const totalSizeFile2 = numChunksFile2 * moduleSizeFile2
-    const differenceInTotalSize = totalSizeFile1 - totalSizeFile2
+    const differenceInTotalSize = totalSizeFile2 - totalSizeFile1
 
     return {
       id: moduleId,
@@ -259,7 +285,7 @@ function RelevantModules(props: {
     <div id="RelevantModules">
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Relevant modules that changed total size ({filteredTableData.length})</Typography>
+          <Typography variant="h6">Relevant INDIVIDUAL modules that changed total size ({filteredTableData.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography variant="subtitle1">{totalSizeChange > 0 ? `Build 1 is larger than Build 2 by ${inKB(totalSizeChange)} kb` : `Build 1 is smaller than Build 2 by ${inKB(-1 * totalSizeChange)} kb`} (across all chunks, so pre-gzipped)</Typography>
@@ -310,4 +336,8 @@ function RelevantModules(props: {
       </Accordion>
     </div>
   )
+}
+
+function AssetComparison(props: { }) {
+
 }

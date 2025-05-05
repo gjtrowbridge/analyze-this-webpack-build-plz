@@ -38,7 +38,13 @@ export function ModuleInspector() {
   const [showMoreId, setShowMoreId] = useState<number>(-1)
   const [inclusionReasonFilter, setInclusionReasonFilter] = useState<string>(anyInclusionReasonText)
 
-  const includeSubModulesInSizeCalcs = false
+  /**
+   * Right now, we are showing statistics for each individual module, NOT the total size for concatenated
+   * modules.  This IMO is a bit more informative, since it shows EXACTLY what code files are being duplicated, vs.
+   * showing a large duplication number for a module called "blah blah module + 16 others", which is much harder to
+   * reason about.
+   */
+  const showStatsSizeBasedOnIndividualModules = true
 
   const sortFn = useCallback((a: ProcessedModuleInfo, b: ProcessedModuleInfo) => {
     const sortOrder = sortAscending ? 1 : -1
@@ -73,17 +79,23 @@ export function ModuleInspector() {
     } else if (sortBy === 'Name') {
       return (a.rawFromWebpack.name.localeCompare(b.rawFromWebpack.name)) * sortOrder
     } else if (sortBy === '# Chunks') {
-      const aNumChunks = getModuleNumberOfChunks(a)
-      const bNumChunks = getModuleNumberOfChunks(b)
+      const aNumChunks = getModuleNumberOfChunks({
+        module: a,
+        includeChunksFromSuperModules: true,
+      })
+      const bNumChunks = getModuleNumberOfChunks({
+        module: b,
+        includeChunksFromSuperModules: true,
+      })
       return (aNumChunks - bNumChunks) * sortOrder
     } else if (sortBy === 'Extra Duplication Size') {
       const aExtra = getModuleExtraSizeDueToDuplication({
         module: a,
-        includeSubModules: includeSubModulesInSizeCalcs,
+        basedOnIndividualModules: showStatsSizeBasedOnIndividualModules,
       })
       const bExtra = getModuleExtraSizeDueToDuplication({
         module: b,
-        includeSubModules: includeSubModulesInSizeCalcs,
+        basedOnIndividualModules: showStatsSizeBasedOnIndividualModules,
       })
       return (aExtra - bExtra) * sortOrder
     } else {
@@ -149,7 +161,10 @@ export function ModuleInspector() {
       })
     })
     .filter((m) => {
-      const numChunks = getModuleNumberOfChunks(m)
+      const numChunks = getModuleNumberOfChunks({
+        module: m,
+        includeChunksFromSuperModules: true,
+      })
       if (numChunks >= filterByMinNumberChunks) {
         return true
       }
