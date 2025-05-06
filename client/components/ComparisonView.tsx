@@ -48,8 +48,6 @@ export function ComparisonView() {
     file2AssetLookup,
   })
 
-  console.log('xcxc assets', assets)
-
   return (
     <div id="ComparisonView">
       <ModuleComparison data={modules} />

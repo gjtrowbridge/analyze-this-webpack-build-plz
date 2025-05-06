@@ -1,7 +1,7 @@
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { ProcessedAssetInfo, ProcessedModuleInfo } from './processModulesAndChunks'
 
-function getAssetSize(asset: ImmutableObject<ProcessedAssetInfo>) {
+export function getAssetSize(asset: ImmutableObject<ProcessedAssetInfo>) {
   return asset.rawFromWebpack.size
 }
 
@@ -89,4 +89,10 @@ export class AssetLookup {
   toArray(): Array<ImmutableObject<ProcessedAssetInfo>> {
     return Array.from(this.byDatabaseId.values())
   }
+}
+
+export function getSumOfSizes(assets: Array<ImmutableObject<ProcessedAssetInfo>>): number {
+  return assets.reduce((acc, asset) => {
+    return getAssetSize(asset) + acc
+  }, 0)
 }

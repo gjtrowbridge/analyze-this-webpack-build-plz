@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { AssetRow } from './AssetRow'
 import { SortControl } from './SortControl'
-import { getStatistics, inKB } from '../helpers/math'
+import { getHumanReadableSize, getStatistics, inKB } from '../helpers/math'
 import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState } from '../globalState'
 import { ProcessedAssetInfo } from '../helpers/processModulesAndChunks'
@@ -14,6 +14,7 @@ import {
   Typography,
   Alert
 } from '@mui/material'
+import { getAssetSize, getSumOfSizes } from '../helpers/assets'
 
 export type AssetSortBy = 'Name' | 'Size' | 'Total Modules'
 
@@ -74,6 +75,9 @@ export function AssetInspector() {
     standardDeviation,
   } = getStatistics(filteredAssets.map((a) => { return a.rawFromWebpack.size }))
 
+  const totalSize = getSumOfSizes(allAssets)
+  const totalSizeFiltered = getSumOfSizes(filteredAssets)
+
   const noAssetWarning = allAssets.length > 0 ? null : (
     <Alert severity="warning" sx={{ mb: 2 }}>
       No assets found -- Make sure you generate your stats.json with asset output enabled!
@@ -107,11 +111,14 @@ export function AssetInspector() {
       </Card>
 
       <Typography variant="h5" gutterBottom>
-        There are {allAssets.length} total assets, and {filteredAssets.length} assets that match your filters
+        There are {allAssets.length} total assets, {filteredAssets.length} assets that pass your filters, and {assetRows.length} being shown
+      </Typography>
+      <Typography variant="h6" gutterBottom>
+        The total size of all assets is {getHumanReadableSize(totalSize)}, and the total size of assets that pass filters is {getHumanReadableSize(totalSizeFiltered)}
       </Typography>
       {noAssetWarning}
       <Typography variant="subtitle1" gutterBottom>
-        For the filtered assets, the mean asset size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
+        For the filtered assets, the mean asset size is {getHumanReadableSize(mean)}, the std deviation is {getHumanReadableSize(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {assetRows}

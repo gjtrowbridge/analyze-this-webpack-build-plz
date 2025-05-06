@@ -31,6 +31,20 @@ export function inKB(num: number) {
   return Math.round(kb * 100) / 100
 }
 
+export function getHumanReadableSize(num: number): string {
+  const labels = ['bytes', 'kb', 'mb', 'gb']
+  let currentNum = num
+  let currentLabel = labels[0]
+  for (let i = 0; i<labels.length; i++) {
+    currentLabel = labels[i]
+    if (currentNum < 1024) {
+      break
+    }
+    currentNum = currentNum / 1024
+  }
+  return `${Math.round(currentNum * 100) / 100} ${currentLabel}`
+}
+
 export function formatNumber(num: number): string {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 }
