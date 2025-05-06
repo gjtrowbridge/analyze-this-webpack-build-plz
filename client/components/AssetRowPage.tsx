@@ -34,6 +34,7 @@ export function AssetRowPage({ file }: AssetRowPageProps) {
         showRawInfo={true}
         setShowRawInfo={() => {}}
         chunksByDatabaseId={stateOrNull.chunksByDatabaseId.get()}
+        modulesByDatabaseId={stateOrNull.modulesByDatabaseId.get()}
       />
     </Box>
   )

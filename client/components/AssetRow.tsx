@@ -1,7 +1,7 @@
 import { JsonViewer } from '@textea/json-viewer'
 import { ImmutableObject, ImmutableMap } from '@hookstate/core'
 import { inKB } from '../helpers/math'
-import { ProcessedAssetInfo, ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
+import { ProcessedAssetInfo, ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { 
   Box, 
   Card, 
@@ -17,6 +17,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
 import { AssetLink } from './AssetLink'
 import { ChunkLink } from './ChunkLink'
+import { ModuleLink } from './ModuleLink'
 
 export function AssetRow(props: {
   file: 'file1' | 'file2'
@@ -24,6 +25,8 @@ export function AssetRow(props: {
   showRawInfo: boolean,
   setShowRawInfo: (assetDatabaseId: number) => void
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
+  modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
+  noLimitsOnLists?: boolean
 }) {
   const {
     file,
@@ -31,10 +34,16 @@ export function AssetRow(props: {
     showRawInfo,
     setShowRawInfo,
     chunksByDatabaseId,
+    modulesByDatabaseId,
+    noLimitsOnLists,
   } = props
 
   const [expanded, setExpanded] = useState(false)
   const [chunksExpanded, setChunksExpanded] = useState(false)
+  const [modulesExpanded, setModulesExpanded] = useState(false)
+  const [subModulesExpanded, setSubModulesExpanded] = useState(false)
+
+  const maxItemsToShow = noLimitsOnLists ? 100000 : 10
 
   const chunkLinks = Array.from(asset.chunkDatabaseIds).map((chunkDatabaseId) => {
     const chunk = chunksByDatabaseId.get(chunkDatabaseId)
@@ -47,6 +56,34 @@ export function AssetRow(props: {
       </ListItem>
     )
   })
+
+  const moduleLinks = Array.from(asset.moduleDatabaseIds)
+    .slice(0, maxItemsToShow)
+    .map((moduleDatabaseId) => {
+      const module = modulesByDatabaseId.get(moduleDatabaseId)
+      if (!module) {
+        return null
+      }
+      return (
+        <ListItem key={moduleDatabaseId}>
+          <ModuleLink module={module} file={file} />
+        </ListItem>
+      )
+    })
+
+  const subModuleLinks = Array.from(asset.subModuleDatabaseIds)
+    .slice(0, maxItemsToShow)
+    .map((moduleDatabaseId) => {
+      const module = modulesByDatabaseId.get(moduleDatabaseId)
+      if (!module) {
+        return null
+      }
+      return (
+        <ListItem key={moduleDatabaseId}>
+          <ModuleLink module={module} file={file} />
+        </ListItem>
+      )
+    })
 
   return (
     <Card sx={{ mb: 2 }}>
@@ -62,6 +99,28 @@ export function AssetRow(props: {
             <AccordionDetails>
               <List>
                 {chunkLinks}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion expanded={modulesExpanded} onChange={() => setModulesExpanded(!modulesExpanded)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Modules ({asset.moduleDatabaseIds.size} total -- will only show up to {maxItemsToShow})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {moduleLinks}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion expanded={subModulesExpanded} onChange={() => setSubModulesExpanded(!subModulesExpanded)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Submodules ({asset.subModuleDatabaseIds.size} total -- will only show up to {maxItemsToShow})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {subModuleLinks}
               </List>
             </AccordionDetails>
           </Accordion>

@@ -15,7 +15,7 @@ import {
   Alert
 } from '@mui/material'
 
-export type AssetSortBy = 'Name' | 'Size'
+export type AssetSortBy = 'Name' | 'Size' | 'Total Modules'
 
 export function AssetInspector() {
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState)
@@ -30,6 +30,10 @@ export function AssetInspector() {
       return (a.rawFromWebpack.size - b.rawFromWebpack.size) * sortOrder
     } else if (sortBy === "Name") {
       return (a.rawFromWebpack.name.localeCompare(b.rawFromWebpack.name)) * sortOrder
+    } else if (sortBy === "Total Modules") {
+      const aTotalModules = a.moduleDatabaseIds.size + a.subModuleDatabaseIds.size
+      const bTotalModules = b.moduleDatabaseIds.size + b.subModuleDatabaseIds.size
+      return (aTotalModules - bTotalModules) * sortOrder
     }
     return 0
   }, [sortAscending, sortBy])
@@ -41,6 +45,7 @@ export function AssetInspector() {
 
   const assetLookup = stateOrNull.assetLookup.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
+  const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const allAssets = assetLookup.toArray()
   const filteredAssets = allAssets
     .filter((a) => {
@@ -60,6 +65,7 @@ export function AssetInspector() {
       }}
       showRawInfo={showMoreId === asset.assetDatabaseId}
       chunksByDatabaseId={chunksByDatabaseId}
+      modulesByDatabaseId={modulesByDatabaseId}
     />
   })
 
@@ -84,6 +90,7 @@ export function AssetInspector() {
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <SortControl<AssetSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<AssetSortBy> controlFor={"Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<AssetSortBy> controlFor={"Total Modules"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
