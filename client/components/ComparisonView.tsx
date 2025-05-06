@@ -10,6 +10,8 @@ import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { GridColDef, DataGrid } from '@mui/x-data-grid'
 import { formatNumber, inKB } from '../helpers/math'
 import { getModuleName, getModuleNumberOfChunks, getModuleSize } from '../helpers/modules'
+import { AssetLink } from './AssetLink'
+import { AssetComparisonData } from '../helpers/comparison'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -57,6 +59,7 @@ export function ComparisonView() {
         file1ModulesByWebpackId,
         file2ModulesByWebpackId,
       }} />
+      <AssetComparison data={assets} />
     </div>
   )
 }
@@ -286,7 +289,7 @@ function RelevantModules(props: {
           <Typography variant="h6">Relevant INDIVIDUAL modules that changed total size ({filteredTableData.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="subtitle1">{totalSizeChange > 0 ? `Build 1 is larger than Build 2 by ${inKB(totalSizeChange)} kb` : `Build 1 is smaller than Build 2 by ${inKB(-1 * totalSizeChange)} kb`} (across all chunks, so pre-gzipped)</Typography>
+          <Typography variant="subtitle1">{totalSizeChange > 0 ? `Build 1 is smaller than Build 2 by ${inKB(totalSizeChange)} kb` : `Build 1 is larger than Build 2 by ${inKB(-1 * totalSizeChange)} kb`} (across all chunks, so pre-gzipped)</Typography>
           <div style={{ height: 600, width: '100%' }}>
             <DataGrid
               rows={filteredTableData}
@@ -336,6 +339,101 @@ function RelevantModules(props: {
   )
 }
 
-function AssetComparison(props: { }) {
+function AssetComparison(props: { data: AssetComparisonData }) {
+  const { data } = props
+  const { changed, onlyInFile1, onlyInFile2 } = data
 
+  const tableColumns: Array<GridColDef> = [
+    { field: 'name', headerName: 'Name', width: 300 },
+    { field: 'sizeFile1', headerName: 'Size (File 1)', width: 150 },
+    { field: 'sizeFile2', headerName: 'Size (File 2)', width: 150 },
+    { field: 'differenceInSize', headerName: 'Diff', width: 150 },
+  ]
+
+  const tableData: Array<{
+    id: string,
+    name: string,
+    sizeFile1: number,
+    sizeFile2: number,
+    differenceInSize: number,
+  }> = [
+    ...changed.map(({ file1Asset, file2Asset }) => ({
+      id: `changed-${file1Asset.assetDatabaseId}`,
+      name: file1Asset.rawFromWebpack.name,
+      sizeFile1: file1Asset.rawFromWebpack.size,
+      sizeFile2: file2Asset.rawFromWebpack.size,
+      differenceInSize: file2Asset.rawFromWebpack.size - file1Asset.rawFromWebpack.size,
+    })),
+    ...onlyInFile1.map(asset => ({
+      id: `file1-${asset.assetDatabaseId}`,
+      name: asset.rawFromWebpack.name,
+      sizeFile1: asset.rawFromWebpack.size,
+      sizeFile2: 0,
+      differenceInSize: -asset.rawFromWebpack.size,
+    })),
+    ...onlyInFile2.map(asset => ({
+      id: `file2-${asset.assetDatabaseId}`,
+      name: asset.rawFromWebpack.name,
+      sizeFile1: 0,
+      sizeFile2: asset.rawFromWebpack.size,
+      differenceInSize: asset.rawFromWebpack.size,
+    })),
+  ]
+
+  const totalSizeFile1 = changed.reduce((acc, curr) => acc + curr.file1Asset.rawFromWebpack.size, 0) +
+    onlyInFile1.reduce((acc, curr) => acc + curr.rawFromWebpack.size, 0)
+  
+  const totalSizeFile2 = changed.reduce((acc, curr) => acc + curr.file2Asset.rawFromWebpack.size, 0) +
+    onlyInFile2.reduce((acc, curr) => acc + curr.rawFromWebpack.size, 0)
+
+  const sizeDifference = totalSizeFile2 - totalSizeFile1
+
+  return (
+    <div id="AssetComparison">
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Assets that changed total size ({tableData.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="subtitle1">
+            {sizeDifference > 0 ? 
+              `Build 1 total assets are smaller than Build 2 by ${inKB(sizeDifference)} kb` :
+              `Build 1 total assets are larger than Build 2 by ${inKB(-1 * sizeDifference)} kb`
+            }
+          </Typography>
+          <div style={{ height: 600, width: '100%' }}>
+            <DataGrid
+              rows={tableData}
+              columns={tableColumns}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: 20 },
+                },
+              }}
+              pageSizeOptions={[10, 20, 50]}
+              checkboxSelection
+              slots={{
+                footer: () => {
+                  const totals = {
+                    sizeFile1: tableData.reduce((sum, row) => sum + row.sizeFile1, 0),
+                    sizeFile2: tableData.reduce((sum, row) => sum + row.sizeFile2, 0),
+                    differenceInSize: tableData.reduce((sum, row) => sum + row.differenceInSize, 0),
+                  };
+
+                  return (
+                    <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+                      <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.sizeFile1)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.sizeFile2)}</div>
+                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInSize)}</div>
+                    </div>
+                  );
+                },
+              }}
+            />
+          </div>
+        </AccordionDetails>
+      </Accordion>
+    </div>
+  )
 }
