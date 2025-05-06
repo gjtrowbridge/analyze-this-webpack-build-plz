@@ -34,8 +34,8 @@ export function ComparisonView() {
   const file2ChunksByWebpackId = file2ProcessedState.chunksByWebpackId.get()
   const file1ModulesByDatabaseId = file1ProcessedState.modulesByDatabaseId.get()
   const file2ModulesByDatabaseId = file2ProcessedState.modulesByDatabaseId.get()
-  const file1AssetsByDatabaseId = file1ProcessedState.assetsByDatabaseId.get()
-  const file2AssetsByDatabaseId = file2ProcessedState.assetsByDatabaseId.get()
+  const file1AssetLookup = file1ProcessedState.assetLookup.get()
+  const file2AssetLookup = file2ProcessedState.assetLookup.get()
 
   const { modules, chunks, assets } = compareFiles({
     file1ModulesByDatabaseId,
@@ -44,8 +44,8 @@ export function ComparisonView() {
     file2ModulesByWebpackId,
     file1ChunksByWebpackId,
     file2ChunksByWebpackId,
-    file1AssetsByDatabaseId,
-    file2AssetsByDatabaseId,
+    file1AssetLookup,
+    file2AssetLookup,
   })
 
   console.log('xcxc assets', assets)

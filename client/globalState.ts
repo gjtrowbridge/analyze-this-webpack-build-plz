@@ -1,6 +1,7 @@
 import { hookstate, State } from '@hookstate/core';
 import { AssetRow, ChunkRow, FileRow, ModuleRow } from '../shared/types'
 import { ProcessedState } from './helpers/processModulesAndChunks'
+import { AssetLookup } from './helpers/assets'
 
 
 export interface LoadedFileData {
@@ -49,7 +50,7 @@ export const defaultProcessedState: ProcessedState = {
   chunksByWebpackId: new Map(),
   moduleInclusionReasons: new Set(),
   namedChunkGroupsByDatabaseId: new Map(),
-  assetsByDatabaseId: new Map(),
+  assetLookup: new AssetLookup(),
 }
 export const file1ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })
 export const file2ProcessedGlobalState: State<ProcessedState> = hookstate<ProcessedState>({ ...defaultProcessedState })

@@ -20,8 +20,8 @@ export function AssetRowPage({ file }: AssetRowPageProps) {
   }
 
   const assetId = Number(assetDatabaseId)
-  const assetsMap = stateOrNull.assetsByDatabaseId.get()
-  const asset = assetsMap.get(assetId)
+  const assetLookup = stateOrNull.assetLookup.get()
+  const asset = assetLookup.getByDatabaseId(assetId)
   if (!asset) {
     return <Box>Asset not found</Box>
   }

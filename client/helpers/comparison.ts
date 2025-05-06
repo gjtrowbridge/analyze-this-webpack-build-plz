@@ -1,7 +1,7 @@
 import { ProcessedAssetInfo, ProcessedChunkInfo, ProcessedModuleInfo } from './processModulesAndChunks'
 import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { getModuleIdentifier } from './modules'
-import { assetHasChanged, getAssetName } from './assets'
+import { assetHasChanged, AssetLookup, getAssetName } from './assets'
 
 function moduleHasChanged(args: {
   m1: ImmutableObject<ProcessedModuleInfo>
@@ -66,8 +66,8 @@ export function compareFiles(args: {
   file2ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>
   file1ChunksByWebpackId: ImmutableMap<string, ProcessedChunkInfo>
   file2ChunksByWebpackId: ImmutableMap<string, ProcessedChunkInfo>
-  file1AssetsByDatabaseId: ImmutableMap<number, ProcessedAssetInfo>
-  file2AssetsByDatabaseId: ImmutableMap<number, ProcessedAssetInfo>
+  file1AssetLookup: ImmutableObject<AssetLookup>
+  file2AssetLookup: ImmutableObject<AssetLookup>
 }): {
   modules: ModuleComparisonData
   chunks: ChunkComparisonData
@@ -80,8 +80,8 @@ export function compareFiles(args: {
     file2ModulesByWebpackId,
     file1ChunksByWebpackId,
     file2ChunksByWebpackId,
-    file1AssetsByDatabaseId,
-    file2AssetsByDatabaseId,
+    file1AssetLookup,
+    file2AssetLookup,
   } = args
 
   const rando = Math.random()
@@ -210,44 +210,38 @@ export function compareFiles(args: {
   }> = []
   const assetsOnlyInFile1: Array<ImmutableObject<ProcessedAssetInfo>> = []
   const assetsOnlyInFile2: Array<ImmutableObject<ProcessedAssetInfo>> = []
-  const assetsByNameFile1 = new Map<string, ImmutableObject<ProcessedAssetInfo>>()
-  const assetsByNameFile2 = new Map<string, ImmutableObject<ProcessedAssetInfo>>()
 
-  // file1AssetsByDatabaseId.forEach((file1Asset) => {
-  //   const name = getAssetName(file1Asset)
-  //   if (assetsByNameFile1.has(name)) {
-  //     console.log(`new one ${rando}, ${name}`, file1Asset)
-  //     console.log(`existing one ${rando}, ${name}`, assetsByNameFile1.get(name))
-  //     throw `Woops! There are two assets with the same name! Handle this case now that we know it can happen! ${rando}`
-  //   }
-  //   assetsByNameFile1.set(name, file1Asset)
-  // })
-  //
-  // file2AssetsByDatabaseId.forEach((file2Asset) => {
-  //   const name = getAssetName(file2Asset)
-  //   assetsByNameFile2.set(name, file2Asset)
-  //
-  //   const file1Asset = assetsByNameFile1.get(name)
-  //   if (file1Asset === undefined) {
-  //     assetsOnlyInFile2.push(file2Asset)
-  //   } else {
-  //     if (assetHasChanged({
-  //       asset1: file1Asset,
-  //       asset2: file2Asset,
-  //     })) {
-  //       assetsChanged.push({
-  //         file1Asset,
-  //         file2Asset,
-  //       })
-  //     }
-  //   }
-  // })
-  //
-  // assetsByNameFile1.forEach((file1Asset, name) => {
-  //   if (!assetsByNameFile2.has(name)) {
-  //     assetsOnlyInFile1.push(file1Asset)
-  //   }
-  // })
+  file1AssetLookup.toArray().forEach((file1Asset) => {
+    // Does this asset from file 1 have an equivalent-looking one in file 2?
+    const file2Asset = file2AssetLookup.getMatchingAssetFromOtherFile({
+      asset: file1Asset,
+      modulesByDatabaseId: file1ModulesByDatabaseId,
+    })
+    if (!file2Asset) {
+      assetsOnlyInFile1.push(file1Asset)
+    } else {
+      if (assetHasChanged({
+        asset1: file1Asset,
+        asset2: file2Asset,
+      })) {
+        assetsChanged.push({
+          file1Asset,
+          file2Asset,
+        })
+      }
+    }
+  })
+
+  file2AssetLookup.toArray().forEach((file2Asset) => {
+    // Does this asset from file 2 have an equivalent-looking one in file 1?
+    const file1Asset = file1AssetLookup.getMatchingAssetFromOtherFile({
+      asset: file2Asset,
+      modulesByDatabaseId: file2ModulesByDatabaseId,
+    })
+    if (!file1Asset) {
+      assetsOnlyInFile2.push(file2Asset)
+    }
+  })
 
   return {
     modules: {

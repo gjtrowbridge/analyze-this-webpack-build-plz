@@ -39,9 +39,10 @@ export function AssetInspector() {
     return <Typography>Loading and processing data, asset data will be visible soon...</Typography>
   }
 
-  const assets = Array.from(stateOrNull.assetsByDatabaseId.get().values())
+  const assetLookup = stateOrNull.assetLookup.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
-  const filteredAssets = assets
+  const allAssets = assetLookup.toArray()
+  const filteredAssets = allAssets
     .filter((a) => {
       if (filterName === "") {
         return true
@@ -67,7 +68,7 @@ export function AssetInspector() {
     standardDeviation,
   } = getStatistics(filteredAssets.map((a) => { return a.rawFromWebpack.size }))
 
-  const noAssetWarning = assets.length > 0 ? null : (
+  const noAssetWarning = allAssets.length > 0 ? null : (
     <Alert severity="warning" sx={{ mb: 2 }}>
       No assets found -- Make sure you generate your stats.json with asset output enabled!
     </Alert>
@@ -99,7 +100,7 @@ export function AssetInspector() {
       </Card>
 
       <Typography variant="h5" gutterBottom>
-        There are {assets.length} total assets, and {filteredAssets.length} assets that match your filters
+        There are {allAssets.length} total assets, and {filteredAssets.length} assets that match your filters
       </Typography>
       {noAssetWarning}
       <Typography variant="subtitle1" gutterBottom>
