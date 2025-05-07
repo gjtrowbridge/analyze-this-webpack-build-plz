@@ -301,36 +301,36 @@ function RelevantModules(props: {
               }}
               pageSizeOptions={[10, 20, 50]}
               checkboxSelection
-              slots={{
-                footer: () => {
-                  const totals = {
-                    moduleSizeFile1: filteredTableData.reduce((sum, row) => sum + row.moduleSizeFile1, 0),
-                    moduleSizeFile2: filteredTableData.reduce((sum, row) => sum + row.moduleSizeFile2, 0),
-                    differenceInModuleSize: filteredTableData.reduce((sum, row) => sum + row.differenceInModuleSize, 0),
-                    numChunksFile1: filteredTableData.reduce((sum, row) => sum + row.numChunksFile1, 0),
-                    numChunksFile2: filteredTableData.reduce((sum, row) => sum + row.numChunksFile2, 0),
-                    differenceInNumChunks: filteredTableData.reduce((sum, row) => sum + row.differenceInNumChunks, 0),
-                    totalSizeFile1: filteredTableData.reduce((sum, row) => sum + row.totalSizeFile1, 0),
-                    totalSizeFile2: filteredTableData.reduce((sum, row) => sum + row.totalSizeFile2, 0),
-                    differenceInTotalSize: filteredTableData.reduce((sum, row) => sum + row.differenceInTotalSize, 0),
-                  };
-
-                  return (
-                    <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
-                      <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.moduleSizeFile1)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.moduleSizeFile2)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInModuleSize)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.numChunksFile1)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.numChunksFile2)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInNumChunks)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.totalSizeFile1)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.totalSizeFile2)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInTotalSize)}</div>
-                    </div>
-                  );
-                },
-              }}
+              // slots={{
+              //   footer: () => {
+              //     const totals = {
+              //       moduleSizeFile1: filteredTableData.reduce((sum, row) => sum + row.moduleSizeFile1, 0),
+              //       moduleSizeFile2: filteredTableData.reduce((sum, row) => sum + row.moduleSizeFile2, 0),
+              //       differenceInModuleSize: filteredTableData.reduce((sum, row) => sum + row.differenceInModuleSize, 0),
+              //       numChunksFile1: filteredTableData.reduce((sum, row) => sum + row.numChunksFile1, 0),
+              //       numChunksFile2: filteredTableData.reduce((sum, row) => sum + row.numChunksFile2, 0),
+              //       differenceInNumChunks: filteredTableData.reduce((sum, row) => sum + row.differenceInNumChunks, 0),
+              //       totalSizeFile1: filteredTableData.reduce((sum, row) => sum + row.totalSizeFile1, 0),
+              //       totalSizeFile2: filteredTableData.reduce((sum, row) => sum + row.totalSizeFile2, 0),
+              //       differenceInTotalSize: filteredTableData.reduce((sum, row) => sum + row.differenceInTotalSize, 0),
+              //     };
+              //
+              //     return (
+              //       <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+              //         <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.moduleSizeFile1)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.moduleSizeFile2)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.differenceInModuleSize)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.numChunksFile1)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.numChunksFile2)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.differenceInNumChunks)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.totalSizeFile1)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.totalSizeFile2)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.differenceInTotalSize)}</div>
+              //       </div>
+              //     );
+              //   },
+              // }}
             />
           </div>
         </AccordionDetails>
@@ -412,24 +412,24 @@ function AssetComparison(props: { data: AssetComparisonData }) {
               }}
               pageSizeOptions={[10, 20, 50]}
               checkboxSelection
-              slots={{
-                footer: () => {
-                  const totals = {
-                    sizeFile1: tableData.reduce((sum, row) => sum + row.sizeFile1, 0),
-                    sizeFile2: tableData.reduce((sum, row) => sum + row.sizeFile2, 0),
-                    differenceInSize: tableData.reduce((sum, row) => sum + row.differenceInSize, 0),
-                  };
-
-                  return (
-                    <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
-                      <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.sizeFile1)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.sizeFile2)}</div>
-                      <div style={{ width: 150 }}>{formatNumber(totals.differenceInSize)}</div>
-                    </div>
-                  );
-                },
-              }}
+              // slots={{
+              //   footer: () => {
+              //     const totals = {
+              //       sizeFile1: tableData.reduce((sum, row) => sum + row.sizeFile1, 0),
+              //       sizeFile2: tableData.reduce((sum, row) => sum + row.sizeFile2, 0),
+              //       differenceInSize: tableData.reduce((sum, row) => sum + row.differenceInSize, 0),
+              //     };
+              //
+              //     return (
+              //       <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
+              //         <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.sizeFile1)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.sizeFile2)}</div>
+              //         <div style={{ width: 150 }}>{formatNumber(totals.differenceInSize)}</div>
+              //       </div>
+              //     );
+              //   },
+              // }}
             />
           </div>
         </AccordionDetails>

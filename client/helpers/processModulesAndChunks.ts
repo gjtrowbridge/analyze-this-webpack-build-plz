@@ -139,7 +139,9 @@ const moduleReasonTypeHandlers: {
 
   "import() eager": getImportHandler({ isLazy: true }),
   "import()": getImportHandler({ isLazy: true }),
+  "import() context lazy": getImportHandler({ isLazy: true }),
 
+  "import() context element": getImportHandler({ isLazy: false }),
   "cjs require": getImportHandler({ isLazy: false }),
   "harmony export imported specifier": getImportHandler({ isLazy: false }),
   "cjs self exports reference": getImportHandler({ isLazy: false }),
