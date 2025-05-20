@@ -12,6 +12,7 @@ import { formatNumber, inKB } from '../helpers/math'
 import { getModuleName, getModuleNumberOfChunks, getModuleSize } from '../helpers/modules'
 import { AssetLink } from './AssetLink'
 import { AssetComparisonData } from '../helpers/comparison'
+import { useFileNames } from '../hooks/useFiles'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -20,6 +21,7 @@ export function ComparisonView() {
 
   const file1OrNull = file1ProcessedState.ornull
   const file2OrNull = file2ProcessedState.ornull
+  const fileNames = useFileNames()
 
   const loadedFileData = fileData.get()
   if (loadedFileData.status === "LOADED" && loadedFileData.selectedFileId2 === undefined) {
@@ -67,6 +69,7 @@ export function ComparisonView() {
 function ModuleComparison(props: { data: ModuleComparisonData}) {
   const { data } = props
   const { changed, onlyInFile1, onlyInFile2 } = data
+  const fileNames = useFileNames()
   const modulesThatChanged = changed.map((args) => {
     const { file1Module, file2Module } = args
     return (
@@ -106,7 +109,7 @@ function ModuleComparison(props: { data: ModuleComparisonData}) {
 
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Modules that exist only in file 1 ({onlyInFile1.length})</Typography>
+          <Typography variant="h6">Modules that exist only in {fileNames.file1} ({onlyInFile1.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <ul>
@@ -117,7 +120,7 @@ function ModuleComparison(props: { data: ModuleComparisonData}) {
 
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Modules that exist only in file 2 ({onlyInFile2.length})</Typography>
+          <Typography variant="h6">Modules that exist only in {fileNames.file2} ({onlyInFile2.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <ul>
@@ -132,6 +135,7 @@ function ModuleComparison(props: { data: ModuleComparisonData}) {
 function ChunkComparison(props: { data: ChunkComparisonData}) {
   const { data } = props
   const { changed, onlyInFile1, onlyInFile2 } = data
+  const fileNames = useFileNames()
   const chunksThatChanged = changed.map((args) => {
     const { file1Chunk, file2Chunk } = args
     return (
@@ -171,7 +175,7 @@ function ChunkComparison(props: { data: ChunkComparisonData}) {
 
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Chunks that exist only in file 1 ({onlyInFile1.length})</Typography>
+          <Typography variant="h6">Chunks that exist only in {fileNames.file1} ({onlyInFile1.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <ul>
@@ -182,7 +186,7 @@ function ChunkComparison(props: { data: ChunkComparisonData}) {
 
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Chunks that exist only in file 2 ({onlyInFile2.length})</Typography>
+          <Typography variant="h6">Chunks that exist only in {fileNames.file2} ({onlyInFile2.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <ul>
@@ -201,18 +205,19 @@ function RelevantModules(props: {
     file2ModulesByWebpackId: ImmutableMap<string, ProcessedModuleInfo>,
   }
 }) {
+  const fileNames = useFileNames()
   const { data } = props
   const { relevantModules, file1ModulesByWebpackId, file2ModulesByWebpackId } = data
   const tableColumns: Array<GridColDef> = [
     { field: 'name', headerName: 'Name', width: 300},
-    { field: 'moduleSizeFile1', headerName: 'Module Size (File 1)', width: 150},
-    { field: 'moduleSizeFile2', headerName: 'Module Size (File 2)', width: 150},
+    { field: 'moduleSizeFile1', headerName: `Module Size (${fileNames.file1})`, width: 150},
+    { field: 'moduleSizeFile2', headerName: `Module Size (${fileNames.file2})`, width: 150},
     { field: 'differenceInModuleSize', headerName: 'Diff', width: 150},
-    { field: 'numChunksFile1', headerName: '# Chunks (File 1)', width: 150},
-    { field: 'numChunksFile2', headerName: '# Chunks (File 2)', width: 150},
+    { field: 'numChunksFile1', headerName: `# Chunks (${fileNames.file1})`, width: 150},
+    { field: 'numChunksFile2', headerName: `# Chunks (${fileNames.file2})`, width: 150},
     { field: 'differenceInNumChunks', headerName: 'Diff', width: 150},
-    { field: 'totalSizeFile1', headerName: 'Total Size (File 1)', width: 150},
-    { field: 'totalSizeFile2', headerName: 'Total Size (File 2)', width: 150},
+    { field: 'totalSizeFile1', headerName: `Total Size (${fileNames.file1})`, width: 150},
+    { field: 'totalSizeFile2', headerName: `Total Size (${fileNames.file2})`, width: 150},
     { field: 'differenceInTotalSize', headerName: 'Total Diff', width: 150},
   ]
   const tableData: Array<{
@@ -289,7 +294,7 @@ function RelevantModules(props: {
           <Typography variant="h6">Relevant INDIVIDUAL modules that changed total size ({filteredTableData.length})</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="subtitle1">{totalSizeChange > 0 ? `Build 1 is smaller than Build 2 by ${inKB(totalSizeChange)} kb` : `Build 1 is larger than Build 2 by ${inKB(-1 * totalSizeChange)} kb`} (across all chunks, so pre-gzipped)</Typography>
+          <Typography variant="subtitle1">{totalSizeChange > 0 ? `${fileNames.file1} is smaller than ${fileNames.file2} by ${inKB(totalSizeChange)} kb` : `${fileNames.file1} is larger than ${fileNames.file2} by ${inKB(-1 * totalSizeChange)} kb`} (across all chunks, so pre-gzipped)</Typography>
           <div style={{ height: 600, width: '100%' }}>
             <DataGrid
               rows={filteredTableData}
@@ -342,11 +347,12 @@ function RelevantModules(props: {
 function AssetComparison(props: { data: AssetComparisonData }) {
   const { data } = props
   const { changed, onlyInFile1, onlyInFile2 } = data
+  const fileNames = useFileNames()
 
   const tableColumns: Array<GridColDef> = [
     { field: 'name', headerName: 'Name', width: 300 },
-    { field: 'sizeFile1', headerName: 'Size (File 1)', width: 150 },
-    { field: 'sizeFile2', headerName: 'Size (File 2)', width: 150 },
+    { field: 'sizeFile1', headerName: `Size (${fileNames.file1})`, width: 150 },
+    { field: 'sizeFile2', headerName: `Size (${fileNames.file2})`, width: 150 },
     { field: 'differenceInSize', headerName: 'Diff', width: 150 },
   ]
 
@@ -397,8 +403,8 @@ function AssetComparison(props: { data: AssetComparisonData }) {
         <AccordionDetails>
           <Typography variant="subtitle1">
             {sizeDifference > 0 ? 
-              `Build 1 total assets are smaller than Build 2 by ${inKB(sizeDifference)} kb` :
-              `Build 1 total assets are larger than Build 2 by ${inKB(-1 * sizeDifference)} kb`
+              `${fileNames.file1} total assets are smaller than ${fileNames.file2} by ${inKB(sizeDifference)} kb` :
+              `${fileNames.file1} total assets are larger than ${fileNames.file2} by ${inKB(-1 * sizeDifference)} kb`
             }
           </Typography>
           <div style={{ height: 600, width: '100%' }}>
