@@ -28,6 +28,7 @@ export function ChunkInspector() {
   const [filterName, setFilterName] = useState<string>("")
   const [filterByIncludedModule, setFilterByIncludedModule] = useState<string>("")
   const [filterByGeneratedAssetName, setFilterByGeneratedAssetName] = useState<string>("")
+  const [filterByNamedChunkGroup, setFilterByNamedChunkGroup] = useState<string>("")
 
   const sortFn = useCallback((a: ProcessedChunkInfo, b: ProcessedChunkInfo) => {
     const sortOrder = sortAscending ? 1 : -1
@@ -98,6 +99,15 @@ export function ChunkInspector() {
       }
       return c.rawFromWebpack.files.some((f) => {
         return f.toLowerCase().includes(filterByGeneratedAssetName.toLowerCase())
+      })
+    })
+    .filter((c) => {
+      if (filterByNamedChunkGroup === "") {
+        return true
+      }
+      return Array.from(c.namedChunkGroupDatabaseIds).some((ncgId) => {
+        const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+        return ncg && ncg.name.toLowerCase() === filterByNamedChunkGroup.toLowerCase()
       })
     })
     .sort(sortFn)
@@ -175,6 +185,15 @@ export function ChunkInspector() {
                 label="Filter By Generated Asset Name"
                 value={filterByGeneratedAssetName}
                 onChange={(e) => setFilterByGeneratedAssetName(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField
+                fullWidth
+                label="Filter By Named Chunk Group"
+                value={filterByNamedChunkGroup}
+                onChange={(e) => setFilterByNamedChunkGroup(e.target.value)}
                 size="small"
               />
             </Grid>
