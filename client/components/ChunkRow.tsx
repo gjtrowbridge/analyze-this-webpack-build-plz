@@ -275,7 +275,7 @@ export function ChunkRow(props: {
           </AccordionSummary>
           <AccordionDetails>
             {expanded && (
-              <JsonViewer value={chunk} defaultInspectControl={() => false} />
+              <JsonViewer value={chunk.rawFromWebpack} defaultInspectControl={() => false} />
             )}
           </AccordionDetails>
         </Accordion>

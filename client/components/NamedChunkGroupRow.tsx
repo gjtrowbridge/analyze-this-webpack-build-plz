@@ -53,32 +53,38 @@ export function NamedChunkGroupRow(props: {
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Box>
-          <NamedChunkGroupLink namedChunkGroup={namedChunkGroup} file={file} />
-          <Typography variant="body1" gutterBottom>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            <NamedChunkGroupLink namedChunkGroup={namedChunkGroup} file={file} />
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
             Total Size: {getHumanReadableSize(namedChunkGroup.totalSize)} ({namedChunkGroup.chunkDatabaseIds.size} chunks)
           </Typography>
+        </Box>
 
-          <Accordion expanded={chunksExpanded} onChange={() => setChunksExpanded(!chunksExpanded)}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Associated Chunks ({namedChunkGroup.chunkDatabaseIds.size})</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <List>
+        <Accordion expanded={chunksExpanded} onChange={() => setChunksExpanded(!chunksExpanded)}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Associated Chunks ({namedChunkGroup.chunkDatabaseIds.size})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {chunksExpanded && (
+              <List dense>
                 {chunkLinks}
               </List>
-            </AccordionDetails>
-          </Accordion>
+            )}
+          </AccordionDetails>
+        </Accordion>
 
-          <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>See raw webpack JSON</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
+        <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>See raw webpack JSON</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {expanded && (
               <JsonViewer value={namedChunkGroup.rawFromWebpack} defaultInspectControl={() => false} />
-            </AccordionDetails>
-          </Accordion>
-        </Box>
+            )}
+          </AccordionDetails>
+        </Accordion>
       </CardContent>
     </Card>
   );

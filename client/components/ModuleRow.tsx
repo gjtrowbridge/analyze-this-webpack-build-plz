@@ -136,95 +136,106 @@ export function ModuleRow(props: {
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Box>
-          <Typography variant="h5" gutterBottom>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
             <ModuleLink module={module} file={"file1"} />
           </Typography>
-          <Typography variant="body1" gutterBottom>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</Typography>
-          <Typography variant="body1" gutterBottom># Associated Files: { associatedAssets.length } (See Chunk Parents for more info)</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            # Associated Files: { associatedAssets.length } (See Chunk Parents for more info)
+          </Typography>
           {sizeElements}
-          <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: {getHumanReadableSize(getModuleExtraSizeDueToDuplication({
-            module,
-            basedOnIndividualModules: true,
-          }))}</Typography>
-          <Typography variant="body1" gutterBottom># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</Typography>
-          <Typography variant="body1" gutterBottom>Module Concatenation Status: {
-            module.isSuperModule ?
-              'Super-module (has concatenated sub-modules)' :
-              module.isSubModule ?
-                'Sub-module (is concatenated onto a super-module)' :
-                'Normal (has not been concatenated with any other modules)'
-          }</Typography>
-          
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Direct Chunk Parents ({module.parentChunkDatabaseIds.size})</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <List>
-                {chunkParents}
-              </List>
-            </AccordionDetails>
-          </Accordion>
-
-          {module.isSubModule ?
-            (
-              <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography>Implicit Chunk Parents From Concatenated Super-module(s) ({module.parentChunkDatabaseIdsFromSuperModule.size})</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <List>
-                    {parentChunkFromSuperModuleElements}
-                  </List>
-                </AccordionDetails>
-              </Accordion>
-            ) : null}
-
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Shortest Path to Entry Point ({module.pathFromEntry.length})</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <List>
-                {shortestPath}
-              </List>
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Module Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <List>
-                {children}
-              </List>
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Module Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <List>
-                {parents}
-              </List>
-            </AccordionDetails>
-          </Accordion>
-
-          {subModuleSection}
-
-          <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>See raw webpack JSON</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <JsonViewer value={module.rawFromWebpack} defaultInspectControl={() => false} />
-            </AccordionDetails>
-          </Accordion>
+          <Typography variant="body2" color="text.secondary">
+            Extra Size In Bundle Due To Duplication: {getHumanReadableSize(getModuleExtraSizeDueToDuplication({
+              module,
+              basedOnIndividualModules: true,
+            }))}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            # Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Module Concatenation Status: {
+              module.isSuperModule ?
+                'Super-module (has concatenated sub-modules)' :
+                module.isSubModule ?
+                  'Sub-module (is concatenated onto a super-module)' :
+                  'Normal (has not been concatenated with any other modules)'
+            }
+          </Typography>
         </Box>
+        
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Direct Chunk Parents ({module.parentChunkDatabaseIds.size})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {chunkParents}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        {module.isSubModule ? (
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Implicit Chunk Parents From Concatenated Super-module(s) ({module.parentChunkDatabaseIdsFromSuperModule.size})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List dense>
+                {parentChunkFromSuperModuleElements}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        ) : null}
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Shortest Path to Entry Point ({module.pathFromEntry.length})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {shortestPath}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Module Children ({module.childModules.size} total -- will only show up to {maxChildrenToShow})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {children}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Module Parents ({module.parentModules.size} total -- will only show up to {maxParentsToShow})</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <List dense>
+              {parents}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+
+        {subModuleSection}
+
+        <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>See raw webpack JSON</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {expanded && (
+              <JsonViewer value={module.rawFromWebpack} defaultInspectControl={() => false} />
+            )}
+          </AccordionDetails>
+        </Accordion>
       </CardContent>
     </Card>
   )
