@@ -202,7 +202,36 @@ export function ChunkInspector() {
       </Card>
 
       <Typography variant="h5" gutterBottom>
-        There are {chunks.length} chunks
+        There are {chunks.length} total chunks, {chunks.filter((c) => {
+          if (sortBy === 'Depth From Entry' && c.pathFromEntry.length === 0) {
+            return false
+          }
+          if (filterName !== "" && !c.rawFromWebpack.names.some((name) => {
+            return name.toLowerCase().includes(filterName.toLowerCase())
+          })) {
+            return false
+          }
+          if (filterById !== "" && String(c.rawFromWebpack.id) !== String(filterById)) {
+            return false
+          }
+          if (filterByIncludedModule !== "" && !c.rawFromWebpack.origins.some((o) => {
+            return o.moduleIdentifier.toLowerCase().includes(filterByIncludedModule.toLowerCase())
+          })) {
+            return false
+          }
+          if (filterByGeneratedAssetName !== "" && !c.rawFromWebpack.files.some((f) => {
+            return f.toLowerCase().includes(filterByGeneratedAssetName.toLowerCase())
+          })) {
+            return false
+          }
+          if (filterByNamedChunkGroup !== "" && !Array.from(c.namedChunkGroupDatabaseIds).some((ncgId) => {
+            const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+            return ncg && ncg.name.toLowerCase() === filterByNamedChunkGroup.toLowerCase()
+          })) {
+            return false
+          }
+          return true
+        }).length} chunks that pass your filters, and {chunkRows.length} being shown
       </Typography>
       {noChunkWarning}
       <Typography variant="subtitle1" gutterBottom>
