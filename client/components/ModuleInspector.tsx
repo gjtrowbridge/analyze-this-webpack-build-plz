@@ -37,6 +37,7 @@ export function ModuleInspector() {
   const [filterOptimizationBailout, setfilterOptimizationBailout] = useState<string>("")
   const [showMoreId, setShowMoreId] = useState<number>(-1)
   const [inclusionReasonFilter, setInclusionReasonFilter] = useState<string>(anyInclusionReasonText)
+  const [filterByNamedChunkGroup, setFilterByNamedChunkGroup] = useState<string>("")
 
   /**
    * Right now, we are showing statistics for each individual module, NOT the total size for concatenated
@@ -111,8 +112,10 @@ export function ModuleInspector() {
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
   const moduleInclusionReasons = stateOrNull.moduleInclusionReasons.get()
+  const namedChunkGroupsByDatabaseId = stateOrNull.namedChunkGroupsByDatabaseId.get()
   const inclusionReasons = Array.from(moduleInclusionReasons)
   const finalModules = Array.from(modulesByDatabaseId.values())
+  const exactNames = filterByNamedChunkGroup.split(',').map(name => name.trim().toLowerCase())
   const filteredModules = finalModules
     .filter((m) => {
       if (filterName === "") {
@@ -168,6 +171,15 @@ export function ModuleInspector() {
       if (numChunks >= filterByMinNumberChunks) {
         return true
       }
+    })
+    .filter((m) => {
+      if (filterByNamedChunkGroup === "") {
+        return true
+      }
+      return Array.from(m.namedChunkGroupDatabaseIds).some((ncgId) => {
+        const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+        return ncg && exactNames.includes(ncg.name.toLowerCase())
+      })
     })
     .sort(sortFn)
   const moduleRows = filteredModules
@@ -275,6 +287,16 @@ export function ModuleInspector() {
                   {inclusionReasonOptions}
                 </Select>
               </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Named Chunk Group (comma-separated, exact match)"
+                value={filterByNamedChunkGroup}
+                onChange={(e) => setFilterByNamedChunkGroup(e.target.value)}
+                size="small"
+                placeholder="e.g. main, vendor, app"
+              />
             </Grid>
           </Grid>
         </CardContent>

@@ -88,6 +88,7 @@ export interface ProcessedModuleInfo {
   childModules: Map<number, ModuleRelationshipInfo>
 
   parentChunkDatabaseIds: Set<number>
+  namedChunkGroupDatabaseIds: Set<number>
 
   /**
    * #ConcatenatedModules
@@ -210,6 +211,7 @@ export function processState(args: {
       parentModules: new Map<number, ModuleRelationshipInfo>,
       childModules: new Map<number, ModuleRelationshipInfo>,
       parentChunkDatabaseIds: new Set<number>,
+      namedChunkGroupDatabaseIds: new Set<number>,
       /**
        * These get updated in the next step
        */
@@ -259,6 +261,10 @@ export function processState(args: {
       if (chunk) {
         chunk.childModuleDatabaseIds.add(module.moduleDatabaseId)
         module.parentChunkDatabaseIds.add(chunk.chunkDatabaseId)
+        // Add named chunk group database IDs from the chunk to the module
+        chunk.namedChunkGroupDatabaseIds.forEach(ncgId => {
+          module.namedChunkGroupDatabaseIds.add(ncgId)
+        })
       }
     }
 
