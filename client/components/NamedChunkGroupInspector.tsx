@@ -14,6 +14,7 @@ export const NamedChunkGroupInspector: React.FC = () => {
   const [sortBy, setSortBy] = useState<NamedChunkGroupSortBy>("Name");
   const [sortAscending, setSortAscending] = useState<boolean>(false);
   const [filterName, setFilterName] = useState<string>("");
+  const [filterExactName, setFilterExactName] = useState<string>("");
   const [showMoreId, setShowMoreId] = useState<number>(-1);
 
   const sortFn = useCallback((a: ProcessedNamedChunkGroupInfo, b: ProcessedNamedChunkGroupInfo) => {
@@ -38,10 +39,12 @@ export const NamedChunkGroupInspector: React.FC = () => {
   const allNamedChunkGroups = Array.from(namedChunkGroupsByDatabaseId.values());
   const filteredNamedChunkGroups = allNamedChunkGroups
     .filter((ncg) => {
-      if (filterName === "") {
+      if (filterName === "" && filterExactName === "") {
         return true;
       }
-      return ncg.name.toLowerCase().includes(filterName.toLowerCase());
+      const matchesPartial = filterName === "" || ncg.name.toLowerCase().includes(filterName.toLowerCase());
+      const matchesExact = filterExactName === "" || ncg.name.toLowerCase() === filterExactName.toLowerCase();
+      return matchesPartial && matchesExact;
     })
     .sort(sortFn);
 
@@ -87,9 +90,18 @@ export const NamedChunkGroupInspector: React.FC = () => {
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
-                label="Filter By Name"
+                label="Filter By Name (Partial Match)"
                 value={filterName}
                 onChange={(e) => setFilterName(e.target.value)}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Name (Exact Match)"
+                value={filterExactName}
+                onChange={(e) => setFilterExactName(e.target.value)}
                 size="small"
               />
             </Grid>
