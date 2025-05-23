@@ -235,6 +235,38 @@ export function ChunkInspector() {
       </Typography>
       {noChunkWarning}
       <Typography variant="subtitle1" gutterBottom>
+        The filtered chunks have a total size of {inKB(chunks.filter((c) => {
+          if (sortBy === 'Depth From Entry' && c.pathFromEntry.length === 0) {
+            return false
+          }
+          if (filterName !== "" && !c.rawFromWebpack.names.some((name) => {
+            return name.toLowerCase().includes(filterName.toLowerCase())
+          })) {
+            return false
+          }
+          if (filterById !== "" && String(c.rawFromWebpack.id) !== String(filterById)) {
+            return false
+          }
+          if (filterByIncludedModule !== "" && !c.rawFromWebpack.origins.some((o) => {
+            return o.moduleIdentifier.toLowerCase().includes(filterByIncludedModule.toLowerCase())
+          })) {
+            return false
+          }
+          if (filterByGeneratedAssetName !== "" && !c.rawFromWebpack.files.some((f) => {
+            return f.toLowerCase().includes(filterByGeneratedAssetName.toLowerCase())
+          })) {
+            return false
+          }
+          if (filterByNamedChunkGroup !== "" && !Array.from(c.namedChunkGroupDatabaseIds).some((ncgId) => {
+            const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+            return ncg && ncg.name.toLowerCase() === filterByNamedChunkGroup.toLowerCase()
+          })) {
+            return false
+          }
+          return true
+        }).reduce((acc, c) => acc + (c.rawFromWebpack.sizes.javascript ?? 0), 0))} kb
+      </Typography>
+      <Typography variant="subtitle1" gutterBottom>
         The mean chunk size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
