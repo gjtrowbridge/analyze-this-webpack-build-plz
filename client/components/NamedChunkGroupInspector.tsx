@@ -43,7 +43,8 @@ export const NamedChunkGroupInspector: React.FC = () => {
         return true;
       }
       const matchesPartial = filterName === "" || ncg.name.toLowerCase().includes(filterName.toLowerCase());
-      const matchesExact = filterExactName === "" || ncg.name.toLowerCase() === filterExactName.toLowerCase();
+      const exactNames = filterExactName.split(',').map(name => name.trim().toLowerCase());
+      const matchesExact = filterExactName === "" || exactNames.includes(ncg.name.toLowerCase());
       return matchesPartial && matchesExact;
     })
     .sort(sortFn);
@@ -90,18 +91,19 @@ export const NamedChunkGroupInspector: React.FC = () => {
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
-                label="Filter By Name (Partial Match)"
-                value={filterName}
-                onChange={(e) => setFilterName(e.target.value)}
+                label="Filter By Exact Name (comma-separated)"
+                value={filterExactName}
+                onChange={(e) => setFilterExactName(e.target.value)}
                 size="small"
+                placeholder="e.g. main, vendor, app"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
-                label="Filter By Name (Exact Match)"
-                value={filterExactName}
-                onChange={(e) => setFilterExactName(e.target.value)}
+                label="Filter By Name (Partial Match)"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
                 size="small"
               />
             </Grid>
