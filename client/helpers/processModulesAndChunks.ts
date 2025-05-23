@@ -26,6 +26,7 @@ export interface ProcessedNamedChunkGroupInfo {
   name: string
   rawFromWebpack: ImmutableObject<StatsChunkGroup>
   chunkDatabaseIds: Set<number>
+  totalSize: number
 }
 
 export interface ProcessedAssetInfo {
@@ -231,6 +232,7 @@ export function processState(args: {
       namedChunkGroupDatabaseId: namedChunkGroupRow.databaseId,
       chunkDatabaseIds: new Set<number>,
       name: namedChunkGroupRow.rawFromWebpack.name,
+      totalSize: 0,
     }
     // Update the database ids for chunks and named chunk groups
     namedChunkGroupRow.rawFromWebpack.chunks.forEach((c) => {
@@ -239,6 +241,7 @@ export function processState(args: {
         const chunk = chunksByWebpackId.get(chunkWebpackId)
         chunk.namedChunkGroupDatabaseIds.add(processedNamedChunkGroup.namedChunkGroupDatabaseId)
         processedNamedChunkGroup.chunkDatabaseIds.add(chunk.chunkDatabaseId)
+        processedNamedChunkGroup.totalSize += chunk.rawFromWebpack.size
       }
     })
     namedChunkGroupsByDatabaseId.set(processedNamedChunkGroup.namedChunkGroupDatabaseId, processedNamedChunkGroup)
