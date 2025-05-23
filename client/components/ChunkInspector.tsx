@@ -2,7 +2,7 @@ import { ChunkRow } from './ChunkRow'
 import { useCallback, useState } from 'react'
 import { ChunkIdentifier } from '../helpers/chunks'
 import { SortControl } from './SortControl'
-import { getStatistics, inKB } from '../helpers/math'
+import { getStatistics, getHumanReadableSize } from '../helpers/math'
 import { useHookstate } from '@hookstate/core'
 import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
 import { file1ProcessedGlobalState } from '../globalState'
@@ -234,8 +234,8 @@ export function ChunkInspector() {
         }).length} chunks that pass your filters, and {chunkRows.length} being shown
       </Typography>
       {noChunkWarning}
-      <Typography variant="subtitle1" gutterBottom>
-        The filtered chunks have a total size of {inKB(chunks.filter((c) => {
+      <Typography variant="h6" gutterBottom>
+        The total size of all chunks is {getHumanReadableSize(chunks.reduce((acc, c) => acc + (c.rawFromWebpack.sizes.javascript ?? 0), 0))}, and the total size of chunks that pass filters is {getHumanReadableSize(chunks.filter((c) => {
           if (sortBy === 'Depth From Entry' && c.pathFromEntry.length === 0) {
             return false
           }
@@ -264,10 +264,10 @@ export function ChunkInspector() {
             return false
           }
           return true
-        }).reduce((acc, c) => acc + (c.rawFromWebpack.sizes.javascript ?? 0), 0))} kb
+        }).reduce((acc, c) => acc + (c.rawFromWebpack.sizes.javascript ?? 0), 0))}
       </Typography>
       <Typography variant="subtitle1" gutterBottom>
-        The mean chunk size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
+        The mean chunk size is {getHumanReadableSize(mean)}, the std deviation is {getHumanReadableSize(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {chunkRows}

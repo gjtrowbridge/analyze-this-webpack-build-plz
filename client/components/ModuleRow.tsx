@@ -5,7 +5,7 @@ import { ImmutableMap, ImmutableObject } from '@hookstate/core'
 import { ModuleLink } from './ModuleLink'
 import { ChunkLink } from './ChunkLink'
 import { getModuleExtraSizeDueToDuplication, getModuleSize } from '../helpers/modules'
-import { inKB } from '../helpers/math'
+import { getHumanReadableSize } from '../helpers/math'
 import { 
   Box, 
   Card, 
@@ -117,20 +117,20 @@ export function ModuleRow(props: {
   const sizeElements = moduleHasConcatenatedSubModules ?
     (
       <Fragment>
-        <Typography variant="body1" gutterBottom>Size (With Concatenated Submodules): ~{inKB(getModuleSize({
+        <Typography variant="body1" gutterBottom>Size (With Concatenated Submodules): {getHumanReadableSize(getModuleSize({
           module,
           includeSubModules: true,
-        }))} kb</Typography>
-        <Typography variant="body1" gutterBottom>Size (JUST this module): ~{inKB(getModuleSize({
+        }))}</Typography>
+        <Typography variant="body1" gutterBottom>Size (JUST this module): {getHumanReadableSize(getModuleSize({
           module,
           includeSubModules: false,
-        }))} kb</Typography>
+        }))}</Typography>
       </Fragment>
     ) : (
-      <Typography variant="body1" gutterBottom>Size (This module has no concatenated submodules): ~{inKB(getModuleSize({
+      <Typography variant="body1" gutterBottom>Size (This module has no concatenated submodules): {getHumanReadableSize(getModuleSize({
         module,
         includeSubModules: false,
-      }))} kb</Typography>
+      }))}</Typography>
     )
 
   return (
@@ -143,10 +143,10 @@ export function ModuleRow(props: {
           <Typography variant="body1" gutterBottom>Depth: { depth === 0 ? "Not a descendant of any entry point file" : depth }</Typography>
           <Typography variant="body1" gutterBottom># Associated Files: { associatedAssets.length } (See Chunk Parents for more info)</Typography>
           {sizeElements}
-          <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: ~{inKB(getModuleExtraSizeDueToDuplication({
+          <Typography variant="body1" gutterBottom>Extra Size In Bundle Due To Duplication: {getHumanReadableSize(getModuleExtraSizeDueToDuplication({
             module,
             basedOnIndividualModules: true,
-          }))} kb</Typography>
+          }))}</Typography>
           <Typography variant="body1" gutterBottom># Optimization Bailouts: { module.rawFromWebpack.optimizationBailout?.length || 0 }</Typography>
           <Typography variant="body1" gutterBottom>Module Concatenation Status: {
             module.isSuperModule ?

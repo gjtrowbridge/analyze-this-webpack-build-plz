@@ -1,7 +1,7 @@
 import {useCallback, useState} from "react"
 import { ModuleRow } from "./ModuleRow"
 import { SortControl } from './SortControl'
-import { getStatistics, inKB } from '../helpers/math'
+import { getStatistics, getHumanReadableSize } from '../helpers/math'
 import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState } from '../globalState'
@@ -284,8 +284,11 @@ export function ModuleInspector() {
         There are {finalModules.length} total modules, and {filteredModules.length} modules that passed your filters
       </Typography>
       {noModuleWarning}
+      <Typography variant="h6" gutterBottom>
+        The total size of all modules is {getHumanReadableSize(finalModules.reduce((acc, m) => acc + m.rawFromWebpack.size, 0))}, and the total size of modules that pass filters is {getHumanReadableSize(filteredModules.reduce((acc, m) => acc + m.rawFromWebpack.size, 0))}
+      </Typography>
       <Typography variant="subtitle1" gutterBottom>
-        For the ones passing filters, the mean module size is {inKB(mean)}, the std deviation is {inKB(standardDeviation)}
+        For the ones passing filters, the mean module size is {getHumanReadableSize(mean)}, the std deviation is {getHumanReadableSize(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {moduleRows}

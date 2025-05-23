@@ -3,7 +3,7 @@ import { ProcessedChunkInfo } from '../helpers/processModulesAndChunks'
 import { Link } from 'react-router'
 import { FileNumber } from '../types'
 import { getHumanReadableChunkName } from '../helpers/chunks'
-import { inKB } from '../helpers/math'
+import { getHumanReadableSize } from '../helpers/math'
 export function ChunkLink(props: {
   chunk: ImmutableObject<ProcessedChunkInfo>
   file: FileNumber
@@ -31,7 +31,7 @@ export function ChunkLink(props: {
     }
   }
   if (includeSize) {
-    linkText = linkText.concat(` (${inKB(chunk.rawFromWebpack.size)} kb)`)
+    linkText = linkText.concat(` (${getHumanReadableSize(chunk.rawFromWebpack.size)})`)
   }
   return (
     <Link to={`/chunks/${file}/${chunk.chunkDatabaseId}`}>

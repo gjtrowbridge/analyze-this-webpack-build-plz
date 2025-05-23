@@ -1,6 +1,6 @@
 import { JsonViewer } from '@textea/json-viewer'
 import { ImmutableObject, ImmutableMap } from '@hookstate/core'
-import { inKB } from '../helpers/math'
+import { getHumanReadableSize } from '../helpers/math'
 import { ProcessedAssetInfo, ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { 
   Box, 
@@ -90,7 +90,7 @@ export function AssetRow(props: {
       <CardContent>
         <Box>
           <AssetLink asset={asset} file={file} />
-          <Typography variant="body1" gutterBottom>Size: ~{inKB(asset.rawFromWebpack.size)} kb</Typography>
+          <Typography variant="body1" gutterBottom>Size: {getHumanReadableSize(asset.rawFromWebpack.size)}</Typography>
           
           <Accordion expanded={chunksExpanded} onChange={() => setChunksExpanded(!chunksExpanded)}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>

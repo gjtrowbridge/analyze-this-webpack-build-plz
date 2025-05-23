@@ -23,7 +23,7 @@ import {
 import { NamedChunkGroupLink } from './NamedChunkGroupLink'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
-import { inKB } from '../helpers/math'
+import { inKB, getHumanReadableSize } from '../helpers/math'
 
 
 export function ChunkRow(props: {
@@ -154,7 +154,7 @@ export function ChunkRow(props: {
             Webpack Id: {chunk.rawFromWebpack.id}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            JS Size: {inKB(chunk.rawFromWebpack.sizes.javascript ?? 0)} ({chunk.rawFromWebpack.sizes.javascript ?? 0} bytes)
+            JS Size: {getHumanReadableSize(chunk.rawFromWebpack.sizes.javascript ?? 0)} ({chunk.rawFromWebpack.sizes.javascript ?? 0} bytes)
           </Typography>
           {/* <Typography variant="body2" color="text.secondary">
             Size based on modules: {inKB(javascriptSizeFromModules)} ({javascriptSizeFromModules} bytes)

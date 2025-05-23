@@ -3,7 +3,7 @@ import { Box, Card, CardContent, Grid, TextField, Typography, Alert } from '@mui
 import { useHookstate } from '@hookstate/core';
 import { file1ProcessedGlobalState } from '../globalState';
 import { SortControl } from './SortControl';
-import { getStatistics } from '../helpers/math';
+import { getStatistics, getHumanReadableSize } from '../helpers/math';
 import { ProcessedNamedChunkGroupInfo } from '../helpers/processModulesAndChunks';
 import { NamedChunkGroupRow } from './NamedChunkGroupRow';
 
@@ -115,8 +115,11 @@ export const NamedChunkGroupInspector: React.FC = () => {
         There are {allNamedChunkGroups.length} total named chunk groups, {filteredNamedChunkGroups.length} named chunk groups that pass your filters, and {namedChunkGroupRows.length} being shown
       </Typography>
       {noNamedChunkGroupWarning}
+      <Typography variant="h6" gutterBottom>
+        The total size of all named chunk groups is {getHumanReadableSize(allNamedChunkGroups.reduce((acc, ncg) => acc + ncg.totalSize, 0))}, and the total size of named chunk groups that pass filters is {getHumanReadableSize(filteredNamedChunkGroups.reduce((acc, ncg) => acc + ncg.totalSize, 0))}
+      </Typography>
       <Typography variant="subtitle1" gutterBottom>
-        For the filtered named chunk groups, the mean size is {mean.toFixed(2)} bytes, the std deviation is {standardDeviation.toFixed(2)} bytes
+        For the filtered named chunk groups, the mean size is {getHumanReadableSize(mean)}, the std deviation is {getHumanReadableSize(standardDeviation)}
       </Typography>
       <Box sx={{ mt: 2 }}>
         {namedChunkGroupRows}

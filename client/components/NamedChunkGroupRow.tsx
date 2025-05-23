@@ -16,7 +16,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useState } from 'react';
 import { NamedChunkGroupLink } from './NamedChunkGroupLink';
 import { ChunkLink } from './ChunkLink';
-import { inKB } from '../helpers/math';
+import { getHumanReadableSize } from '../helpers/math';
 
 export function NamedChunkGroupRow(props: {
   file: 'file1' | 'file2';
@@ -56,7 +56,7 @@ export function NamedChunkGroupRow(props: {
         <Box>
           <NamedChunkGroupLink namedChunkGroup={namedChunkGroup} file={file} />
           <Typography variant="body1" gutterBottom>
-            Total Size: ~{inKB(namedChunkGroup.totalSize)} kb ({namedChunkGroup.chunkDatabaseIds.size} chunks)
+            Total Size: {getHumanReadableSize(namedChunkGroup.totalSize)} ({namedChunkGroup.chunkDatabaseIds.size} chunks)
           </Typography>
 
           <Accordion expanded={chunksExpanded} onChange={() => setChunksExpanded(!chunksExpanded)}>

@@ -3,7 +3,7 @@ import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
 import { Link } from 'react-router'
 import { FileNumber } from '../types'
 import { getModuleExtraSizeDueToDuplication } from '../helpers/modules'
-import { inKB } from '../helpers/math'
+import { getHumanReadableSize } from '../helpers/math'
 
 export function ModuleLink(props: {
   module: ImmutableObject<ProcessedModuleInfo>
@@ -22,7 +22,7 @@ export function ModuleLink(props: {
     linkText = linkText.concat(` (${file})`)
   }
   if (includeDuplicationAmount) {
-    linkText = linkText.concat(` (Extra Size Due To Duplication: ${inKB(getModuleExtraSizeDueToDuplication({
+    linkText = linkText.concat(` (Extra Size Due To Duplication: ${getHumanReadableSize(getModuleExtraSizeDueToDuplication({
       module,
       basedOnIndividualModules: true,
     }))})`)
