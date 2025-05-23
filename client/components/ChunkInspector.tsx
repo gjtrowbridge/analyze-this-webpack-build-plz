@@ -64,6 +64,7 @@ export function ChunkInspector() {
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const namedChunkGroupsByDatabaseId = stateOrNull.namedChunkGroupsByDatabaseId.get()
   const chunks = Array.from(chunksByDatabaseId.values())
+  const exactNames = filterByNamedChunkGroup.split(',').map(name => name.trim().toLowerCase())
   const chunkRows = chunks
     .filter((c) => {
       if (sortBy === 'Depth From Entry' && c.pathFromEntry.length === 0) {
@@ -107,7 +108,7 @@ export function ChunkInspector() {
       }
       return Array.from(c.namedChunkGroupDatabaseIds).some((ncgId) => {
         const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
-        return ncg && ncg.name.toLowerCase() === filterByNamedChunkGroup.toLowerCase()
+        return ncg && exactNames.includes(ncg.name.toLowerCase())
       })
     })
     .sort(sortFn)
@@ -191,10 +192,11 @@ export function ChunkInspector() {
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 fullWidth
-                label="Filter By Named Chunk Group"
+                label="Filter By Named Chunk Group (comma-separated, exact match)"
                 value={filterByNamedChunkGroup}
                 onChange={(e) => setFilterByNamedChunkGroup(e.target.value)}
                 size="small"
+                placeholder="e.g. main, vendor, app"
               />
             </Grid>
           </Grid>
@@ -226,7 +228,7 @@ export function ChunkInspector() {
           }
           if (filterByNamedChunkGroup !== "" && !Array.from(c.namedChunkGroupDatabaseIds).some((ncgId) => {
             const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
-            return ncg && ncg.name.toLowerCase() === filterByNamedChunkGroup.toLowerCase()
+            return ncg && exactNames.includes(ncg.name.toLowerCase())
           })) {
             return false
           }
@@ -259,7 +261,7 @@ export function ChunkInspector() {
           }
           if (filterByNamedChunkGroup !== "" && !Array.from(c.namedChunkGroupDatabaseIds).some((ncgId) => {
             const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
-            return ncg && ncg.name.toLowerCase() === filterByNamedChunkGroup.toLowerCase()
+            return ncg && exactNames.includes(ncg.name.toLowerCase())
           })) {
             return false
           }
