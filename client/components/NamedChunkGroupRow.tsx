@@ -50,22 +50,13 @@ export function NamedChunkGroupRow(props: {
     })
     .filter(Boolean);
 
-  const totalSize = Array.from(namedChunkGroup.chunkDatabaseIds)
-    .reduce((sum, chunkDatabaseId) => {
-      const chunk = chunksByDatabaseId.get(chunkDatabaseId);
-      if (!chunk) {
-        return sum;
-      }
-      return sum + (chunk.rawFromWebpack.sizes.javascript ?? 0);
-    }, 0);
-
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
         <Box>
           <NamedChunkGroupLink namedChunkGroup={namedChunkGroup} file={file} />
           <Typography variant="body1" gutterBottom>
-            Total Size: ~{inKB(totalSize)} kb ({namedChunkGroup.chunkDatabaseIds.size} chunks)
+            Total Size: ~{inKB(namedChunkGroup.totalSize)} kb ({namedChunkGroup.chunkDatabaseIds.size} chunks)
           </Typography>
 
           <Accordion expanded={chunksExpanded} onChange={() => setChunksExpanded(!chunksExpanded)}>

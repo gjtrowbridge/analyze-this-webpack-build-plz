@@ -7,7 +7,7 @@ import { getStatistics } from '../helpers/math';
 import { ProcessedNamedChunkGroupInfo } from '../helpers/processModulesAndChunks';
 import { NamedChunkGroupRow } from './NamedChunkGroupRow';
 
-export type NamedChunkGroupSortBy = 'Name' | 'Chunk Count';
+export type NamedChunkGroupSortBy = 'Name' | 'Chunk Count' | 'Total Size';
 
 export const NamedChunkGroupInspector: React.FC = () => {
   const file1ProcessedState = useHookstate(file1ProcessedGlobalState);
@@ -22,6 +22,8 @@ export const NamedChunkGroupInspector: React.FC = () => {
       return (a.name.localeCompare(b.name)) * sortOrder;
     } else if (sortBy === "Chunk Count") {
       return (a.chunkDatabaseIds.size - b.chunkDatabaseIds.size) * sortOrder;
+    } else if (sortBy === "Total Size") {
+      return (a.totalSize - b.totalSize) * sortOrder;
     }
     return 0;
   }, [sortAscending, sortBy]);
@@ -61,7 +63,7 @@ export const NamedChunkGroupInspector: React.FC = () => {
   const {
     mean,
     standardDeviation,
-  } = getStatistics(filteredNamedChunkGroups.map((ncg) => ncg.chunkDatabaseIds.size));
+  } = getStatistics(filteredNamedChunkGroups.map((ncg) => ncg.totalSize));
 
   const noNamedChunkGroupWarning = allNamedChunkGroups.length > 0 ? null : (
     <Alert severity="warning" sx={{ mb: 2 }}>
@@ -79,6 +81,7 @@ export const NamedChunkGroupInspector: React.FC = () => {
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <SortControl<NamedChunkGroupSortBy> controlFor={"Name"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
                 <SortControl<NamedChunkGroupSortBy> controlFor={"Chunk Count"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
+                <SortControl<NamedChunkGroupSortBy> controlFor={"Total Size"} sortBy={sortBy} setSortBy={setSortBy} sortAscending={sortAscending} setSortAscending={setSortAscending} />
               </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
@@ -99,7 +102,7 @@ export const NamedChunkGroupInspector: React.FC = () => {
       </Typography>
       {noNamedChunkGroupWarning}
       <Typography variant="subtitle1" gutterBottom>
-        For the filtered named chunk groups, the mean number of chunks is {mean.toFixed(2)}, the std deviation is {standardDeviation.toFixed(2)}
+        For the filtered named chunk groups, the mean size is {mean.toFixed(2)} bytes, the std deviation is {standardDeviation.toFixed(2)} bytes
       </Typography>
       <Box sx={{ mt: 2 }}>
         {namedChunkGroupRows}
