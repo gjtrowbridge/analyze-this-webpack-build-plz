@@ -2,6 +2,7 @@ import { Migration } from './types'
 import type { Database } from 'better-sqlite3'
 
 export const createAssetsAndChunkGroupsTablesMigration: Migration = {
+  name: '2025-04-16_02-38-create-assets-and-named-chunk-groups-tables',
   up: (db: Database) => {
     db.exec(`
   CREATE TABLE IF NOT EXISTS assets(
@@ -12,7 +13,7 @@ export const createAssetsAndChunkGroupsTablesMigration: Migration = {
       file_id INTEGER NOT NULL,
       
       PRIMARY KEY(id ASC),
-      FOREIGN KEY(file_id) REFERENCES files(id),
+      FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
       UNIQUE(name, file_id)
   ) STRICT
 `)
@@ -25,7 +26,7 @@ export const createAssetsAndChunkGroupsTablesMigration: Migration = {
       file_id INTEGER NOT NULL,
       
       PRIMARY KEY(id ASC),
-      FOREIGN KEY(file_id) REFERENCES files(id),
+      FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
       UNIQUE(name, file_id)
   ) STRICT
 `)

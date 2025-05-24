@@ -19,7 +19,7 @@ CREATE TABLE modules(
       file_id INTEGER NOT NULL,
 
       PRIMARY KEY(id ASC),
-      FOREIGN KEY(file_id) REFERENCES files(id),
+      FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
       UNIQUE(unique_key, file_id)
   ) STRICT
 ;
@@ -31,7 +31,7 @@ CREATE TABLE chunks(
       file_id INTEGER NOT NULL,
 
       PRIMARY KEY(id ASC),
-      FOREIGN KEY(file_id) REFERENCES files(id),
+      FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
       UNIQUE(chunk_id, chunk_name, file_id)
   ) STRICT
 ;
@@ -43,7 +43,7 @@ CREATE TABLE assets(
       file_id INTEGER NOT NULL,
       
       PRIMARY KEY(id ASC),
-      FOREIGN KEY(file_id) REFERENCES files(id),
+      FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
       UNIQUE(name, file_id)
   ) STRICT
 ;
@@ -55,7 +55,7 @@ CREATE TABLE named_chunk_groups(
       file_id INTEGER NOT NULL,
       
       PRIMARY KEY(id ASC),
-      FOREIGN KEY(file_id) REFERENCES files(id),
+      FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
       UNIQUE(name, file_id)
   ) STRICT
 ;

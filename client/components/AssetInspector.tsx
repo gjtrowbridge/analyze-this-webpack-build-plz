@@ -23,6 +23,7 @@ export function AssetInspector() {
   const [sortBy, setSortBy] = useState<AssetSortBy>("Name")
   const [sortAscending, setSortAscending] = useState<boolean>(false)
   const [filterName, setFilterName] = useState<string>("")
+  const [filterByNamedChunkGroup, setFilterByNamedChunkGroup] = useState<string>("")
   const [showMoreId, setShowMoreId] = useState<number>(-1)
 
   const sortFn = useCallback((a: ProcessedAssetInfo, b: ProcessedAssetInfo) => {
@@ -47,13 +48,24 @@ export function AssetInspector() {
   const assetLookup = stateOrNull.assetLookup.get()
   const chunksByDatabaseId = stateOrNull.chunksByDatabaseId.get()
   const modulesByDatabaseId = stateOrNull.modulesByDatabaseId.get()
+  const namedChunkGroupsByDatabaseId = stateOrNull.namedChunkGroupsByDatabaseId.get()
   const allAssets = assetLookup.toArray()
+  const exactNames = filterByNamedChunkGroup.split(',').map(name => name.trim().toLowerCase())
   const filteredAssets = allAssets
     .filter((a) => {
       if (filterName === "") {
         return true
       }
       return a.rawFromWebpack.name.toLowerCase().includes(filterName.toLowerCase())
+    })
+    .filter((a) => {
+      if (filterByNamedChunkGroup === "") {
+        return true
+      }
+      return Array.from(a.namedChunkGroupDatabaseIds).some((ncgId) => {
+        const ncg = namedChunkGroupsByDatabaseId.get(ncgId)
+        return ncg && exactNames.includes(ncg.name.toLowerCase())
+      })
     })
     .sort(sortFn)
   const assetRows = filteredAssets.slice(0, 50).map((asset) => {
@@ -104,6 +116,16 @@ export function AssetInspector() {
                 value={filterName}
                 onChange={(e) => setFilterName(e.target.value)}
                 size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <TextField
+                fullWidth
+                label="Filter By Named Chunk Group (comma-separated, exact match)"
+                value={filterByNamedChunkGroup}
+                onChange={(e) => setFilterByNamedChunkGroup(e.target.value)}
+                size="small"
+                placeholder="e.g. main, vendor, app"
               />
             </Grid>
           </Grid>

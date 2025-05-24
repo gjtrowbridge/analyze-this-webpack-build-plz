@@ -35,6 +35,7 @@ export interface ProcessedAssetInfo {
   chunkDatabaseIds: Set<number>
   moduleDatabaseIds: Set<number>
   subModuleDatabaseIds: Set<number>
+  namedChunkGroupDatabaseIds: Set<number>
 }
 
 export interface ProcessedChunkInfo {
@@ -394,6 +395,7 @@ export function processState(args: {
     const chunkDatabaseIds = new Set<number>()
     const moduleDatabaseIds = new Set<number>()
     const subModuleDatabaseIds = new Set<number>()
+    const namedChunkGroupDatabaseIds = new Set<number>()
 
     chunksFromWebpack.forEach((chunkWebpackId: number) => {
       const chunk = chunksByWebpackId.get(getSanitizedChunkId(chunkWebpackId))
@@ -409,6 +411,10 @@ export function processState(args: {
       chunk.childSubmoduleDatabaseIds.forEach((subModuleDatabaseId) => {
         subModuleDatabaseIds.add(subModuleDatabaseId)
       })
+      // Add named chunk group database IDs from the chunk to the asset
+      chunk.namedChunkGroupDatabaseIds.forEach((ncgId) => {
+        namedChunkGroupDatabaseIds.add(ncgId)
+      })
     })
 
     const processedAsset: ProcessedAssetInfo = {
@@ -417,6 +423,7 @@ export function processState(args: {
       chunkDatabaseIds: new Set(chunkDatabaseIds),
       moduleDatabaseIds,
       subModuleDatabaseIds,
+      namedChunkGroupDatabaseIds,
     }
     assetLookup.addAsset(processedAsset)
   })
