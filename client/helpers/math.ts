@@ -33,7 +33,9 @@ export function inKB(num: number) {
 
 export function getHumanReadableSize(num: number): string {
   const labels = ['bytes', 'kb', 'mb', 'gb']
-  let currentNum = num
+  let signMultiplier = num < 0 ? -1 : 1
+
+  let currentNum = Math.abs(num)
   let currentLabel = labels[0]
   for (let i = 0; i<labels.length; i++) {
     currentLabel = labels[i]
@@ -42,7 +44,7 @@ export function getHumanReadableSize(num: number): string {
     }
     currentNum = currentNum / 1024
   }
-  return `${Math.round(currentNum * 100) / 100} ${currentLabel}`
+  return `${Math.round(currentNum * 100) / 100 * signMultiplier} ${currentLabel}`
 }
 
 export function formatNumber(num: number): string {

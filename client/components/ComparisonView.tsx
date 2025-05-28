@@ -1,4 +1,4 @@
-import { ImmutableMap, useHookstate } from '@hookstate/core'
+import { ImmutableMap, ImmutableObject, useHookstate } from '@hookstate/core'
 import { file1ProcessedGlobalState, file2ProcessedGlobalState, filesGlobalState } from '../globalState'
 import { ChunkComparisonData, compareFiles, ModuleComparisonData } from '../helpers/comparison'
 import { ModuleLink } from './ModuleLink'
@@ -6,13 +6,14 @@ import { ChunkLink } from './ChunkLink'
 import { CompareChunkLink } from './CompareChunkLink'
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import { ProcessedModuleInfo, ProcessedNamedChunkGroupInfo } from '../helpers/processModulesAndChunks'
 import { GridColDef, DataGrid } from '@mui/x-data-grid'
-import { formatNumber, inKB } from '../helpers/math'
+import { formatNumber, getHumanReadableSize, inKB } from '../helpers/math'
 import { getModuleName, getModuleNumberOfChunks, getModuleSize } from '../helpers/modules'
 import { AssetLink } from './AssetLink'
 import { AssetComparisonData } from '../helpers/comparison'
 import { useFileNames } from '../hooks/useFiles'
+import { AssetLookup } from '../helpers/assets'
 
 export function ComparisonView() {
   const fileData = useHookstate(filesGlobalState)
@@ -38,6 +39,8 @@ export function ComparisonView() {
   const file2ChunksByWebpackId = file2ProcessedState.chunksByWebpackId.get()
   const file1ModulesByDatabaseId = file1ProcessedState.modulesByDatabaseId.get()
   const file2ModulesByDatabaseId = file2ProcessedState.modulesByDatabaseId.get()
+  const file1NamedChunkGroupsByDatabaseId = file1ProcessedState.namedChunkGroupsByDatabaseId.get()
+  const file2NamedChunkGroupsByDatabaseId = file2ProcessedState.namedChunkGroupsByDatabaseId.get()
   const file1AssetLookup = file1ProcessedState.assetLookup.get()
   const file2AssetLookup = file2ProcessedState.assetLookup.get()
 
@@ -62,6 +65,12 @@ export function ComparisonView() {
         file2ModulesByWebpackId,
       }} />
       <AssetComparison data={assets} />
+      <NamedChunkGroupComparison
+        file1AssetLookup={file1AssetLookup}
+        file2AssetLookup={file2AssetLookup}
+        file1NamedChunkGroupsByDatabaseId={file1NamedChunkGroupsByDatabaseId}
+        file2NamedChunkGroupsByDatabaseId={file2NamedChunkGroupsByDatabaseId}
+      />
     </div>
   )
 }
@@ -418,28 +427,132 @@ function AssetComparison(props: { data: AssetComparisonData }) {
               }}
               pageSizeOptions={[10, 20, 50]}
               checkboxSelection
-              // slots={{
-              //   footer: () => {
-              //     const totals = {
-              //       sizeFile1: tableData.reduce((sum, row) => sum + row.sizeFile1, 0),
-              //       sizeFile2: tableData.reduce((sum, row) => sum + row.sizeFile2, 0),
-              //       differenceInSize: tableData.reduce((sum, row) => sum + row.differenceInSize, 0),
-              //     };
-              //
-              //     return (
-              //       <div style={{ padding: '8px', display: 'flex', borderTop: '1px solid rgba(224, 224, 224, 1)' }}>
-              //         <div style={{ width: 300, fontWeight: 'bold' }}>Totals</div>
-              //         <div style={{ width: 150 }}>{formatNumber(totals.sizeFile1)}</div>
-              //         <div style={{ width: 150 }}>{formatNumber(totals.sizeFile2)}</div>
-              //         <div style={{ width: 150 }}>{formatNumber(totals.differenceInSize)}</div>
-              //       </div>
-              //     );
-              //   },
-              // }}
+
             />
           </div>
         </AccordionDetails>
       </Accordion>
     </div>
   )
+}
+
+function NamedChunkGroupComparison(props: {
+  file1AssetLookup: ImmutableObject<AssetLookup>,
+  file2AssetLookup: ImmutableObject<AssetLookup>,
+  file1NamedChunkGroupsByDatabaseId: ImmutableMap<number, ProcessedNamedChunkGroupInfo>,
+  file2NamedChunkGroupsByDatabaseId: ImmutableMap<number, ProcessedNamedChunkGroupInfo>,
+}) {
+  const {
+    file1AssetLookup,
+    file2AssetLookup,
+    file1NamedChunkGroupsByDatabaseId,
+    file2NamedChunkGroupsByDatabaseId,
+  } = props
+  const fileNames = useFileNames()
+
+  const file1TotalSizeByNamedChunkGroupName = new Map<string, number>()
+  const file2TotalSizeByNamedChunkGroupName = new Map<string, number>()
+
+  file1AssetLookup.toArray().forEach((asset) => {
+    asset.namedChunkGroupDatabaseIds.forEach((ncgId) => {
+      const ncg = file1NamedChunkGroupsByDatabaseId.get(ncgId)
+      const name = ncg.name
+      if (!file1TotalSizeByNamedChunkGroupName.has(name)) {
+        file1TotalSizeByNamedChunkGroupName.set(name, 0)
+      }
+      const currentSize = file1TotalSizeByNamedChunkGroupName.get(name)
+      file1TotalSizeByNamedChunkGroupName.set(name, currentSize + asset.rawFromWebpack.size)
+    })
+  })
+  file2AssetLookup.toArray().forEach((asset) => {
+    asset.namedChunkGroupDatabaseIds.forEach((ncgId) => {
+      const ncg = file2NamedChunkGroupsByDatabaseId.get(ncgId)
+      const name = ncg.name
+      if (!file2TotalSizeByNamedChunkGroupName.has(name)) {
+        file2TotalSizeByNamedChunkGroupName.set(name, 0)
+      }
+      const currentSize = file2TotalSizeByNamedChunkGroupName.get(name)
+      file2TotalSizeByNamedChunkGroupName.set(name, currentSize + asset.rawFromWebpack.size)
+    })
+  })
+
+
+  const tableColumns: Array<GridColDef> = [
+    { field: 'chunkGroupName', headerName: 'Name', width: 300 },
+    { field: 'sizeFile1', headerName: `Total Asset Size (${fileNames.file1})`, width: 200 },
+    { field: 'sizeFile2', headerName: `Total Asset Size (${fileNames.file2})`, width: 200 },
+    { field: 'differenceInSize', headerName: 'Diff', width: 200 },
+  ]
+
+  const chunkGroupNamesSeen = new Set<string>()
+  let tableData: Array<{
+    id: string,
+    chunkGroupName: string,
+    sizeFile1: number,
+    sizeFile2: number,
+    differenceInSize: string,
+  }> = []
+  for (const name of file1TotalSizeByNamedChunkGroupName.keys()) {
+    if (chunkGroupNamesSeen.has(name)) {
+      continue
+    }
+    chunkGroupNamesSeen.add(name)
+    const sizeFile1 = file1TotalSizeByNamedChunkGroupName.get(name) || 0
+    const sizeFile2 = file2TotalSizeByNamedChunkGroupName.get(name) || 0
+    tableData.push({
+      id: name,
+      chunkGroupName: name,
+      sizeFile1,
+      sizeFile2,
+      differenceInSize: sizeFile2 === sizeFile1 ? "" : getHumanReadableSize(sizeFile2 - sizeFile1)
+    })
+  }
+  for (const name of file2TotalSizeByNamedChunkGroupName.keys()) {
+    if (chunkGroupNamesSeen.has(name)) {
+      continue
+    }
+    chunkGroupNamesSeen.add(name)
+    const sizeFile1 = file1TotalSizeByNamedChunkGroupName.get(name) || 0
+    const sizeFile2 = file2TotalSizeByNamedChunkGroupName.get(name) || 0
+    tableData.push({
+      id: name,
+      chunkGroupName: name,
+      sizeFile1,
+      sizeFile2,
+      differenceInSize: sizeFile2 === sizeFile1 ? "" : getHumanReadableSize(sizeFile2 - sizeFile1)
+    })
+  }
+
+  tableData = tableData.filter((a) => {
+    return a.differenceInSize !== ""
+  }).sort((a, b) => {
+    return a.chunkGroupName.localeCompare(b.chunkGroupName)
+  })
+
+  return (
+    <div id="NamedChunkGroupComparison">
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Named chunk groups that changed total size ({tableData.length})</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <div style={{ height: 600, width: '100%' }}>
+            <DataGrid
+              rows={tableData}
+              columns={tableColumns}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: 20 },
+                },
+              }}
+              pageSizeOptions={[10, 20, 50]}
+              checkboxSelection
+
+            />
+          </div>
+        </AccordionDetails>
+      </Accordion>
+    </div>
+  )
+
 }
