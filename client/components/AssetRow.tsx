@@ -1,7 +1,7 @@
 import { JsonViewer } from '@textea/json-viewer'
 import { ImmutableObject, ImmutableMap } from '@hookstate/core'
 import { getHumanReadableSize } from '../helpers/math'
-import { ProcessedAssetInfo, ProcessedChunkInfo, ProcessedModuleInfo } from '../helpers/processModulesAndChunks'
+import { ProcessedAssetInfo, ProcessedChunkInfo, ProcessedModuleInfo, ProcessedNamedChunkGroupInfo } from '../helpers/processModulesAndChunks'
 import { 
   Box, 
   Card, 
@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { AssetLink } from './AssetLink'
 import { ChunkLink } from './ChunkLink'
 import { ModuleLink } from './ModuleLink'
+import { NamedChunkGroupLink } from './NamedChunkGroupLink'
 
 export function AssetRow(props: {
   file: 'file1' | 'file2'
@@ -26,6 +27,7 @@ export function AssetRow(props: {
   setShowRawInfo: (assetDatabaseId: number) => void
   chunksByDatabaseId: ImmutableMap<number, ProcessedChunkInfo>
   modulesByDatabaseId: ImmutableMap<number, ProcessedModuleInfo>
+  namedChunkGroupsByDatabaseId: ImmutableMap<number, ProcessedNamedChunkGroupInfo>
   noLimitsOnLists?: boolean
 }) {
   const {
@@ -35,6 +37,7 @@ export function AssetRow(props: {
     setShowRawInfo,
     chunksByDatabaseId,
     modulesByDatabaseId,
+    namedChunkGroupsByDatabaseId,
     noLimitsOnLists,
   } = props
 
@@ -42,6 +45,7 @@ export function AssetRow(props: {
   const [chunksExpanded, setChunksExpanded] = useState(false)
   const [modulesExpanded, setModulesExpanded] = useState(false)
   const [subModulesExpanded, setSubModulesExpanded] = useState(false)
+  const [namedChunkGroupsExpanded, setNamedChunkGroupsExpanded] = useState(false)
 
   const maxItemsToShow = noLimitsOnLists ? 100000 : 10
 
@@ -85,6 +89,20 @@ export function AssetRow(props: {
       )
     })
 
+  const namedChunkGroupLinks = Array.from(asset.namedChunkGroupDatabaseIds)
+    .slice(0, maxItemsToShow)
+    .map((ncgDatabaseId) => {
+      const ncg = namedChunkGroupsByDatabaseId.get(ncgDatabaseId)
+      if (!ncg) {
+        return null
+      }
+      return (
+        <ListItem key={ncgDatabaseId}>
+          <NamedChunkGroupLink namedChunkGroup={ncg} file={file} />
+        </ListItem>
+      )
+    })
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
@@ -121,6 +139,17 @@ export function AssetRow(props: {
             <AccordionDetails>
               <List>
                 {subModuleLinks}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion expanded={namedChunkGroupsExpanded} onChange={() => setNamedChunkGroupsExpanded(!namedChunkGroupsExpanded)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Named Chunk Groups ({asset.namedChunkGroupDatabaseIds.size} total -- will only show up to {maxItemsToShow})</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {namedChunkGroupLinks}
               </List>
             </AccordionDetails>
           </Accordion>

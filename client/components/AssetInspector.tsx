@@ -79,6 +79,7 @@ export function AssetInspector() {
       showRawInfo={showMoreId === asset.assetDatabaseId}
       chunksByDatabaseId={chunksByDatabaseId}
       modulesByDatabaseId={modulesByDatabaseId}
+      namedChunkGroupsByDatabaseId={namedChunkGroupsByDatabaseId}
     />
   })
 
