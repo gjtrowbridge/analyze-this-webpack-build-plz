@@ -4,8 +4,9 @@ import { useHookstate } from '@hookstate/core'
 import { filesGlobalState } from '../globalState'
 import { useStateRefreshFunctions } from '../hooks/useRefresh'
 import Button from '@mui/material/Button'
-import { MenuItem, TextField, Typography } from '@mui/material'
-
+import { MenuItem, TextField, Typography, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { useState } from 'react'
 
 export function FileSelector() {
   const files = useHookstate(filesGlobalState)
@@ -14,6 +15,26 @@ export function FileSelector() {
     clearFileData,
   } = useStateRefreshFunctions()
   const f = files.get()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [fileToDelete, setFileToDelete] = useState<number | null>(null)
+
+  const handleDeleteClick = (fileId: number) => {
+    setFileToDelete(fileId)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (fileToDelete !== null) {
+      console.log('Delete file:', fileToDelete)
+      setDeleteDialogOpen(false)
+      setFileToDelete(null)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+    setFileToDelete(null)
+  }
 
   let statusEl = null
 
@@ -116,6 +137,68 @@ export function FileSelector() {
       </div>
       <Typography variant={'h4'}>Upload New File(s)</Typography>
       <FileLoader />
+      {f.status === "LOADED" && f.existingFiles.length > 0 && (
+        <>
+          <Typography variant={'h4'} sx={{ mt: 4 }}>Remove Files</Typography>
+          <Accordion sx={{ mt: 2 }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>View All Files</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {f.existingFiles.map((file) => (
+                  <ListItem 
+                    key={file.id}
+                    sx={{
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '4px',
+                      mb: 1,
+                      '&:hover': {
+                        backgroundColor: '#f5f5f5'
+                      },
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <ListItemText
+                      primary={file.user_provided_name}
+                      secondary={file.uploaded_at}
+                      primaryTypographyProps={{
+                        fontWeight: 'medium',
+                        fontSize: '1.1rem'
+                      }}
+                    />
+                    <Button 
+                      variant="contained" 
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteClick(file.id)}
+                    >
+                      Delete
+                    </Button>
+                  </ListItem>
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={handleDeleteCancel}
+          >
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogContent>
+              Are you sure you want to delete "{f.existingFiles.find(file => file.id === fileToDelete)?.user_provided_name}"? This action cannot be undone.
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDeleteCancel}>Cancel</Button>
+              <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
     </>
   )
 }

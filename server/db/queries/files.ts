@@ -3,6 +3,10 @@ import { db } from '../database'
 import { Statement } from 'better-sqlite3'
 import { DatabaseFileRow } from '../../helpers/databaseTypes'
 
+const deleteAllStatement = `
+  DELETE FROM files WHERE id = @id
+`
+
 const insertStatement = `
   INSERT INTO files (
                      original_name,
@@ -68,4 +72,9 @@ export function getFilesFromDatabase(): Array<FileRow> {
 export function getFileFromDatabase(id: number): FileRow | undefined {
   const getOne: Statement<unknown[], DatabaseFileRow> = db.prepare(getOneStatement)
   return getOne.get(id)
+}
+
+export function deleteFileFromDatabase(id: number) {
+  const deleteOne: Statement<unknown[], DatabaseFileRow> = db.prepare(deleteStatement)
+  return deleteOne.run(id)
 }
