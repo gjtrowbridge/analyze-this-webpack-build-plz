@@ -44,7 +44,7 @@ const updateStatement = `
 `
 
 const deleteStatement = `
-  DELETE FROM files where id = @id
+  DELETE FROM files where id = ?
 `
 const getAllStatement = `
   SELECT * FROM files ORDER BY uploaded_at DESC

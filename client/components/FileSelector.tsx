@@ -7,6 +7,8 @@ import Button from '@mui/material/Button'
 import { MenuItem, TextField, Typography, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useState } from 'react'
+import axios from 'axios'
+import { useRefreshFilesFn } from '../hooks/useFiles'
 
 export function FileSelector() {
   const files = useHookstate(filesGlobalState)
@@ -17,15 +19,21 @@ export function FileSelector() {
   const f = files.get()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [fileToDelete, setFileToDelete] = useState<number | null>(null)
+  const refreshFiles = useRefreshFilesFn()
 
   const handleDeleteClick = (fileId: number) => {
     setFileToDelete(fileId)
     setDeleteDialogOpen(true)
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (fileToDelete !== null) {
-      console.log('Delete file:', fileToDelete)
+      try {
+        await axios.delete(`/api/files/${fileToDelete}`)
+        refreshFiles()
+      } catch (error) {
+        console.error('Failed to delete file:', error)
+      }
       setDeleteDialogOpen(false)
       setFileToDelete(null)
     }
